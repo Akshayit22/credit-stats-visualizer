@@ -1,0 +1,1389 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="stylesheet" href="_ds/nocturne-1e5b28c3-8831-49f9-8a61-e086d2cadc2f/styles.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+body{margin:0;background:var(--color-bg);color:var(--color-text);font-variant-numeric:tabular-nums;--pad:20px;--gap:16px;-webkit-font-smoothing:antialiased}
+a{color:var(--color-accent)}a:hover{color:var(--color-accent-300)}
+@keyframes skel{0%{opacity:.3}50%{opacity:.6}100%{opacity:.3}}
+::-webkit-scrollbar{height:8px;width:8px}
+::-webkit-scrollbar-thumb{background:#3f424d;border-radius:8px}
+::-webkit-scrollbar-track{background:transparent}
+</style>
+</helmet>
+
+<div ref="{{ rootRef }}" style="display:flex;align-items:stretch;min-height:100vh;background:var(--color-bg)">
+
+  <aside style="{{ asideSt }}">
+    <div style="{{ brandSt }}">
+      <div style="width:20px;height:20px;flex:none;border-radius:6px;border:1px solid var(--color-accent);display:grid;place-items:center">
+        <div style="width:7px;height:7px;background:var(--color-accent);border-radius:2px"></div>
+      </div>
+      <sc-if value="{{ navOpen }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:1;font-family:var(--font-heading);font-weight:500;font-size:13.5px;letter-spacing:-.01em;white-space:nowrap;overflow:hidden">Statements</div>
+      </sc-if>
+    </div>
+
+    <nav style="display:flex;flex-direction:column;gap:2px;padding:10px 0">
+      <sc-for list="{{ nav }}" as="it" hint-placeholder-count="5">
+        <button onClick="{{ it.go }}" title="{{ it.label }}" style="{{ it.st }}">
+          <i class="{{ it.icon }}" style="font-size:16px;flex:none"></i>
+          <sc-if value="{{ navOpen }}" hint-placeholder-val="{{ true }}">
+            <span style="flex:1;text-align:left;white-space:nowrap;overflow:hidden">{{ it.label }}</span>
+          </sc-if>
+        </button>
+      </sc-for>
+    </nav>
+
+    <div style="flex:1"></div>
+    <button onClick="{{ toggleNav }}" title="{{ toggleLabel }}" style="{{ toggleSt }}">
+      <i class="{{ toggleIcon }}" style="font-size:15px;flex:none"></i>
+      <sc-if value="{{ navOpen }}" hint-placeholder-val="{{ true }}">
+        <span style="flex:1;text-align:left;white-space:nowrap">Collapse</span>
+      </sc-if>
+    </button>
+  </aside>
+
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+
+    <header style="display:flex;align-items:center;gap:var(--gap);flex-wrap:wrap;padding:14px 30px;position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--color-bg) 93%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--color-divider)">
+      <div style="display:flex;align-items:center;gap:6px;flex:none">
+        <sc-for list="{{ acctPills }}" as="p" hint-placeholder-count="2">
+          <button onClick="{{ p.go }}" style="{{ p.st }}">
+            <i class="{{ p.icon }}" style="font-size:13px"></i>
+            <span style="white-space:nowrap">{{ p.label }}</span>
+          </button>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{ showPillRule }}" hint-placeholder-val="{{ true }}">
+        <div style="width:1px;height:20px;background:var(--color-divider);flex:none"></div>
+      </sc-if>
+
+      <div class="seg" style="flex:none">
+        <sc-for list="{{ modeOpts }}" as="o" hint-placeholder-count="3">
+          <button onClick="{{ o.go }}" style="{{ o.st }}">{{ o.label }}</button>
+        </sc-for>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:8px;flex:1 1 300px;min-width:240px">
+        <sc-if value="{{ monthMode }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;align-items:center;gap:4px;overflow-x:auto;padding:2px 0;flex:1">
+            <sc-for list="{{ monthChips }}" as="c" hint-placeholder-count="12">
+              <button onClick="{{ c.go }}" title="{{ c.tip }}" style="{{ c.st }}">{{ c.label }}</button>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ yearMode }}" hint-placeholder-val="{{ false }}">
+          <select onChange="{{ setYearScope }}" value="{{ yearScope }}" class="input" style="width:auto;min-width:180px;font-size:12.5px">
+            <option value="fy2627">FY 2026–27 · Apr–Mar</option>
+            <option value="fy2526">FY 2025–26 · Apr–Mar</option>
+            <option value="cal2026">Calendar 2026</option>
+          </select>
+        </sc-if>
+
+        <sc-if value="{{ rangeMode }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:color-mix(in srgb,var(--color-text) 58%,transparent)">
+            <select onChange="{{ setFrom }}" value="{{ rangeFrom }}" class="input" style="width:auto;min-width:130px;font-size:12.5px">
+              <sc-for list="{{ monthOptions }}" as="m" hint-placeholder-count="12">
+                <option value="{{ m.key }}">{{ m.label }}</option>
+              </sc-for>
+            </select>
+            <span>to</span>
+            <select onChange="{{ setTo }}" value="{{ rangeTo }}" class="input" style="width:auto;min-width:130px;font-size:12.5px">
+              <sc-for list="{{ monthOptions }}" as="m" hint-placeholder-count="12">
+                <option value="{{ m.key }}">{{ m.label }}</option>
+              </sc-for>
+            </select>
+            <span style="{{ rangeWarnSt }}">{{ rangeNote }}</span>
+          </div>
+        </sc-if>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:var(--gap);flex:0 0 auto;margin-left:auto">
+        <sc-if value="{{ demoOn }}" hint-placeholder-val="{{ false }}">
+          <div title="{{ demoTip }}" style="display:flex;align-items:center;gap:6px;font-size:11px;padding:4px 9px;border-radius:6px;cursor:help;color:#d0a46a;background:color-mix(in srgb,#d0a46a 12%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,#d0a46a 30%,transparent)">
+            <i class="ph ph-flask" style="font-size:12px"></i>
+            <span style="white-space:nowrap">{{ demoLabel }}</span>
+          </div>
+        </sc-if>
+        <div title="{{ coverTip }}" style="display:flex;align-items:center;gap:7px;font-size:11.5px;color:color-mix(in srgb,var(--color-text) 60%,transparent);cursor:help">
+          <span style="{{ coverDotSt }}"></span>
+          <span style="border-bottom:1px dotted color-mix(in srgb,var(--color-text) 32%,transparent);white-space:nowrap">{{ coverLabel }}</span>
+        </div>
+        <button class="btn btn-primary" onClick="{{ openUpload }}" style="flex:none"><i class="ph ph-upload-simple" style="font-size:14px"></i>Upload</button>
+      </div>
+    </header>
+
+    <main style="padding:26px 30px 70px;display:flex;flex-direction:column;gap:30px;max-width:1360px">
+
+      <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:26px">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--gap)">
+            <div style="height:78px;border-radius:var(--radius-md);background:var(--color-surface);animation:skel 1.5s ease-in-out infinite"></div>
+            <div style="height:78px;border-radius:var(--radius-md);background:var(--color-surface);animation:skel 1.5s ease-in-out .15s infinite"></div>
+            <div style="height:78px;border-radius:var(--radius-md);background:var(--color-surface);animation:skel 1.5s ease-in-out .3s infinite"></div>
+          </div>
+          <div style="height:260px;border-radius:var(--radius-md);background:var(--color-surface);animation:skel 1.5s ease-in-out .2s infinite"></div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ noData }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:70px 0;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px">
+          <i class="ph ph-calendar-x" style="font-size:26px;color:var(--color-accent);opacity:.75"></i>
+          <div style="font-family:var(--font-heading);font-size:18px">Nothing uploaded for {{ periodLabel }}</div>
+          <p style="font-size:13px;max-width:380px;margin:0;color:color-mix(in srgb,var(--color-text) 58%,transparent)">{{ noDataSub }}</p>
+          <button class="btn btn-primary" onClick="{{ openUpload }}" style="margin-top:4px">Upload statement</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ sOverview }}" hint-placeholder-val="{{ true }}">
+        <section style="display:flex;flex-direction:column;gap:32px">
+
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:var(--gap);flex-wrap:wrap">
+            <div>
+              <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 46%,transparent)">Overview</div>
+              <div style="font-family:var(--font-heading);font-size:26px;letter-spacing:-.02em;margin-top:5px">{{ periodLabel }}</div>
+            </div>
+            <div style="font-size:12px;color:color-mix(in srgb,var(--color-text) 50%,transparent)">{{ periodSub }}</div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:30px 34px">
+            <sc-for list="{{ heroTiles }}" as="t" hint-placeholder-count="4">
+              <div>
+                <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 46%,transparent)">{{ t.label }}</div>
+                <div style="font-size:29px;font-family:var(--font-heading);font-weight:500;line-height:1.15;letter-spacing:-.025em;margin-top:7px;{{ t.valSt }}">{{ t.value }}</div>
+                <div style="display:flex;align-items:center;gap:5px;font-size:11.5px;margin-top:5px;{{ t.deltaSt }}">
+                  <i class="{{ t.deltaIcon }}" style="font-size:11px"></i>{{ t.delta }}
+                  <span style="color:color-mix(in srgb,var(--color-text) 40%,transparent)">{{ t.note }}</span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:30px">
+            <sc-for list="{{ trendCharts }}" as="c" hint-placeholder-count="3">
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--color-divider);padding-bottom:9px">
+                  <div style="display:flex;align-items:baseline;gap:11px">
+                    <span style="width:14px;height:2px;background:{{ c.color }};display:inline-block;margin-bottom:4px"></span>
+                    <span style="font-family:var(--font-heading);font-size:15px">{{ c.title }}</span>
+                    <span style="font-size:11.5px;color:color-mix(in srgb,var(--color-text) 46%,transparent)">{{ c.sub }}</span>
+                  </div>
+                  <div style="display:flex;align-items:baseline;gap:16px;font-size:11.5px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">
+                    <span>Total <b style="font-weight:500;color:var(--color-text);font-size:13px">{{ c.total }}</b></span>
+                    <span>Average <b style="font-weight:500;color:var(--color-text);font-size:13px">{{ c.avg }}</b></span>
+                  </div>
+                </div>
+                <div data-chart="{{ c.id }}" style="width:100%;height:180px"></div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <div style="font-family:var(--font-heading);font-size:15px;padding-bottom:9px;border-bottom:1px solid var(--color-divider)">Accounts</div>
+            <sc-for list="{{ acctRows }}" as="r" hint-placeholder-count="2">
+              <button onClick="{{ r.go }}" style="display:flex;align-items:center;gap:16px;width:100%;padding:15px 2px;background:transparent;border:0;border-bottom:1px solid color-mix(in srgb,var(--color-text) 7%,transparent);color:inherit;font:inherit;cursor:pointer;text-align:left">
+                <i class="{{ r.icon }}" style="font-size:17px;flex:none;color:var(--color-accent);opacity:.8"></i>
+                <span style="flex:1;min-width:0">
+                  <span style="display:block;font-size:13.5px">{{ r.name }}</span>
+                  <span style="display:block;font-size:11.5px;color:color-mix(in srgb,var(--color-text) 46%,transparent);margin-top:2px">{{ r.sub }}</span>
+                </span>
+                <sc-for list="{{ r.stats }}" as="s" hint-placeholder-count="3">
+                  <span style="flex:none;text-align:right;min-width:104px">
+                    <span style="display:block;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 44%,transparent)">{{ s.label }}</span>
+                    <span style="display:block;font-size:14px;font-family:var(--font-heading);margin-top:3px;{{ s.st }}">{{ s.value }}</span>
+                  </span>
+                </sc-for>
+                <i class="ph ph-arrow-right" style="font-size:14px;flex:none;opacity:.4"></i>
+              </button>
+            </sc-for>
+          </div>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ sCard }}" hint-placeholder-val="{{ false }}">
+        <section style="display:flex;flex-direction:column;gap:32px">
+
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:var(--gap);flex-wrap:wrap">
+            <div>
+              <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 46%,transparent)">{{ acctName }}</div>
+              <div style="font-family:var(--font-heading);font-size:26px;letter-spacing:-.02em;margin-top:5px">{{ periodLabel }}</div>
+            </div>
+            <div style="font-size:12px;color:color-mix(in srgb,var(--color-text) 50%,transparent)">{{ cardHeadSub }}</div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:30px 34px">
+            <sc-for list="{{ cardTiles }}" as="t" hint-placeholder-count="5">
+              <div>
+                <div style="font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 46%,transparent)">{{ t.label }}</div>
+                <div style="font-size:23px;font-family:var(--font-heading);font-weight:500;line-height:1.2;letter-spacing:-.02em;margin-top:7px;{{ t.valSt }}">{{ t.value }}</div>
+                <div style="font-size:11px;color:color-mix(in srgb,var(--color-text) 42%,transparent);margin-top:4px">{{ t.note }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ cardYear }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:30px">
+              <sc-for list="{{ trendCharts }}" as="c" hint-placeholder-count="3">
+                <div style="display:flex;flex-direction:column;gap:12px">
+                  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--color-divider);padding-bottom:9px">
+                    <div style="display:flex;align-items:baseline;gap:11px">
+                      <span style="width:14px;height:2px;background:{{ c.color }};display:inline-block;margin-bottom:4px"></span>
+                      <span style="font-family:var(--font-heading);font-size:15px">{{ c.title }}</span>
+                      <span style="font-size:11.5px;color:color-mix(in srgb,var(--color-text) 46%,transparent)">{{ c.sub }}</span>
+                    </div>
+                    <div style="display:flex;align-items:baseline;gap:16px;font-size:11.5px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">
+                      <span>Total <b style="font-weight:500;color:var(--color-text);font-size:13px">{{ c.total }}</b></span>
+                      <span>Average <b style="font-weight:500;color:var(--color-text);font-size:13px">{{ c.avg }}</b></span>
+                    </div>
+                  </div>
+                  <div data-chart="{{ c.id }}" style="width:100%;height:180px"></div>
+                </div>
+              </sc-for>
+
+              <div style="display:flex;flex-direction:column;gap:9px">
+                <div style="font-family:var(--font-heading);font-size:15px;padding-bottom:9px;border-bottom:1px solid var(--color-divider)">Month by month</div>
+                <div style="overflow-x:auto">
+                  <table class="table" style="min-width:680px">
+                    <thead><tr><th style="width:120px">Month</th><th style="text-align:right">Spend</th><th style="text-align:right">Cashback</th><th style="text-align:right">Fees &amp; interest</th><th style="text-align:right">Payments</th><th style="text-align:right">Closing</th></tr></thead>
+                    <tbody>
+                      <sc-for list="{{ yearRows }}" as="r" hint-placeholder-count="12">
+                        <tr style="{{ r.rowSt }}">
+                          <td style="font-size:12.5px">{{ r.label }}</td>
+                          <td style="text-align:right">{{ r.spend }}</td>
+                          <td style="text-align:right;{{ r.cbSt }}">{{ r.cashback }}</td>
+                          <td style="text-align:right;{{ r.feeSt }}">{{ r.fees }}</td>
+                          <td style="text-align:right">{{ r.payments }}</td>
+                          <td style="text-align:right">{{ r.closing }}</td>
+                        </tr>
+                      </sc-for>
+                      <tr style="font-family:var(--font-heading)">
+                        <td style="font-size:12.5px">Total{{ totalMark }}</td>
+                        <td style="text-align:right">{{ tSpend }}</td>
+                        <td style="text-align:right;color:#7fb08f">{{ tCashback }}</td>
+                        <td style="text-align:right;color:#d0a46a">{{ tFees }}</td>
+                        <td style="text-align:right">{{ tPayments }}</td>
+                        <td style="text-align:right">{{ tClosing }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <sc-if value="{{ partialYear }}" hint-placeholder-val="{{ true }}">
+                  <div style="font-size:11.5px;color:#d0a46a">* Built from {{ coverHave }} of {{ coverTotal }} months. Shaded rows have no statement uploaded.</div>
+                </sc-if>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ cardMonth }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:32px">
+
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--color-divider);padding-bottom:9px">
+                  <div style="display:flex;align-items:baseline;gap:11px">
+                    <span style="width:14px;height:2px;background:#b5abfc;display:inline-block;margin-bottom:4px"></span>
+                    <span style="font-family:var(--font-heading);font-size:15px">Spend through the cycle</span>
+                    <span style="font-size:11.5px;color:color-mix(in srgb,var(--color-text) 46%,transparent)">{{ cyclePeriod }}</span>
+                  </div>
+                  <div style="font-size:11.5px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">Peak <b style="font-weight:500;color:var(--color-text);font-size:13px">{{ peakDay }}</b></div>
+                </div>
+                <div style="display:grid;grid-template-columns:minmax(0,1.9fr) minmax(210px,0.9fr);gap:30px;align-items:center">
+                  <div data-chart="mDaily" style="width:100%;height:220px"></div>
+                  <div data-chart="mDonut" style="width:100%;height:220px"></div>
+                </div>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--color-divider);padding-bottom:9px">
+                  <div style="display:flex;align-items:baseline;gap:11px">
+                    <span style="width:14px;height:2px;background:#7fb08f;display:inline-block;margin-bottom:4px"></span>
+                    <span style="font-family:var(--font-heading);font-size:15px">Cashback per transaction</span>
+                    <span style="font-size:11.5px;color:color-mix(in srgb,var(--color-text) 46%,transparent)">hover a point for spend and rate</span>
+                  </div>
+                  <div style="display:flex;align-items:baseline;gap:16px;font-size:11.5px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">
+                    <span>Total <b style="font-weight:500;color:var(--color-text);font-size:13px">{{ cbCycleTotal }}</b></span>
+                    <span>Best <b style="font-weight:500;color:var(--color-text);font-size:13px">{{ cbBest }}</b></span>
+                  </div>
+                </div>
+                <div data-chart="cardCb" style="width:100%;height:200px"></div>
+              </div>
+
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:36px">
+                <div style="display:flex;flex-direction:column;gap:2px">
+                  <div style="display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid var(--color-divider);padding-bottom:9px;margin-bottom:6px">
+                    <span style="font-family:var(--font-heading);font-size:15px">Where it went</span>
+                    <span style="font-size:11.5px;color:color-mix(in srgb,var(--color-text) 46%,transparent)">{{ catCount }} categories</span>
+                  </div>
+                  <sc-for list="{{ catRows }}" as="c" hint-placeholder-count="7">
+                    <button onClick="{{ c.go }}" style="{{ c.rowSt }}">
+                      <span style="display:flex;align-items:baseline;gap:10px;width:100%">
+                        <span style="flex:1;min-width:0;font-size:12.5px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</span>
+                        <span style="font-size:11px;color:color-mix(in srgb,var(--color-text) 42%,transparent);width:46px;text-align:right">{{ c.share }}</span>
+                        <span style="font-size:12.5px;width:92px;text-align:right">{{ c.amount }}</span>
+                      </span>
+                      <span style="display:block;width:100%;height:3px;margin-top:6px;background:color-mix(in srgb,var(--color-text) 8%,transparent)">
+                        <span style="{{ c.barSt }}"></span>
+                      </span>
+                    </button>
+                  </sc-for>
+                </div>
+
+                <div style="display:flex;flex-direction:column;gap:2px">
+                  <div style="display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid var(--color-divider);padding-bottom:9px;margin-bottom:6px">
+                    <span style="font-family:var(--font-heading);font-size:15px">Fees &amp; charges</span>
+                    <span style="font-size:11.5px;{{ feeTotalSt }}">{{ feeTotal }}</span>
+                  </div>
+                  <sc-if value="{{ hasFees }}" hint-placeholder-val="{{ true }}">
+                    <div>
+                      <sc-for list="{{ feeRows }}" as="f" hint-placeholder-count="2">
+                        <div style="display:flex;align-items:baseline;gap:12px;padding:11px 2px;border-bottom:1px solid color-mix(in srgb,var(--color-text) 7%,transparent)">
+                          <span style="flex:1;font-size:12.5px">{{ f.type }}</span>
+                          <span style="font-size:11px;color:color-mix(in srgb,var(--color-text) 42%,transparent)">{{ f.date }}</span>
+                          <span style="font-size:12.5px;width:88px;text-align:right;color:#d0a46a">{{ f.amount }}</span>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ noFees }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;align-items:center;gap:10px;padding:16px 2px;font-size:12.5px;color:color-mix(in srgb,var(--color-text) 60%,transparent)">
+                      <i class="ph ph-check" style="font-size:15px;color:#7fb08f"></i>Nothing charged this cycle.
+                    </div>
+                  </sc-if>
+                </div>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:9px">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--gap);flex-wrap:wrap;border-bottom:1px solid var(--color-divider);padding-bottom:9px">
+                  <div style="display:flex;align-items:baseline;gap:11px">
+                    <span style="font-family:var(--font-heading);font-size:15px">Transactions</span>
+                    <span style="font-size:11.5px;color:color-mix(in srgb,var(--color-text) 46%,transparent)">{{ txSub }}</span>
+                  </div>
+                  <div class="seg">
+                    <sc-for list="{{ txFilters }}" as="f" hint-placeholder-count="4">
+                      <button onClick="{{ f.go }}" style="{{ f.st }}">{{ f.label }}</button>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="overflow-x:auto">
+                  <table class="table" style="min-width:660px">
+                    <thead><tr><th style="width:92px">Date</th><th>Details</th><th style="width:140px">Category</th><th style="width:120px;text-align:right">Amount</th><th style="width:104px;text-align:right">Cashback</th></tr></thead>
+                    <tbody>
+                      <sc-for list="{{ txRows }}" as="t" hint-placeholder-count="10">
+                        <tr>
+                          <td style="font-size:12.5px;color:color-mix(in srgb,var(--color-text) 62%,transparent)">{{ t.date }}</td>
+                          <td style="font-size:13px">{{ t.desc }}</td>
+                          <td style="font-size:11.5px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">{{ t.cat }}</td>
+                          <td style="text-align:right;{{ t.amtSt }}">{{ t.amount }}<span style="font-size:10px;opacity:.55"> {{ t.drcr }}</span></td>
+                          <td style="text-align:right;font-size:12.5px;{{ t.cbSt }}">{{ t.cb }}</td>
+                        </tr>
+                      </sc-for>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ sCashback }}" hint-placeholder-val="{{ false }}">
+        <section style="display:flex;flex-direction:column;gap:32px">
+
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:var(--gap);flex-wrap:wrap">
+            <div>
+              <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 46%,transparent)">Cashback · {{ acctName }}</div>
+              <div style="font-family:var(--font-heading);font-size:26px;letter-spacing:-.02em;margin-top:5px">{{ periodLabel }}</div>
+            </div>
+            <div style="font-size:12px;color:color-mix(in srgb,var(--color-text) 50%,transparent)">{{ cbHeadSub }}</div>
+          </div>
+
+          <sc-if value="{{ acctHasCashback }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:32px">
+
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:30px 34px">
+                <sc-for list="{{ cbTiles }}" as="t" hint-placeholder-count="4">
+                  <div>
+                    <div style="font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 46%,transparent)">{{ t.label }}</div>
+                    <div style="font-size:25px;font-family:var(--font-heading);font-weight:500;line-height:1.2;letter-spacing:-.02em;margin-top:7px;{{ t.valSt }}">{{ t.value }}</div>
+                    <div style="font-size:11px;color:color-mix(in srgb,var(--color-text) 42%,transparent);margin-top:4px">{{ t.note }}</div>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--color-divider);padding-bottom:9px">
+                  <div style="display:flex;align-items:baseline;gap:11px">
+                    <span style="width:14px;height:2px;background:#7fb08f;display:inline-block;margin-bottom:4px"></span>
+                    <span style="font-family:var(--font-heading);font-size:15px">Cashback, transaction by transaction</span>
+                    <span style="font-size:11.5px;color:color-mix(in srgb,var(--color-text) 46%,transparent)">{{ cyclePeriod }} · hover a point for the merchant</span>
+                  </div>
+                  <div style="font-size:11.5px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">Best <b style="font-weight:500;color:var(--color-text);font-size:13px">{{ cbBest }}</b></div>
+                </div>
+                <div data-chart="cbTx" style="width:100%;height:210px"></div>
+              </div>
+
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:36px">
+                <div style="display:flex;flex-direction:column;gap:12px">
+                  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;border-bottom:1px solid var(--color-divider);padding-bottom:9px">
+                    <div style="display:flex;align-items:baseline;gap:11px">
+                      <span style="width:14px;height:2px;background:#7fb08f;display:inline-block;margin-bottom:4px"></span>
+                      <span style="font-family:var(--font-heading);font-size:15px">By month</span>
+                    </div>
+                    <div style="font-size:11.5px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">{{ cbMonthCount }}</div>
+                  </div>
+                  <div data-chart="cbMonths" style="width:100%;height:190px"></div>
+                </div>
+
+                <div style="display:flex;flex-direction:column;gap:2px">
+                  <div style="display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid var(--color-divider);padding-bottom:9px;margin-bottom:6px">
+                    <span style="font-family:var(--font-heading);font-size:15px">By category</span>
+                    <span style="font-size:11.5px;color:color-mix(in srgb,var(--color-text) 46%,transparent)">rate achieved</span>
+                  </div>
+                  <sc-for list="{{ cbCatRows }}" as="c" hint-placeholder-count="7">
+                    <div style="padding:9px 2px;border-bottom:1px solid color-mix(in srgb,var(--color-text) 7%,transparent)">
+                      <div style="display:flex;align-items:baseline;gap:10px">
+                        <span style="flex:1;min-width:0;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</span>
+                        <span style="font-size:11px;color:color-mix(in srgb,var(--color-text) 42%,transparent);width:52px;text-align:right">{{ c.rate }}</span>
+                        <span style="font-size:12.5px;width:78px;text-align:right;{{ c.cbSt }}">{{ c.cb }}</span>
+                      </div>
+                      <div style="height:3px;margin-top:6px;background:color-mix(in srgb,var(--color-text) 8%,transparent)"><div style="{{ c.barSt }}"></div></div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ acctNoCashback }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:60px 0;display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px">
+              <i class="ph ph-percent" style="font-size:24px;opacity:.5"></i>
+              <div style="font-family:var(--font-heading);font-size:17px">{{ acctName }} earns interest, not cashback</div>
+              <p style="font-size:13px;max-width:380px;margin:0;color:color-mix(in srgb,var(--color-text) 56%,transparent)">Interest credited is tracked on the savings screen.</p>
+              <button class="btn btn-secondary" onClick="{{ goSavings }}" style="margin-top:4px">Open savings</button>
+            </div>
+          </sc-if>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ sSavings }}" hint-placeholder-val="{{ false }}">
+        <section style="display:flex;flex-direction:column;gap:32px">
+
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:var(--gap);flex-wrap:wrap">
+            <div>
+              <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 46%,transparent)">{{ savName }}</div>
+              <div style="font-family:var(--font-heading);font-size:26px;letter-spacing:-.02em;margin-top:5px">{{ periodLabel }}</div>
+            </div>
+            <div style="font-size:12px;color:color-mix(in srgb,var(--color-text) 50%,transparent)">{{ savHeadSub }}</div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:30px 34px">
+            <sc-for list="{{ savTiles }}" as="t" hint-placeholder-count="5">
+              <div>
+                <div style="font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 46%,transparent)">{{ t.label }}</div>
+                <div style="font-size:23px;font-family:var(--font-heading);font-weight:500;line-height:1.2;letter-spacing:-.02em;margin-top:7px;{{ t.valSt }}">{{ t.value }}</div>
+                <div style="font-size:11px;color:color-mix(in srgb,var(--color-text) 42%,transparent);margin-top:4px">{{ t.note }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ savMonth }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--color-divider);padding-bottom:9px">
+                <div style="display:flex;align-items:baseline;gap:11px">
+                  <span style="width:14px;height:2px;background:#b5abfc;display:inline-block;margin-bottom:4px"></span>
+                  <span style="font-family:var(--font-heading);font-size:15px">Balance, day by day</span>
+                  <span style="font-size:11.5px;color:color-mix(in srgb,var(--color-text) 46%,transparent)">{{ savPeriodLine }}</span>
+                </div>
+                <div style="display:flex;align-items:baseline;gap:16px;font-size:11.5px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">
+                  <span>Low <b style="font-weight:500;color:var(--color-text);font-size:13px">{{ savLow }}</b></span>
+                  <span>High <b style="font-weight:500;color:var(--color-text);font-size:13px">{{ savHigh }}</b></span>
+                </div>
+              </div>
+              <div data-chart="savBalance" style="width:100%;height:210px"></div>
+            </div>
+          </sc-if>
+
+          <div style="display:flex;flex-direction:column;gap:30px">
+            <sc-for list="{{ savCharts }}" as="c" hint-placeholder-count="2">
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--color-divider);padding-bottom:9px">
+                  <div style="display:flex;align-items:baseline;gap:11px">
+                    <span style="width:14px;height:2px;background:{{ c.color }};display:inline-block;margin-bottom:4px"></span>
+                    <span style="font-family:var(--font-heading);font-size:15px">{{ c.title }}</span>
+                    <span style="font-size:11.5px;color:color-mix(in srgb,var(--color-text) 46%,transparent)">{{ c.sub }}</span>
+                  </div>
+                  <div style="display:flex;align-items:baseline;gap:16px;font-size:11.5px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">
+                    <span>Total <b style="font-weight:500;color:var(--color-text);font-size:13px">{{ c.total }}</b></span>
+                    <span>Average <b style="font-weight:500;color:var(--color-text);font-size:13px">{{ c.avg }}</b></span>
+                  </div>
+                </div>
+                <div data-chart="{{ c.id }}" style="width:100%;height:180px"></div>
+              </div>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ savMonth }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--gap);flex-wrap:wrap;border-bottom:1px solid var(--color-divider);padding-bottom:9px">
+                <div style="display:flex;align-items:baseline;gap:11px">
+                  <span style="font-family:var(--font-heading);font-size:15px">Transactions</span>
+                  <span style="font-size:11.5px;color:color-mix(in srgb,var(--color-text) 46%,transparent)">{{ savTxSub }}</span>
+                </div>
+                <div class="seg">
+                  <sc-for list="{{ savFilters }}" as="f" hint-placeholder-count="4">
+                    <button onClick="{{ f.go }}" style="{{ f.st }}">{{ f.label }}</button>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="overflow-x:auto">
+                <table class="table" style="min-width:680px">
+                  <thead><tr><th style="width:92px">Date</th><th>Details</th><th style="width:106px">Mode</th><th style="width:122px;text-align:right">Amount</th><th style="width:130px;text-align:right">Balance</th></tr></thead>
+                  <tbody>
+                    <sc-for list="{{ savTxRows }}" as="t" hint-placeholder-count="12">
+                      <tr>
+                        <td style="font-size:12.5px;color:color-mix(in srgb,var(--color-text) 62%,transparent)">{{ t.date }}</td>
+                        <td style="font-size:13px">{{ t.desc }}</td>
+                        <td style="font-size:11.5px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">{{ t.mode }}</td>
+                        <td style="text-align:right;{{ t.amtSt }}">{{ t.amount }}<span style="font-size:10px;opacity:.55"> {{ t.drcr }}</span></td>
+                        <td style="text-align:right;font-size:12.5px;color:color-mix(in srgb,var(--color-text) 70%,transparent)">{{ t.balance }}</td>
+                      </tr>
+                    </sc-for>
+                  </tbody>
+                </table>
+              </div>
+              <sc-if value="{{ savInterestHidden }}" hint-placeholder-val="{{ true }}">
+                <div style="font-size:11.5px;color:color-mix(in srgb,var(--color-text) 48%,transparent)">{{ savInterestNote }}</div>
+              </sc-if>
+            </div>
+          </sc-if>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ sStatements }}" hint-placeholder-val="{{ false }}">
+        <section style="display:flex;flex-direction:column;gap:26px">
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:var(--gap);flex-wrap:wrap">
+            <div>
+              <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 46%,transparent)">Library</div>
+              <div style="font-family:var(--font-heading);font-size:26px;letter-spacing:-.02em;margin-top:5px">Statements</div>
+            </div>
+            <button class="btn btn-primary" onClick="{{ openUpload }}"><i class="ph ph-plus" style="font-size:14px"></i>Add statement</button>
+          </div>
+
+          <div style="overflow-x:auto">
+            <table class="table" style="min-width:740px">
+              <thead><tr><th>Account</th><th style="width:170px">Period</th><th style="width:120px">Uploaded</th><th style="width:80px;text-align:right">Rows</th><th style="width:140px">Status</th><th style="width:70px"></th></tr></thead>
+              <tbody>
+                <sc-for list="{{ stmtRows }}" as="s" hint-placeholder-count="6">
+                  <tr>
+                    <td>
+                      <div style="font-size:13px">{{ s.iss }}</div>
+                      <div style="font-size:11px;color:color-mix(in srgb,var(--color-text) 44%,transparent);margin-top:2px">{{ s.acct }}</div>
+                    </td>
+                    <td style="font-size:12.5px">{{ s.period }}</td>
+                    <td style="font-size:12.5px;color:color-mix(in srgb,var(--color-text) 60%,transparent)">{{ s.up }}</td>
+                    <td style="text-align:right;font-size:12.5px">{{ s.n }}</td>
+                    <td><span style="{{ s.badgeSt }}">{{ s.status }}</span></td>
+                    <td style="text-align:right"><button class="btn btn-ghost" style="font-size:12px">View</button></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding-top:18px;border-top:1px solid var(--color-divider)">
+            <div style="flex:1;min-width:240px;font-size:12px;line-height:1.6;color:color-mix(in srgb,var(--color-text) 56%,transparent);text-wrap:pretty">PDFs are decrypted and parsed in your browser, then discarded. Only the extracted figures are kept.</div>
+            <button class="btn btn-secondary">Export data</button>
+            <button class="btn btn-secondary">Delete all</button>
+          </div>
+        </section>
+      </sc-if>
+    </main>
+  </div>
+
+  <sc-if value="{{ uploadOpen }}" hint-placeholder-val="{{ false }}">
+    <div class="dialog-backdrop" style="z-index:90">
+      <div class="dialog" style="width:min(480px,100%)">
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <div style="flex:1">
+            <div class="dialog-title">Upload statement</div>
+            <div style="font-size:12px;color:color-mix(in srgb,var(--color-text) 52%,transparent);margin-top:3px">{{ uploadSub }}</div>
+          </div>
+          <button onClick="{{ closeUpload }}" style="background:transparent;border:0;color:inherit;opacity:.55;cursor:pointer;padding:3px"><i class="ph ph-x" style="font-size:16px"></i></button>
+        </div>
+        <div style="display:grid;place-items:center;gap:8px;padding:30px var(--pad);border-radius:var(--radius-md);border:1px dashed color-mix(in srgb,var(--color-accent) 44%,transparent);text-align:center">
+          <i class="ph ph-file-pdf" style="font-size:24px;color:var(--color-accent)"></i>
+          <div style="font-size:13.5px">Drop statement PDFs, or <span style="color:var(--color-accent)">browse</span></div>
+          <div style="font-size:11.5px;color:color-mix(in srgb,var(--color-text) 48%,transparent)">Card and savings statements both work. Password-protected files supported.</div>
+        </div>
+        <div class="field">
+          <label>PDF password, if set</label>
+          <input class="input" type="password" placeholder="••••••••">
+        </div>
+        <div class="dialog-actions">
+          <button class="btn btn-secondary" onClick="{{ closeUpload }}">Cancel</button>
+          <button class="btn btn-primary" onClick="{{ closeUpload }}">Parse</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;airy&quot;,&quot;compact&quot;],&quot;default&quot;:&quot;airy&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Layout&quot;},&quot;compareLastYear&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Charts&quot;},&quot;stateDemo&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;live&quot;,&quot;loading&quot;,&quot;singleMonth&quot;],&quot;default&quot;:&quot;live&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;States&quot;}}">
+class Component extends DCLogic {
+  MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  MONTHS = ['2026-05','2026-06','2026-07','2026-08'];
+  CARD_MONTHS = ['2026-05','2026-06'];
+  SAV_MONTHS = ['2026-06','2026-07','2026-08'];
+  ACCENT = '#b5abfc'; GOOD = '#7fb08f'; WARN = '#d0a46a';
+  PIE = ['#b5abfc','#8f83d6','#cfc6ff','#6f7fb0','#a98fd0','#5d5294','#8f9fd8','#4a4270'];
+
+  ACCOUNTS = [
+    {id:'sm', kind:'card', label:'super.money RuPay', full:'Axis Bank super.money RuPay Credit Card', sub:'652984••••••9581', icon:'ph ph-credit-card', cashback:true, limit:69000, avail:49607.62},
+    {id:'slice', kind:'savings', label:'slice savings', full:'slice small finance bank · Savings', sub:'A/C ••••••••26993', icon:'ph ph-bank', cashback:false, ifsc:'NESF0000333', opened:'21 Jun \u201926'}
+  ];
+
+  /* Axis super.money — statement cycles run 17th to 16th. Jun 2026 is the parsed statement. */
+  CARD = {
+    '2026-05':{spend:18318.00,cb:241.00,fees:0,pay:30000,closing:18318.00,n:13,fi:[]},
+    '2026-06':{spend:19270.34,cb:267.00,fees:218.04,pay:5808.40,closing:19392.38,n:15,real:true,fi:[{t:'DCC Markup',a:184.78,d:'02 Jun'},{t:'GST',a:33.26,d:'02 Jun'}]}
+  };
+
+  /* Verbatim from the 17 May – 15 Jun 2026 statement. */
+  CARD_TX = [
+    {d:'25/05',desc:'Sri Chakra Tex',cat:'Cloth Stores',amt:400.00,cb:12.00,type:'purchase'},
+    {d:'25/05',desc:'Mr Vengatesan P',cat:'Restaurants',amt:70.00,cb:0,type:'purchase'},
+    {d:'30/05',desc:'RuPay Purchase',cat:'Retail Stores',amt:12318.34,cb:123.00,type:'purchase'},
+    {d:'31/05',desc:'A Basha',cat:'Restaurants',amt:250.00,cb:7.00,type:'purchase'},
+    {d:'02/06',desc:'DCC Markup',cat:'Charge',amt:184.78,cb:0,type:'fee'},
+    {d:'02/06',desc:'GST',cat:'Charge',amt:33.26,cb:0,type:'fee'},
+    {d:'03/06',desc:'BBPS Payment Received',cat:'Payment',amt:5808.40,cb:0,type:'payment'},
+    {d:'03/06',desc:'A Basha',cat:'Restaurants',amt:720.00,cb:21.00,type:'purchase'},
+    {d:'09/06',desc:'Udemy',cat:'Education',amt:663.00,cb:0,type:'purchase'},
+    {d:'10/06',desc:'Cashback Credit — May 26',cat:'Cashback',amt:96.00,cb:0,type:'credit'},
+    {d:'12/06',desc:'Google Play',cat:'Misc Store',amt:1999.00,cb:19.00,type:'purchase'},
+    {d:'13/06',desc:'Varsha Rakesh Aher',cat:'Electronics',amt:1600.00,cb:48.00,type:'purchase'},
+    {d:'14/06',desc:'Dingrai Annu Sanjay',cat:'Cloth Stores',amt:200.00,cb:6.00,type:'purchase'},
+    {d:'14/06',desc:'Nilesh Jitendra Bhadange',cat:'Cloth Stores',amt:500.00,cb:15.00,type:'purchase'},
+    {d:'14/06',desc:'Rekha Kailas Kumawat',cat:'Leather Goods',amt:550.00,cb:16.00,type:'purchase'}
+  ];
+
+  /* slice savings — Jul and Aug 2026 are parsed statements; account opened 21 Jun 2026. */
+  SAV = {
+    '2026-06':{opening:0,credits:242000.00,interest:250.08,debits:12100.00,closing:230150.08,n:9,days:10},
+    '2026-07':{opening:230150.08,credits:116800.00,interest:860.74,debits:71900.00,closing:275910.82,n:41,days:31,real:'jul'},
+    '2026-08':{opening:275938.37,credits:102031.00,interest:1048.09,debits:61326.19,closing:317691.27,n:49,days:31,real:'aug'}
+  };
+  JUL_INT = [33.10,33.11,33.11,33.12,30.43,28.47,28.47,24.16,28.62,28.63,28.63,28.63,28.64,28.64,28.65,28.65,28.66,28.66,27.51,27.52,27.52,27.52,27.53,27.53,27.54,27.54,27.54,0,27.55,27.53,27.53];
+  JUL_TX = [
+    {day:4,desc:'Mr. Akshay Laluman T — IDFC First',mode:'UPI',amt:-8700.00},
+    {day:4,desc:'Mr. Akshay Laluman T — IDFC First',mode:'UPI',amt:-7500.00},
+    {day:4,desc:'Mr. Akshay Laluman T — IDFC First',mode:'UPI',amt:-2500.00},
+    {day:5,desc:'Akshay Laluman Telang — SCB',mode:'UPI',amt:-15000.00},
+    {day:5,desc:'Tejas Sudam Gamane — PhonePe',mode:'UPI',amt:400.00},
+    {day:5,desc:'Aditya Parshuram Ahi — PhonePe',mode:'UPI',amt:900.00},
+    {day:7,desc:'Mr. Akshay Laluman T — IDFC First',mode:'UPI',amt:-30000.00},
+    {day:8,desc:'Akshay Laluman Telang — Shopping',mode:'UPI',amt:31000.00},
+    {day:18,desc:'Mr. Akshay Laluman T — IDFC First',mode:'UPI',amt:-8000.00},
+    {day:29,desc:'Akshay Laluman Telang',mode:'UPI',amt:-200.00},
+    {day:31,desc:'Akshay Laluman Telang — Services',mode:'UPI',amt:84500.00}
+  ];
+  AUG_INT = [39.69,39.15,39.15,39.16,38.34,36.80,36.80,36.81,30.94,30.95,30.95,31.82,31.86,31.86,31.86,31.87,31.87,31.88,31.90,31.90,31.91,31.91,31.92,31.92,33.54,33.54,33.55,33.55,33.56,33.56,33.57];
+  AUG_TX = [
+    {day:1,desc:'Akshay Laluman Telang',mode:'UPI',amt:-500.00},
+    {day:1,desc:'Akshay Laluman Telang',mode:'UPI',amt:-3300.00},
+    {day:4,desc:'CheQ',mode:'UPI',amt:-5733.00},
+    {day:5,desc:'Stable Broking Pvt Ltd',mode:'UPI',amt:-1.00},
+    {day:5,desc:'Stable Broking Private',mode:'UPI',amt:-10782.19},
+    {day:6,desc:'Stable Broking Pvt Ltd',mode:'UPI',amt:1.00},
+    {day:8,desc:'Mr Pritam Hira — PhonePe',mode:'UPI',amt:199.00},
+    {day:8,desc:'Akshay Laluman Telang',mode:'UPI',amt:-2500.00},
+    {day:8,desc:'Akshay Laluman Telang',mode:'IMPS',amt:1.00},
+    {day:8,desc:'Akshay Laluman Telang',mode:'IMPS',amt:-10.00},
+    {day:8,desc:'IMPS reversal',mode:'IMPS',amt:10.00},
+    {day:8,desc:'Akshay Laluman Telang — from slice',mode:'UPI',amt:-38500.00},
+    {day:11,desc:'Akshay Laluman Telang',mode:'UPI',amt:6000.00},
+    {day:12,desc:'Anup Kumar Mridha',mode:'UPI',amt:40.00},
+    {day:12,desc:'Mr Pritam Hira — PhonePe',mode:'UPI',amt:180.00},
+    {day:18,desc:'Anup Kumar Mridha',mode:'UPI',amt:100.00},
+    {day:24,desc:'Akshay Laluman Telang — Services',mode:'UPI',amt:11200.00},
+    {day:31,desc:'Akshay Laluman Telang — Shopping',mode:'UPI',amt:84300.00}
+  ];
+
+  /* Similar shape to the parsed June cycle, for the 17 Apr – 16 May 2026 statement. */
+  MAY_TX = [
+    {d:'19/04',desc:'Reliance Retail',cat:'Retail Stores',amt:8450.00,cb:85.00,type:'purchase'},
+    {d:'21/04',desc:'A Basha',cat:'Restaurants',amt:310.00,cb:9.00,type:'purchase'},
+    {d:'24/04',desc:'Sri Chakra Tex',cat:'Cloth Stores',amt:650.00,cb:20.00,type:'purchase'},
+    {d:'27/04',desc:'Google Play',cat:'Misc Store',amt:799.00,cb:8.00,type:'purchase'},
+    {d:'30/04',desc:'RuPay Purchase',cat:'Retail Stores',amt:3120.00,cb:31.00,type:'purchase'},
+    {d:'02/05',desc:'Blinkit',cat:'Groceries',amt:540.00,cb:11.00,type:'purchase'},
+    {d:'05/05',desc:'Croma',cat:'Electronics',amt:2150.00,cb:65.00,type:'purchase'},
+    {d:'06/05',desc:'BBPS Payment Received',cat:'Payment',amt:30000.00,cb:0,type:'payment'},
+    {d:'08/05',desc:'Udemy',cat:'Education',amt:499.00,cb:0,type:'purchase'},
+    {d:'10/05',desc:'Cashback Credit — Apr 26',cat:'Cashback',amt:213.00,cb:0,type:'credit'},
+    {d:'11/05',desc:'HP Petrol Pump',cat:'Fuel',amt:1200.00,cb:0,type:'purchase'},
+    {d:'13/05',desc:'Rekha Kailas Kumawat',cat:'Leather Goods',amt:420.00,cb:12.00,type:'purchase'},
+    {d:'15/05',desc:'Mr Vengatesan P',cat:'Restaurants',amt:180.00,cb:0,type:'purchase'}
+  ];
+
+  STMTS = [
+    {iss:'slice small finance bank',acct:'Savings 26993',period:'01 – 31 Aug 2026',up:'02 Sep 2026',n:49,status:'parsed'},
+    {iss:'slice small finance bank',acct:'Savings 26993',period:'01 – 31 Jul 2026',up:'02 Aug 2026',n:41,status:'parsed'},
+    {iss:'Axis Bank',acct:'super.money RuPay 9581',period:'17 May – 15 Jun 2026',up:'16 Jun 2026',n:15,status:'parsed'},
+    {iss:'Axis Bank',acct:'super.money RuPay 9581',period:'17 Apr – 16 May 2026',up:'18 May 2026',n:13,status:'parsed'},
+    {iss:'slice small finance bank',acct:'Savings 26993',period:'21 – 30 Jun 2026',up:'02 Jul 2026',n:9,status:'parsed'},
+    {iss:'Axis Bank',acct:'super.money RuPay 9581',period:'17 Mar – 16 Apr 2026',up:'—',n:0,status:'failed'}
+  ];
+
+  PRIOR = {'04':17200,'05':19800,'06':15400,'07':22600,'08':26100,'09':18300,'10':31200,'11':20400,'12':16800,'01':24500,'02':19100,'03':21600};
+  FY = ['04','05','06','07','08','09','10','11','12','01','02','03'];
+
+  state = {screen:'overview',mode:'month',acct:'sm',month:'2026-06',savMonth:'2026-08',yearScope:'fy2627',rangeFrom:'2026-05',rangeTo:'2026-08',navOpen:true,txFilter:'all',savFilter:'flow',catSel:null,uploadOpen:false};
+  rootRef = React.createRef();
+
+  componentDidMount(){
+    this._ro = new ResizeObserver(es => es.forEach(e => { const i = window.echarts && window.echarts.getInstanceByDom(e.target); if (i) i.resize(); }));
+    this.applyDensity();
+    let n = 0;
+    this._t = setInterval(() => { n++; if (window.echarts) { clearInterval(this._t); this.draw(); } else if (n > 120) clearInterval(this._t); }, 80);
+    this._k = e => { if (e.key === 'Escape') this.setState({uploadOpen:false}); };
+    window.addEventListener('keydown', this._k);
+  }
+  componentDidUpdate(){ this.applyDensity(); this.draw(); }
+  componentWillUnmount(){ clearInterval(this._t); if (this._ro) this._ro.disconnect(); window.removeEventListener('keydown', this._k); }
+
+  applyDensity(){
+    const d = (this.props.density ?? 'airy') === 'compact';
+    document.body.style.setProperty('--pad', d ? '14px' : '20px');
+    document.body.style.setProperty('--gap', d ? '11px' : '16px');
+  }
+
+  draw(){
+    if (!window.echarts || !this.rootRef.current) return;
+    this.rootRef.current.querySelectorAll('[data-chart]').forEach(el => {
+      const k = el.getAttribute('data-chart');
+      if (!k || k.indexOf('{') === 0) return;
+      let inst = window.echarts.getInstanceByDom(el);
+      const fresh = !inst;
+      if (!inst) { inst = window.echarts.init(el, null, {renderer:'canvas'}); if (this._ro) this._ro.observe(el); }
+      const o = this.opt(k);
+      if (!o) return;
+      /* Only re-issue the option when it actually changed, so ECharts transitions
+         instead of restarting its grow-in animation from frame zero on every update. */
+      const sig = JSON.stringify(o.series) + '|' + JSON.stringify(o.xAxis && o.xAxis.data);
+      if (!fresh && el.__sig === sig) return;
+      el.__sig = sig;
+      inst.setOption(o, {notMerge:true, lazyUpdate:false});
+    });
+  }
+
+  /* ---------- format ---------- */
+  fmt(n, d){ const dec = d === undefined ? 2 : d; return '\u20b9' + Math.abs(Number(n)||0).toLocaleString('en-IN',{minimumFractionDigits:dec,maximumFractionDigits:dec}); }
+  fmtK(n){ const v = Math.abs(Number(n)||0); if (v >= 100000) return '\u20b9' + (v/100000).toFixed(v >= 1000000 ? 0 : 1) + 'L'; if (v >= 1000) return '\u20b9' + Math.round(v/1000) + 'k'; return '\u20b9' + Math.round(v); }
+  pct(n,d){ return (Number(n)||0).toFixed(d === undefined ? 1 : d) + '%'; }
+  mLabel(k){ return this.MN[+k.slice(5,7)-1] + ' ' + k.slice(0,4); }
+  mShort(k){ return this.MN[+k.slice(5,7)-1] + ' \u2019' + k.slice(2,4); }
+  /* 'dd/mm' as printed on the statement -> the 'DD Mon' label the cycle axis uses */
+  dayLabel(d){
+    if (!d || d.indexOf('/') < 0) return d;
+    const p = d.split('/');
+    return p[0].padStart(2,'0') + ' ' + this.MN[+p[1] - 1];
+  }
+
+  /* ---------- data ---------- */
+  isSav(){ return this.state.acct === 'slice'; }
+  ownMonths(){ return this.isSav() ? this.SAV_MONTHS : this.CARD_MONTHS; }
+  savInt(k){ const r = this.SAV[k]; if (!r) return []; if (r.real === 'jul') return this.JUL_INT; if (r.real === 'aug') return this.AUG_INT;
+    const d = this.cycle(k).days; return Array.from({length:d}, () => Math.round(r.interest / d * 100)/100); }
+  savFlows(k){
+    const r = this.SAV[k];
+    if (!r) return [];
+    if (r.real === 'jul') return this.JUL_TX;
+    if (r.real === 'aug') return this.AUG_TX;
+    const cyc = this.cycle(k), out = [];
+    for (let j = 0; j < 3; j++) out.push({day:Math.min(cyc.days, cyc.from + 1 + j*3), desc:'Akshay Laluman Telang — Services', mode:'UPI', amt:Math.round(r.credits/3*100)/100});
+    for (let j = 0; j < 3; j++) out.push({day:Math.min(cyc.days, cyc.from + 2 + j*3), desc:'Mr. Akshay Laluman T — IDFC First', mode:'UPI', amt:-Math.round(r.debits/3*100)/100});
+    return out.sort((p,q) => p.day - q.day);
+  }
+  acct(){ return this.ACCOUNTS.find(a => a.id === this.state.acct) || this.ACCOUNTS[0]; }
+  src(){ return this.isSav() ? this.SAV : this.CARD; }
+  curMonth(){ return this.isSav() ? this.state.savMonth : this.state.month; }
+  rec(k){ const r = this.src()[k]; return r || null; }
+  cycle(k){
+    if (this.isSav()) {
+      const y = +k.slice(0,4), m = +k.slice(5,7);
+      const last = new Date(y, m, 0).getDate();
+      const r = this.rec(k);
+      const from = (r && r.days && r.days < last) ? last - r.days + 1 : 1;
+      return {label:String(from).padStart(2,'0') + ' \u2013 ' + last + ' ' + this.MN[m-1] + ' ' + y, days:last, from};
+    }
+    const y = +k.slice(0,4), m = +k.slice(5,7);
+    const s = new Date(y, m-2, 17), e = new Date(y, m-1, 15);
+    const lbl = dt => String(dt.getDate()).padStart(2,'0') + ' ' + this.MN[dt.getMonth()];
+    const days = Math.round((e - s)/86400000) + 1;
+    return {label: lbl(s) + ' \u2013 ' + lbl(e) + ' ' + e.getFullYear(), days, start:s,
+      dayLabels: Array.from({length:days}, (_,i) => lbl(new Date(s.getTime() + i*86400000)))};
+  }
+  scopeKeys(){
+    const S = this.state;
+    if (S.mode === 'year') {
+      if (S.yearScope === 'cal2026') return this.MONTHS.filter(k => k.startsWith('2026'));
+      const base = S.yearScope === 'fy2627' ? 2026 : 2025;
+      return this.FY.map((m,i) => (i < 9 ? base : base + 1) + '-' + m);
+    }
+    if (S.mode === 'range') {
+      const a = S.rangeFrom, b = S.rangeTo;
+      const lo = a <= b ? a : b, hi = a <= b ? b : a;
+      return this.MONTHS.filter(k => k >= lo && k <= hi);
+    }
+    return this.MONTHS;
+  }
+  /* keys the account can actually have data for */
+  eligible(keys){ const own = this.ownMonths(); return keys.filter(k => own.indexOf(k) >= 0); }
+  coverage(){
+    const keys = this.eligible(this.scopeKeys());
+    const have = keys.filter(k => this.rec(k));
+    return {have:have.length, total:keys.length, missing:keys.filter(k => !this.rec(k)).map(k => this.mLabel(k))};
+  }
+  catsOf(k){
+    const by = {};
+    this.cardTx(k).filter(t => t.type === 'purchase').forEach(t => {
+      by[t.cat] = by[t.cat] || {name:t.cat, amount:0, cb:0, count:0};
+      by[t.cat].amount += t.amt; by[t.cat].cb += t.cb; by[t.cat].count++;
+    });
+    return Object.values(by).sort((a,b) => b.amount - a.amount);
+  }
+  cardTx(k){
+    const src = k === '2026-06' ? this.CARD_TX : k === '2026-05' ? this.MAY_TX : null;
+    return src ? src.map((t,i) => Object.assign({}, t, {i})) : [];
+  }
+  savLedger(k){
+    const r = this.SAV[k];
+    if (!r) return [];
+    const cyc = this.cycle(k);
+    const int = this.savInt(k);
+    const flows = this.savFlows(k);
+    let bal = r.opening;
+    const rows = [];
+    for (let day = 1; day <= cyc.days; day++) {
+      const iv = int[day-1] || 0;
+      if (iv) { bal = Math.round((bal + iv)*100)/100; rows.push({day, desc:'Interest credited', mode:'Interest', amt:iv, balance:bal, kind:'interest'}); }
+      flows.filter(f => f.day === day).forEach(f => {
+        bal = Math.round((bal + f.amt)*100)/100;
+        rows.push({day, desc:f.desc, mode:f.mode, amt:f.amt, balance:bal, kind: f.amt >= 0 ? 'in' : 'out'});
+      });
+    }
+    return rows;
+  }
+  savDaily(k){
+    const rows = this.savLedger(k);
+    const cyc = this.cycle(k);
+    const r = this.SAV[k];
+    const int = this.savInt(k);
+    const out = [];
+    let bal = r ? r.opening : 0, cum = 0;
+    for (let day = 1; day <= cyc.days; day++) {
+      const last = rows.filter(x => x.day === day).slice(-1)[0];
+      if (last) bal = last.balance;
+      const iv = int[day-1] || 0;
+      cum = Math.round((cum + iv)*100)/100;
+      out.push({day, label:String(day).padStart(2,'0') + ' ' + this.MN[+k.slice(5,7)-1], balance:bal, interest:iv, cumInterest:cum});
+    }
+    return out;
+  }
+
+  /* ---------- charts ---------- */
+  base(){
+    return {
+      backgroundColor:'transparent',
+      textStyle:{fontFamily:'Inter, system-ui, sans-serif', color:'rgba(233,233,237,0.7)'},
+      animationDuration:340, animationDurationUpdate:0,
+      tooltip:{backgroundColor:'#232532', borderColor:'rgba(233,233,237,0.16)', borderWidth:1, padding:[9,12],
+        textStyle:{color:'#e9e9ed', fontSize:12, fontFamily:'Inter'},
+        extraCssText:'box-shadow:0 10px 30px rgba(0,0,0,.55);border-radius:8px'}
+    };
+  }
+  axL(){ return {color:'rgba(233,233,237,0.48)', fontSize:11}; }
+  alpha(hex, a){
+    const h = hex.replace('#','');
+    const n = parseInt(h.length === 3 ? h.split('').map(c => c+c).join('') : h, 16);
+    return 'rgba(' + ((n>>16)&255) + ',' + ((n>>8)&255) + ',' + (n&255) + ',' + a + ')';
+  }
+  /* one simple line: markers on every point, value shown on hover, scale on the y axis */
+  line(cfg){
+    const self = this;
+    const series = cfg.series.map(s => ({
+      name:s.name, type:'line', smooth:false, connectNulls:false,
+      symbol:'circle', symbolSize:s.dim ? 4 : 6, showSymbol:true,
+      lineStyle:{color:s.color, width:s.dim ? 1.2 : 1.8, type:s.dim ? 'dashed' : 'solid'},
+      itemStyle:{color:s.color, borderColor:'#161826', borderWidth:1.5},
+      emphasis:{scale:1.7, focus:'series'},
+      areaStyle: s.area ? {color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:self.alpha(s.color,0.17)},{offset:1,color:self.alpha(s.color,0)}]}} : undefined,
+      data:s.data
+    }));
+    const hasArea = cfg.series.some(s => s.area);
+    return Object.assign(this.base(), {
+      series,
+      grid:{left:cfg.left || 56, right:20, top:18, bottom:cfg.bottom || (cfg.legend ? 42 : 26)},
+      legend: cfg.legend ? {bottom:0, itemWidth:14, itemHeight:2, itemGap:18, icon:'rect', textStyle:{color:'rgba(233,233,237,0.52)', fontSize:11}} : {show:false},
+      xAxis:{type:'category', boundaryGap:hasArea ? false : true, data:cfg.x,
+        axisLabel:Object.assign({interval:cfg.interval === undefined ? 'auto' : cfg.interval,
+          rotate:cfg.rotate || 0, hideOverlap:true,
+          formatter: cfg.maxLabel ? (v => v.length > cfg.maxLabel ? v.slice(0, cfg.maxLabel - 1) + '\u2026' : v) : undefined}, this.axL()),
+        axisLine:{lineStyle:{color:'rgba(233,233,237,0.14)'}}, axisTick:{show:false},
+        axisPointer:{label:{show:false}}},
+      yAxis:{type:'value', axisLabel:Object.assign({formatter: v => self.fmtK(v)}, this.axL()),
+        axisLine:{show:false}, splitLine:{lineStyle:{color:'rgba(233,233,237,0.05)'}}},
+      tooltip:Object.assign(this.base().tooltip, {trigger:'axis',
+        axisPointer:{type:'line', lineStyle:{color:'rgba(233,233,237,0.22)', width:1}},
+        formatter: cfg.formatter || (ps => {
+          const head = '<div style="font-size:11px;opacity:.6;margin-bottom:5px">' + ps[0].axisValueLabel + '</div>';
+          return head + ps.map(p => '<div style="display:flex;gap:10px;align-items:center"><span style="width:8px;height:8px;border-radius:50%;background:' + p.color + '"></span><span style="flex:1">' + p.seriesName + '</span><b style="font-weight:500">' + (p.value == null ? 'no statement' : self.fmt(p.value, 2)) + '</b></div>').join('');
+        })
+      })
+    });
+  }
+
+  opt(k){
+    const S = this.state, self = this;
+    const keys = this.eligible(this.scopeKeys());
+    const x = keys.map(m => this.mShort(m));
+
+    if (k === 'trSpend' || k === 'trCash' || k === 'trFees' || k === 'trFlow' || k === 'trInterest') {
+      if (k === 'trSpend') {
+        const cur = keys.map(m => { const r = this.rec(m); return r ? (this.isSav() ? r.debits : r.spend) : null; });
+        const series = [{name: this.isSav() ? 'Money out' : 'Bill', color:this.ACCENT, data:cur, area:true}];
+        if ((this.props.compareLastYear ?? false) && !this.isSav() && S.mode === 'year') {
+          series.push({name:'Previous year', color:'#6f7fb0', dim:true, data:keys.map(m => this.PRIOR[m.slice(5,7)] || null)});
+        }
+        return this.line({x, series, legend:series.length > 1});
+      }
+      if (k === 'trCash') return this.line({x, series:[{name:'Cashback', color:this.GOOD, data:keys.map(m => { const r = this.rec(m); return r ? r.cb : null; }), area:true}], left:52,
+        formatter: ps => {
+          const p = ps[0], m = keys[p.dataIndex], r = this.rec(m);
+          if (!r) return '<div style="font-size:11px;opacity:.6">' + self.mLabel(m) + ' \u00b7 no statement</div>';
+          return '<div style="font-size:11px;opacity:.6;margin-bottom:5px">' + self.mLabel(m) + '</div>'
+            + '<div style="display:flex;gap:14px"><span style="opacity:.6">Cashback</span><b style="font-weight:500;margin-left:auto;color:' + self.GOOD + '">' + self.fmt(r.cb) + '</b></div>'
+            + '<div style="display:flex;gap:14px"><span style="opacity:.6">On spend of</span><b style="font-weight:500;margin-left:auto">' + self.fmt(r.spend, 0) + '</b></div>'
+            + '<div style="display:flex;gap:14px"><span style="opacity:.6">Rate</span><b style="font-weight:500;margin-left:auto">' + self.pct(r.cb/r.spend*100, 2) + '</b></div>';
+        }});
+      if (k === 'trFees') return this.line({x, series:[{name:'Fees & interest', color:this.WARN, data:keys.map(m => { const r = this.rec(m); return r ? r.fees : null; }), area:true}], left:52});
+      if (k === 'trFlow') return this.line({x, series:[
+        {name:'Money in', color:this.GOOD, data:keys.map(m => { const r = this.rec(m); return r ? r.credits : null; })},
+        {name:'Money out', color:'#c98b8b', data:keys.map(m => { const r = this.rec(m); return r ? r.debits : null; })}
+      ], legend:true});
+      return this.line({x, series:[{name:'Interest earned', color:this.ACCENT, data:keys.map(m => { const r = this.rec(m); return r ? r.interest : null; }), area:true}], left:52});
+    }
+
+    if (k === 'mDaily') {
+      const key = this.state.month, cyc = this.cycle(key);
+      const byDay = {};
+      this.cardTx(key).filter(t => t.type === 'purchase').forEach(t => { const d = this.dayLabel(t.d); byDay[d] = (byDay[d] || 0) + t.amt; });
+      return this.line({x:cyc.dayLabels, interval:Math.ceil(cyc.days/9),
+        series:[{name:'Spend', color:this.ACCENT, area:true, data:cyc.dayLabels.map(d => byDay[d] || 0)}]});
+    }
+
+    if (k === 'cbTx' || k === 'cardCb') {
+      const key = this.state.month;
+      const tx = this.cardTx(key).filter(t => t.type === 'purchase');
+      return this.line({x:tx.map(t => t.desc), interval:0, rotate:34, maxLabel:11, bottom:64, left:52,
+        series:[{name:'Cashback', color:this.GOOD, data:tx.map(t => t.cb)}],
+        formatter: ps => {
+          const p = ps[0], t = tx[p.dataIndex];
+          const rate = t.amt ? (t.cb / t.amt * 100) : 0;
+          return '<div style="font-size:12.5px;margin-bottom:6px">' + t.desc + '</div>'
+            + '<div style="font-size:11px;opacity:.6;margin-bottom:6px">' + t.cat + ' \u00b7 ' + t.d + '</div>'
+            + '<div style="display:flex;gap:14px"><span style="opacity:.6">Spend</span><b style="font-weight:500;margin-left:auto">' + self.fmt(t.amt) + '</b></div>'
+            + '<div style="display:flex;gap:14px"><span style="opacity:.6">Cashback</span><b style="font-weight:500;margin-left:auto;color:' + self.GOOD + '">' + self.fmt(t.cb) + '</b></div>'
+            + '<div style="display:flex;gap:14px"><span style="opacity:.6">Rate</span><b style="font-weight:500;margin-left:auto">' + self.pct(rate, 2) + '</b></div>';
+        }
+      });
+    }
+
+    if (k === 'cbMonths') {
+      const all = this.CARD_MONTHS;
+      return this.line({x:all.map(m => this.mLabel(m)), left:52,
+        series:[{name:'Cashback', color:this.GOOD, area:true, data:all.map(m => { const r = this.CARD[m]; return r ? r.cb : null; })}]});
+    }
+
+    if (k === 'mDonut') {
+      const cats = this.catsOf(this.state.month);
+      const total = cats.reduce((x,c) => x + c.amount, 0);
+      return Object.assign(this.base(), {
+        tooltip:Object.assign(this.base().tooltip, {trigger:'item',
+          formatter: p => '<div style="font-size:12.5px;margin-bottom:5px">' + p.name + '</div>'
+            + '<div style="display:flex;gap:14px"><span style="opacity:.6">Spend</span><b style="font-weight:500;margin-left:auto">' + self.fmt(p.value) + '</b></div>'
+            + '<div style="display:flex;gap:14px"><span style="opacity:.6">Share</span><b style="font-weight:500;margin-left:auto">' + self.pct(p.percent, 1) + '</b></div>'}),
+        series:[{
+          type:'pie', radius:['58%','82%'], center:['50%','50%'], minAngle:4, avoidLabelOverlap:true,
+          itemStyle:{borderColor:'#161826', borderWidth:2},
+          label:{show:false},
+          labelLine:{show:false},
+          emphasis:{scaleSize:5},
+          data:cats.map((c,i) => ({name:c.name, value:c.amount, itemStyle:{color:this.PIE[i % this.PIE.length]}}))
+        }],
+        graphic:[
+          {type:'text', left:'center', top:'43%', style:{text:this.fmt(total, 0), fill:'#e9e9ed', font:'500 19px Inter', textAlign:'center'}},
+          {type:'text', left:'center', top:'54%', style:{text:cats.length + ' categories', fill:'rgba(233,233,237,0.42)', font:'400 10.5px Inter', textAlign:'center'}}
+        ]
+      });
+    }
+
+    if (k === 'savIntDaily') {
+      const d = this.savDaily(S.savMonth);
+      return this.line({x:d.map(p => p.label), interval:Math.ceil(d.length/10), left:52,
+        series:[{name:'Interest, running total', color:this.ACCENT, area:true, data:d.map(p => p.cumInterest)}],
+        formatter: ps => {
+          const p = ps[0], row = d[p.dataIndex];
+          return '<div style="font-size:11px;opacity:.6;margin-bottom:5px">' + row.label + '</div>'
+            + '<div style="display:flex;gap:14px"><span style="opacity:.6">Credited that day</span><b style="font-weight:500;margin-left:auto;color:' + self.GOOD + '">' + (row.interest ? self.fmt(row.interest) : 'none') + '</b></div>'
+            + '<div style="display:flex;gap:14px"><span style="opacity:.6">Month to date</span><b style="font-weight:500;margin-left:auto">' + self.fmt(row.cumInterest) + '</b></div>';
+        }
+      });
+    }
+
+    if (k === 'savBalance') {
+      const key = this.state.savMonth;
+      const d = this.savDaily(key);
+      return this.line({x:d.map(p => p.label), interval:Math.ceil(d.length/9), left:60,
+        series:[{name:'Closing balance', color:this.ACCENT, area:true, data:d.map(p => p.balance)}]});
+    }
+    return null;
+  }
+
+  /* ---------- interaction ---------- */
+  go(screen){
+    return () => {
+      const st = {screen, catSel:null};
+      if (screen === 'card' || screen === 'cashback') st.acct = 'sm';
+      if (screen === 'savings') st.acct = 'slice';
+      this.setState(st);
+    };
+  }
+  pickAcct(id){
+    return () => {
+      const st = {acct:id, catSel:null};
+      if (id === 'slice' && (this.state.screen === 'card' || this.state.screen === 'cashback')) st.screen = 'savings';
+      if (id === 'sm' && this.state.screen === 'savings') st.screen = 'card';
+      this.setState(st);
+    };
+  }
+  pickMonth(k, ok){
+    return () => {
+      if (!ok) { this.setState({uploadOpen:true}); return; }
+      this.setState(this.isSav() ? {savMonth:k, catSel:null} : {month:k, catSel:null});
+    };
+  }
+
+  renderVals(){
+    const S = this.state;
+    const sd = this.props.stateDemo ?? 'live';
+    const a = this.acct(), sav = this.isSav();
+    const navOpen = S.navOpen;
+    const muted = 'color-mix(in srgb,var(--color-text) 46%,transparent)';
+    const key = this.curMonth();
+    const rec = sd === 'loading' ? null : this.rec(key);
+    const cyc = this.cycle(key);
+    const cov = this.coverage();
+    const keys = this.eligible(this.scopeKeys());
+    const single = sd === 'singleMonth';
+
+    /* nav */
+    const items = [
+      {key:'overview', label:'Overview', icon:'ph ph-squares-four'},
+      {key:'card', label:'Credit card', icon:'ph ph-credit-card'},
+      {key:'cashback', label:'Cashback', icon:'ph ph-percent'},
+      {key:'savings', label:'Savings', icon:'ph ph-bank'},
+      {key:'statements', label:'Statements', icon:'ph ph-files'}
+    ];
+    const nav = items.map(it => {
+      const on = S.screen === it.key;
+      return {label:it.label, icon:it.icon, go:this.go(it.key),
+        st:'display:flex;align-items:center;gap:12px;' + (navOpen ? 'width:calc(100% - 16px);margin:0 8px;padding:8px 10px;' : 'width:38px;margin:0 9px;padding:9px 0;justify-content:center;')
+          + 'border:0;border-radius:var(--radius-sm);cursor:pointer;font:inherit;font-size:13px;background:'
+          + (on ? 'color-mix(in srgb,var(--color-accent) 15%,transparent)' : 'transparent')
+          + ';color:' + (on ? 'var(--color-accent-200)' : 'color-mix(in srgb,var(--color-text) 72%,transparent)')};
+    });
+
+    /* header — only accounts the current screen is about */
+    const pillScope = (S.screen === 'card' || S.screen === 'cashback') ? 'card' : S.screen === 'savings' ? 'savings' : 'all';
+    const acctPills = this.ACCOUNTS.filter(x => pillScope === 'all' || x.kind === pillScope).map(x => ({
+      label:x.label, icon:x.icon, go:this.pickAcct(x.id),
+      st:'display:flex;align-items:center;gap:7px;padding:6px 12px;border-radius:999px;cursor:pointer;font:inherit;font-size:12.5px;border:1px solid '
+        + (x.id === S.acct ? 'var(--color-accent)' : 'var(--color-divider)') + ';background:transparent;color:'
+        + (x.id === S.acct ? 'var(--color-accent-200)' : 'color-mix(in srgb,var(--color-text) 66%,transparent)')
+    }));
+    const segSt = on => 'padding:7px 13px;font:inherit;font-size:12.5px;cursor:pointer;border:0;background:transparent;color:'
+      + (on ? 'var(--color-accent)' : 'color-mix(in srgb,var(--color-text) 66%,transparent)')
+      + ';box-shadow:' + (on ? 'inset 0 0 0 1px var(--color-accent)' : 'none');
+    const modeOpts = [['month','Month'],['year','Year'],['range','Range']].map(([m,l]) => ({label:l, st:segSt(S.mode === m), go:() => this.setState({mode:m})}));
+    const monthChips = this.ownMonths().map(m => {
+      const allowed = true;
+      const ok = !!this.src()[m] && !(single && m !== key);
+      const on = m === key;
+      return {label:this.mLabel(m), tip: ok ? this.mLabel(m) + ' \u00b7 uploaded' : this.mLabel(m) + ' \u00b7 no statement',
+        go:this.pickMonth(m, ok),
+        st:'flex:none;padding:5px 11px;border-radius:var(--radius-sm);font:inherit;font-size:12px;white-space:nowrap;cursor:' + (allowed ? 'pointer' : 'not-allowed')
+          + ';border:1px ' + (ok ? 'solid' : 'dashed') + ' ' + (on ? 'var(--color-accent)' : 'var(--color-divider)')
+          + ';background:' + (on ? 'color-mix(in srgb,var(--color-accent) 15%,transparent)' : 'transparent')
+          + ';color:' + (on ? 'var(--color-accent-200)' : (ok ? 'color-mix(in srgb,var(--color-text) 72%,transparent)' : 'color-mix(in srgb,var(--color-text) 32%,transparent)'))};
+    });
+    const monthOptions = this.ownMonths().map(m => ({key:m, label:this.mLabel(m)}));
+    const badRange = S.rangeFrom > S.rangeTo;
+
+    const periodLabel = S.mode === 'month' ? this.mLabel(key)
+      : S.mode === 'year' ? (S.yearScope === 'cal2026' ? 'Calendar 2026' : S.yearScope === 'fy2627' ? 'FY 2026\u201327' : 'FY 2025\u201326')
+      : this.mLabel(keys[0] || S.rangeFrom) + ' \u2013 ' + this.mLabel(keys[keys.length-1] || S.rangeTo);
+
+    /* trend charts */
+    const sum = f => keys.reduce((x,m) => { const r = this.rec(m); return x + (r ? f(r) : 0); }, 0);
+    const nHave = keys.filter(m => this.rec(m)).length || 1;
+    const chart = (id, title, sub, color, total) => ({id, title, sub, color, total:this.fmt(total, 0), avg:this.fmt(total / nHave, 0)});
+    const monthScope = S.mode === 'month';
+    const intDaily = (() => {
+      const c = chart('savIntDaily','Interest earned','day by day, running total through the month', this.ACCENT, (this.SAV[S.savMonth] || {}).interest || 0);
+      const d = sav ? this.savDaily(S.savMonth) : [];
+      const paid = d.filter(p => p.interest).length || 1;
+      c.avg = this.fmt(((this.SAV[S.savMonth] || {}).interest || 0) / paid);
+      return c;
+    })();
+    const trendCharts = sav
+      ? [chart('trFlow','Money in and out','per month', this.GOOD, sum(r => r.credits)),
+         monthScope ? intDaily : chart('trInterest','Interest earned','summed per month', this.ACCENT, sum(r => r.interest))]
+      : [chart('trSpend','Bill by month','purchases per statement cycle', this.ACCENT, sum(r => r.spend)),
+         chart('trCash','Cashback','earned per cycle', this.GOOD, sum(r => r.cb)),
+         chart('trFees','Fees & interest','charged per cycle', this.WARN, sum(r => r.fees))];
+
+    /* overview tiles */
+    const prevKey = (() => { const i = this.MONTHS.indexOf(key); return this.MONTHS.slice(0, i).reverse().find(m => this.rec(m)) || null; })();
+    const prev = single ? null : (prevKey ? this.rec(prevKey) : null);
+    const delta = (cur, p, goodDown) => {
+      if (p == null) return {txt:'\u2014', icon:'ph ph-minus', st:'color:' + muted, note: single ? 'first statement' : 'no prior month'};
+      if (!p) return {txt: cur ? 'new' : 'nil', icon: cur ? 'ph ph-plus' : 'ph ph-minus', st:'color:' + (cur && goodDown ? '#c98b8b' : muted), note:'none in ' + this.mLabel(prevKey)};
+      const d = (cur - p) / p * 100, up = d >= 0, good = goodDown ? !up : up;
+      return {txt:(up ? '+' : '\u2212') + Math.abs(d).toFixed(1) + '%', icon: up ? 'ph ph-trend-up' : 'ph ph-trend-down',
+        st:'color:' + (good ? this.GOOD : '#c98b8b'), note:'vs ' + this.mLabel(prevKey)};
+    };
+    const R = rec || {};
+    const scoped = S.mode !== 'month';
+    const heroTiles = sav
+      ? (() => {
+          const cr = scoped ? sum(r => r.credits) : (R.credits || 0);
+          const db = scoped ? sum(r => r.debits) : (R.debits || 0);
+          const it = scoped ? sum(r => r.interest) : (R.interest || 0);
+          const dC = delta(R.credits || 0, prev ? prev.credits : null), dD = delta(R.debits || 0, prev ? prev.debits : null, true), dI = delta(R.interest || 0, prev ? prev.interest : null);
+          return [
+            {label:'Money in', value:this.fmt(cr, 0), valSt:'', delta: scoped ? '' : dC.txt, deltaIcon: scoped ? '' : dC.icon, deltaSt: scoped ? 'color:' + muted : dC.st, note: scoped ? keys.filter(m => this.rec(m)).length + ' months' : dC.note},
+            {label:'Money out', value:this.fmt(db, 0), valSt:'', delta: scoped ? '' : dD.txt, deltaIcon: scoped ? '' : dD.icon, deltaSt: scoped ? 'color:' + muted : dD.st, note: scoped ? '' : dD.note},
+            {label:'Interest earned', value:this.fmt(it), valSt:'color:' + this.GOOD, delta: scoped ? '' : dI.txt, deltaIcon: scoped ? '' : dI.icon, deltaSt: scoped ? 'color:' + muted : dI.st, note: scoped ? '' : dI.note},
+            {label:'Closing balance', value:this.fmt(R.closing || (this.rec(keys.filter(m => this.rec(m)).slice(-1)[0]) || {}).closing || 0, 0), valSt:'', delta:'', deltaIcon:'', deltaSt:'color:' + muted, note:'latest statement'}
+          ];
+        })()
+      : (() => {
+          const sp = scoped ? sum(r => r.spend) : (R.spend || 0);
+          const cb = scoped ? sum(r => r.cb) : (R.cb || 0);
+          const fe = scoped ? sum(r => r.fees) : (R.fees || 0);
+          const dS = delta(R.spend || 0, prev ? prev.spend : null), dC = delta(R.cb || 0, prev ? prev.cb : null), dF = delta(R.fees || 0, prev ? prev.fees : null, true);
+          return [
+            {label:'Bill', value:this.fmt(sp, 0), valSt:'', delta: scoped ? '' : dS.txt, deltaIcon: scoped ? '' : dS.icon, deltaSt: scoped ? 'color:' + muted : dS.st, note: scoped ? keys.filter(m => this.rec(m)).length + ' cycles' : dS.note},
+            {label:'Cashback', value:this.fmt(cb), valSt:'color:' + this.GOOD, delta: scoped ? '' : dC.txt, deltaIcon: scoped ? '' : dC.icon, deltaSt: scoped ? 'color:' + muted : dC.st, note: scoped ? '' : dC.note},
+            {label:'Fees & interest', value:this.fmt(fe), valSt: fe ? 'color:' + this.WARN : '', delta: scoped ? '' : dF.txt, deltaIcon: scoped ? '' : dF.icon, deltaSt: scoped ? 'color:' + muted : dF.st, note: scoped ? '' : dF.note},
+            {label:'Outstanding', value:this.fmt(R.closing || 0, 0), valSt:'', delta:'', deltaIcon:'', deltaSt:'color:' + muted, note: a.limit ? this.pct((R.closing || 0) / a.limit * 100) + ' of limit' : ''}
+          ];
+        })();
+
+    const acctRows = this.ACCOUNTS.map(x => {
+      const isS = x.kind === 'savings';
+      const m = isS ? S.savMonth : S.month;
+      const r = (isS ? this.SAV : this.CARD)[m] || (isS ? this.SAV['2026-08'] : this.CARD['2026-06']);
+      return {name:x.full, sub:x.sub + ' \u00b7 ' + (isS ? this.mLabel(S.savMonth) : this.mLabel(S.month)), icon:x.icon, go:this.pickAcct(x.id),
+        stats: isS
+          ? [{label:'Interest', value:this.fmt(r.interest), st:'color:' + this.GOOD},
+             {label:'Net flow', value:(r.credits - r.debits >= 0 ? '+' : '\u2212') + this.fmt(r.credits - r.debits, 0), st:''},
+             {label:'Balance', value:this.fmt(r.closing, 0), st:''}]
+          : [{label:'Cashback', value:this.fmt(r.cb), st:'color:' + this.GOOD},
+             {label:'Fees', value: r.fees ? this.fmt(r.fees) : '\u2014', st: r.fees ? 'color:' + this.WARN : 'color:' + muted},
+             {label:'Bill', value:this.fmt(r.spend, 0), st:''}]};
+    });
+
+    /* card month */
+    const cats = sav ? [] : this.catsOf(S.month);
+    const catTotal = cats.reduce((x,c) => x + c.amount, 0);
+    const maxCat = cats.reduce((x,c) => Math.max(x, c.amount), 0) || 1;
+    const catRows = cats.map(c => {
+      const on = S.catSel === c.name;
+      return {name:c.name, share:this.pct(catTotal ? c.amount/catTotal*100 : 0, 0), amount:this.fmt(c.amount),
+        rowSt:'display:block;width:100%;padding:9px 2px;background:transparent;border:0;border-bottom:1px solid color-mix(in srgb,var(--color-text) 7%,transparent);color:' + (on ? 'var(--color-accent-200)' : 'inherit') + ';font:inherit;cursor:pointer',
+        barSt:'display:block;height:100%;width:' + (c.amount/maxCat*100).toFixed(1) + '%;background:' + (on ? 'var(--color-accent)' : 'color-mix(in srgb,var(--color-accent) 60%,transparent)'),
+        go:() => this.setState(s => ({catSel: s.catSel === c.name ? null : c.name}))};
+    });
+    const cardTxAll = sav ? [] : this.cardTx(S.month);
+    const cardR = this.CARD[S.month] || {};
+    const feeRows = (cardR.fi || []).map(f => ({type:f.t, date:f.d, amount:this.fmt(f.a)}));
+    const feeSum = (cardR.fi || []).reduce((x,f) => x + f.a, 0);
+    let txShown = cardTxAll.filter(t => {
+      if (S.catSel && t.cat !== S.catSel) return false;
+      if (S.txFilter === 'all') return true;
+      if (S.txFilter === 'purchases') return t.type === 'purchase';
+      if (S.txFilter === 'charges') return t.type === 'fee';
+      return t.type === 'payment' || t.type === 'credit';
+    });
+    const txRows = txShown.map(t => ({date:t.d, desc:t.desc, cat:t.cat,
+      amount:this.fmt(t.amt), drcr: (t.type === 'payment' || t.type === 'credit') ? 'Cr' : 'Dr',
+      amtSt: (t.type === 'payment' || t.type === 'credit') ? 'color:' + this.GOOD : '',
+      cb: t.cb ? this.fmt(t.cb) : '\u2014', cbSt: t.cb ? 'color:' + this.GOOD : 'color:' + muted}));
+    const txFilters = [['all','All'],['purchases','Purchases'],['charges','Charges'],['money','Payments']].map(([k2,l]) => ({label:l, st:segSt(S.txFilter === k2), go:() => this.setState({txFilter:k2})}));
+    const purch = cardTxAll.filter(t => t.type === 'purchase');
+    const peak = (() => { const by = {}; purch.forEach(t => { const d = this.dayLabel(t.d); by[d] = (by[d] || 0) + t.amt; }); const e = Object.entries(by).sort((p,q) => q[1]-p[1])[0]; return e ? e[0] + ' \u00b7 ' + this.fmt(e[1], 0) : '\u2014'; })();
+
+    const cardTiles = [
+      {label:'Bill', value:this.fmt(cardR.spend || 0), note:'purchases and charges', valSt:''},
+      {label:'Cashback', value:this.fmt(cardR.cb || 0), note: cardR.spend ? this.pct((cardR.cb||0)/cardR.spend*100, 2) + ' of spend' : '', valSt:'color:' + this.GOOD},
+      {label:'Fees & interest', value: cardR.fees ? this.fmt(cardR.fees) : 'None', note: cardR.fees ? feeRows.length + ' charges' : 'nothing charged', valSt: cardR.fees ? 'color:' + this.WARN : 'color:' + this.GOOD},
+      {label:'Payments', value:this.fmt(cardR.pay || 0, 0), note:'received this cycle', valSt:''},
+      {label:'Closing balance', value:this.fmt(cardR.closing || 0), note: a.limit ? this.fmt(a.limit, 0) + ' limit' : '', valSt:''}
+    ];
+
+    /* year table */
+    const yearRows = keys.map(m => {
+      const r = this.rec(m);
+      const em = 'color:' + muted;
+      return {label:this.mLabel(m),
+        spend: r ? this.fmt(sav ? r.debits : r.spend) : 'no statement',
+        cashback: r ? this.fmt(sav ? r.interest : r.cb) : '\u2014',
+        fees: r ? (r.fees ? this.fmt(r.fees) : '\u2014') : '\u2014',
+        payments: r ? this.fmt(sav ? r.credits : r.pay) : '\u2014',
+        closing: r ? this.fmt(r.closing) : '\u2014',
+        cbSt: r ? 'color:' + this.GOOD : em, feeSt: r && r.fees ? 'color:' + this.WARN : em,
+        rowSt: r ? '' : 'color:' + muted + ';background:color-mix(in srgb,var(--color-text) 3%,transparent)'};
+    });
+    const lastHave = keys.filter(m => this.rec(m)).slice(-1)[0];
+    const partial = cov.have < cov.total;
+
+    /* cashback screen */
+    const cbTx = purch;
+    const cbBestTx = cbTx.slice().sort((p,q) => q.cb - p.cb)[0];
+    const cbCats = cats.slice().sort((p,q) => q.cb - p.cb);
+    const maxCb = cbCats.reduce((x,c) => Math.max(x, c.cb), 0) || 1;
+    const cbCatRows = cbCats.map(c => ({name:c.name, cb: c.cb ? this.fmt(c.cb) : 'nil',
+      rate:this.pct(c.amount ? c.cb/c.amount*100 : 0, 2),
+      cbSt: c.cb ? '' : 'color:' + muted,
+      barSt:'height:100%;width:' + (c.cb/maxCb*100).toFixed(1) + '%;background:' + (c.cb ? this.GOOD : 'transparent')}));
+    const cbTiles = [
+      {label:'Cashback this cycle', value:this.fmt(cardR.cb || 0), note:'on ' + this.fmt(cardR.spend || 0, 0) + ' of spend', valSt:'color:' + this.GOOD},
+      {label:'Effective rate', value: cardR.spend ? this.pct((cardR.cb||0)/cardR.spend*100, 2) : '\u2014', note:'across every purchase', valSt:''},
+      {label:'Earning transactions', value: cbTx.filter(t => t.cb).length + ' of ' + cbTx.length, note:this.fmt(cbTx.filter(t => !t.cb).reduce((x,t) => x + t.amt, 0), 0) + ' earned nothing', valSt:''},
+      {label:'All cycles', value:this.fmt(this.CARD_MONTHS.reduce((x,m) => x + ((this.CARD[m]||{}).cb || 0), 0), 0), note:'across ' + this.CARD_MONTHS.filter(m => this.CARD[m]).length + ' uploaded cycles', valSt:''}
+    ];
+
+    /* savings screen */
+    const savR = this.SAV[S.savMonth] || {};
+    const savRows = sav ? this.savLedger(S.savMonth) : [];
+    const savDaily = sav ? this.savDaily(S.savMonth) : [];
+    const bals = savDaily.map(p => p.balance);
+    const savFiltered = savRows.filter(r => S.savFilter === 'all' ? true : S.savFilter === 'flow' ? r.kind !== 'interest' : S.savFilter === 'in' ? r.kind === 'in' : S.savFilter === 'out' ? r.kind === 'out' : r.kind === 'interest');
+    const savTxRows = savFiltered.slice().reverse().map(r => ({
+      date:String(r.day).padStart(2,'0') + ' ' + this.MN[+S.savMonth.slice(5,7)-1],
+      desc:r.desc, mode:r.mode, amount:this.fmt(Math.abs(r.amt)), drcr: r.amt >= 0 ? 'Cr' : 'Dr',
+      amtSt: r.amt >= 0 ? 'color:' + this.GOOD : '', balance:this.fmt(r.balance)}));
+    const savFilters = [['flow','Transfers'],['in','In'],['out','Out'],['interest','Interest']].map(([k2,l]) => ({label:l, st:segSt(S.savFilter === k2), go:() => this.setState({savFilter:k2})}));
+    const savTiles = [
+      {label:'Opening balance', value:this.fmt(savR.opening || 0, 0), note:'carried forward', valSt:''},
+      {label:'Money in', value:this.fmt(savR.credits || 0, 0), note:savRows.filter(r => r.kind === 'in').length + ' credits', valSt:'color:' + this.GOOD},
+      {label:'Interest earned', value:this.fmt(savR.interest || 0), note:'credited daily', valSt:'color:' + this.GOOD},
+      {label:'Money out', value:this.fmt(savR.debits || 0, 0), note:savRows.filter(r => r.kind === 'out').length + ' debits', valSt:''},
+      {label:'Closing balance', value:this.fmt(savR.closing || 0, 0), note:cyc.label, valSt:''}
+    ];
+
+    const stmtRows = this.STMTS.map(s => ({iss:s.iss, acct:s.acct, period:s.period, up:s.up, n: s.n || '\u2014', status:s.status,
+      badgeSt:'display:inline-flex;font-size:11px;padding:3px 9px;border-radius:6px;color:' + (s.status === 'parsed' ? this.GOOD : '#9397ab')
+        + ';background:color-mix(in srgb,' + (s.status === 'parsed' ? this.GOOD : '#9397ab') + ' 13%,transparent)'}));
+
+    const noData = sd !== 'loading' && !rec && S.mode === 'month' && (S.screen === 'card' || S.screen === 'cashback' || S.screen === 'savings');
+
+    return {
+      rootRef:this.rootRef,
+      navOpen, toggleNav:() => this.setState(s => ({navOpen:!s.navOpen})),
+      toggleIcon: navOpen ? 'ph ph-arrow-line-left' : 'ph ph-arrow-line-right',
+      toggleLabel: navOpen ? 'Collapse sidebar' : 'Expand sidebar',
+      toggleSt:'display:flex;align-items:center;gap:12px;' + (navOpen ? 'width:calc(100% - 16px);margin:0 8px 14px;padding:8px 10px;' : 'width:38px;margin:0 9px 14px;padding:9px 0;justify-content:center;')
+        + 'border:0;border-radius:var(--radius-sm);cursor:pointer;font:inherit;font-size:12.5px;background:transparent;color:' + muted,
+      asideSt:'flex:none;width:' + (navOpen ? '188px' : '56px') + ';border-right:1px solid var(--color-divider);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow:hidden;transition:width .16s ease',
+      brandSt:'display:flex;align-items:center;gap:10px;padding:' + (navOpen ? '17px 16px 6px' : '17px 0 6px') + ';' + (navOpen ? '' : 'justify-content:center;'),
+      nav,
+      acctPills, acctName:a.full, savName:(this.ACCOUNTS[1]).full,
+      modeOpts, monthMode:S.mode === 'month', yearMode:S.mode === 'year', rangeMode:S.mode === 'range',
+      monthChips, monthOptions,
+      yearScope:S.yearScope, setYearScope:e => this.setState({yearScope:e.target.value}),
+      rangeFrom:S.rangeFrom, rangeTo:S.rangeTo,
+      setFrom:e => this.setState({rangeFrom:e.target.value}), setTo:e => this.setState({rangeTo:e.target.value}),
+      rangeNote: badRange ? 'end is before start' : keys.length + (keys.length === 1 ? ' month with data' : ' months with data'),
+      rangeWarnSt:'white-space:nowrap;color:' + (badRange ? '#c98b8b' : muted),
+      coverLabel: cov.have + ' of ' + cov.total + ' months',
+      coverTip: cov.missing.length ? 'No statement for ' + cov.missing.join(', ') : 'Complete coverage',
+      coverDotSt:'width:7px;height:7px;border-radius:50%;flex:none;background:' + (cov.have === cov.total ? this.GOOD : this.WARN),
+      coverHave:cov.have, coverTotal:cov.total,
+      openUpload:() => this.setState({uploadOpen:true}), closeUpload:() => this.setState({uploadOpen:false}),
+      uploadOpen:S.uploadOpen, uploadSub:a.full + ' \u00b7 ' + this.mLabel(key),
+      demoOn: sd !== 'live',
+      demoLabel: sd === 'singleMonth' ? 'Demo: single month' : 'Demo: loading',
+      demoTip: sd === 'singleMonth'
+        ? 'Previewing the first-session state \u2014 all months but the selected one are greyed out on purpose. Set stateDemo to \u201clive\u201d in Tweaks to use your real uploads.'
+        : 'Previewing the loading state. Set stateDemo to \u201clive\u201d in Tweaks.',
+      isLoading: sd === 'loading', noData,
+      noDataSub: sav ? 'slice statements start from the account opening on ' + this.ACCOUNTS[1].opened + '.' : 'Upload the statement PDF for this cycle and the charts fill in.',
+      sOverview: sd !== 'loading' && S.screen === 'overview',
+      sCard: sd !== 'loading' && !noData && S.screen === 'card',
+      sCashback: sd !== 'loading' && !noData && S.screen === 'cashback',
+      sSavings: sd !== 'loading' && !noData && S.screen === 'savings',
+      sStatements: S.screen === 'statements',
+      periodLabel, periodSub: sav ? this.ACCOUNTS[1].sub + ' \u00b7 IFSC ' + this.ACCOUNTS[1].ifsc : a.sub,
+      heroTiles, trendCharts, acctRows,
+      cardHeadSub: cyc.label + (this.CARD[S.month] && this.CARD[S.month].real ? ' \u00b7 parsed statement' : ''),
+      cardMonth: S.mode === 'month', cardYear: S.mode !== 'month',
+      cardTiles, cyclePeriod:cyc.label, peakDay:peak,
+      catRows, catCount:cats.length,
+      feeRows, hasFees: feeRows.length > 0, noFees: feeRows.length === 0,
+      feeTotal: feeSum ? this.fmt(feeSum) : 'None', feeTotalSt: feeSum ? 'color:' + this.WARN : 'color:' + muted,
+      txRows, txFilters,
+      txSub: (S.catSel ? S.catSel + ' only \u00b7 ' : '') + txShown.length + ' of ' + cardTxAll.length,
+      yearRows, partialYear: partial, totalMark: partial ? '*' : '',
+      tSpend:this.fmt(sum(r => sav ? r.debits : r.spend), 0),
+      tCashback:this.fmt(sum(r => sav ? r.interest : r.cb), 0),
+      tFees:this.fmt(sum(r => r.fees || 0), 0),
+      tPayments:this.fmt(sum(r => sav ? r.credits : r.pay), 0),
+      tClosing: lastHave ? this.fmt(this.rec(lastHave).closing, 0) : '\u2014',
+      acctHasCashback: a.cashback, acctNoCashback: !a.cashback, goSavings:this.go('savings'),
+      cbHeadSub: cyc.label, cbTiles, cbCatRows,
+      cbMonthCount: this.CARD_MONTHS.length + (this.CARD_MONTHS.length === 1 ? ' month' : ' months'),
+      cbBest: cbBestTx ? cbBestTx.desc + ' \u00b7 ' + this.fmt(cbBestTx.cb) : '\u2014',
+      savMonth: S.mode === 'month', savHeadSub: cyc.label + (savR.real ? ' \u00b7 parsed statement' : ''),
+      savPeriodLine: cyc.label, savTiles,
+      savLow: bals.length ? this.fmt(Math.min.apply(null, bals), 0) : '\u2014',
+      savHigh: bals.length ? this.fmt(Math.max.apply(null, bals), 0) : '\u2014',
+      savCharts: sav ? trendCharts : [], showPillRule: acctPills.length > 1,
+      cbCycleTotal:this.fmt(cardR.cb || 0),
+      savTxRows, savFilters,
+      savTxSub: savFiltered.length + ' of ' + savRows.length + ' rows',
+      savInterestHidden: S.savFilter === 'flow',
+      savInterestNote: savRows.filter(r => r.kind === 'interest').length + ' daily interest credits are folded away \u2014 ' + this.fmt(savR.interest || 0) + ' in total.',
+      stmtRows
+    };
+  }
+}
+
+</script>
+</body>
+</html>

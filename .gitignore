@@ -1,0 +1,32 @@
+# ── real statements: never commit ───────────────────────────────────────────
+samples/
+
+# ── secrets ────────────────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── node / next ────────────────────────────────────────────────────────────
+node_modules/
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# ── test / tooling output ──────────────────────────────────────────────────
+coverage/
+junit.xml
+.eslintcache
+.vitest/
+
+# ── docker volumes ─────────────────────────────────────────────────────────
+.docker/
+
+# ── os / editor ────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json

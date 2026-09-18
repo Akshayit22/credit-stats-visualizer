@@ -7,7 +7,9 @@ const nextConfig: NextConfig = {
   // pdfjs-dist has an optional `canvas` dependency it only uses under Node; the
   // browser bundle must never try to resolve it.
   turbopack: {
-    resolveAlias: { canvas: './src/client/lib/empty-module.ts' },
+    resolveAlias: {
+      canvas: { browser: './src/client/lib/empty-module.ts' },
+    },
   },
 };
 

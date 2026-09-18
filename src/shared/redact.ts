@@ -289,7 +289,7 @@ export function redactForStorage(rawText: string): RedactionResult {
     return joined;
   });
 
-  return { text: normaliseStatementText(redacted.join('\n')), counts };
+  return { text: normaliseStatementText(dropMaskSpill(redacted).join('\n')), counts };
 }
 
 /**
@@ -310,16 +310,33 @@ export const MASK_AT_END = /(?:SELF|\[[a-z-]+\])$/;
  */
 export function joinWrappedDetail(head: string, tail: string): string {
   if (!MASK_AT_END.test(head)) return head + tail;
-
-  // The head ends in a mask, so the continuation's leading word run is the rest
-  // of the value that was masked and goes with it.
-  const rest = tail.replace(/^[A-Za-z0-9.@_]+/, '');
-
-  // A mask can also have swallowed the delimiter that separated the two fields
+  const rest = tail.slice(maskSpillLength(tail));
+  // A mask can also have swallowed the delimiter that separated two fields
   // (`T-IDFB-<mobile>@idfcfirst` is all one handle), leaving two masks flush
   // against each other. Put the delimiter back rather than emit `SELF[vpa]`.
   if (rest.startsWith('[')) return `${head}-${rest}`;
   return head + rest;
+}
+
+/** How far into a continuation a masked value's tail can plausibly run. */
+const MAX_SPILL = 40;
+
+/**
+ * How much of a wrapped continuation belongs to a value that was masked on the
+ * line above.
+ *
+ * Everything up to the continuation's first structural delimiter — the whole
+ * run, not just the first word, because a name wraps as `…AKSHAY LA` +
+ * `LUMAN TELAN-XXXX9652-…` and stopping at the space leaves the surname behind.
+ * A continuation that already begins with a mask spilled nothing.
+ */
+export function maskSpillLength(tail: string): number {
+  if (tail.startsWith('[')) return 0;
+  const delimiter = tail.search(/[-/@\t]/);
+  if (delimiter >= 0 && delimiter <= MAX_SPILL) return delimiter;
+  // No delimiter within reach: take the leading word run only, so a
+  // continuation that is just more prose is not swallowed whole.
+  return tail.match(/^[A-Za-z0-9.@_]+/)?.[0].length ?? 0;
 }
 
 /**
@@ -334,6 +351,33 @@ export function redactFreeText(text: string): string {
   out = out.replace(IFSC, MASK.ifsc);
   out = out.replace(VPA, MASK.vpa);
   out = out.replace(PHONE, MASK.phone);
+  return out;
+}
+
+/**
+ * Redaction runs a line at a time, but a statement that hard-wraps a field
+ * mid-word leaves the truncated head on one line and its tail on the next,
+ * where the per-line pass cannot see what it belongs to. `…TO AKSHAY LA`
+ * becomes `…TO SELF` and the next line still begins `LUMAN TELAN-…`.
+ *
+ * So: a single-cell line following a multi-cell row that masked one of its
+ * cells at the end is a wrapped continuation, and its leading run is the rest
+ * of the masked value. It goes.
+ */
+function dropMaskSpill(lines: string[]): string[] {
+  const out = [...lines];
+  for (let i = 1; i < out.length; i += 1) {
+    const line = out[i];
+    const previous = out[i - 1];
+    if (line === undefined || previous === undefined) continue;
+    if (line.includes(CELL)) continue;
+
+    const previousCells = previous.split(CELL);
+    if (previousCells.length < 3) continue;
+    if (!previousCells.some((cell) => MASK_AT_END.test(cell.trim()))) continue;
+
+    out[i] = line.slice(maskSpillLength(line));
+  }
   return out;
 }
 

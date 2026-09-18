@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import type { Account, Period } from '@/shared/types';
 import { formatPeriodLabel } from '@/client/lib/format';
 import { Icon } from './icon';
@@ -36,6 +36,15 @@ export function AppHeader(props: HeaderProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [uploadOpen, setUploadOpen] = useState(false);
+
+  /**
+   * Twelve month chips overflow the header on any normal screen, and the
+   * selected one is usually the newest — the far right. A callback ref scrolls
+   * it into view as it mounts, so the strip opens where the reader is looking.
+   */
+  const selectedChipRef = useCallback((node: HTMLButtonElement | null) => {
+    node?.scrollIntoView({ block: 'nearest', inline: 'center' });
+  }, []);
 
   const pills = props.accounts.filter(
     (account) => props.accountScope === 'all' || account.type === props.accountScope,
@@ -102,6 +111,7 @@ export function AppHeader(props: HeaderProps) {
               return (
                 <button
                   key={period}
+                  ref={period === props.selectedPeriod ? selectedChipRef : undefined}
                   type="button"
                   className="month-chip"
                   data-empty={!hasData}

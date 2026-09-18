@@ -156,17 +156,17 @@ Branches/LoanCentres(pleasevisitwww.axis.bank.intolocatethenearest
 5616160
 branch /loan centre)
 Call	the	Phone	[phone]	number	(IVR)	1860	419	5555,1860	500	5555	and
-Level 2
+2
 select 0 to block the card
 Write	Email	[email]
-Go on the Mobile App and block the credit card
+on the Mobile App and block the credit card
 Contact Us:
 Mr. Jinit Thakkar Nodal	For any clarification on your credit card statement
 Ph. 080-61865200 Timings: 9.30
 Officer Address : Axis Bank	Phone: 1800 103 5577
 am to 5.30 pm Monday to
 Ltd, CPU 1st Floor, "Gigaplex",	[email]	Email: www.axis.bank.in/support
-Saturday (except second and
+(except second and
 Plot No I.T.5, MIDC, Airoli	nk.in	Send correspondence to: Manager, Customer care, Axis Bank Ltd, CPU
 fourth Saturdays and Bank
 Knowledge Park, Airoli Navi	1st Floor, "Gigaplex", Plot No I.T.5, MIDC, Airoli Knowledge Park, Airoli

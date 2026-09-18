@@ -95,28 +95,46 @@ function pad(value: string, width: number): string {
 }
 
 /**
- * Two earlier months per account, derived from a real one by scaling every row.
- * They are clearly marked `demo:` in the `parser` field so nothing mistakes
- * them for parsed statements, and one month is deliberately left empty so the
- * coverage note and the empty state both have something to show.
+ * Earlier months per account, derived from that account's newest real statement
+ * by scaling every row. They are marked `demo:` in the `parser` field so nothing
+ * mistakes them for parsed statements.
+ *
+ * Deliberate shape: months at −2, −3 and −5, leaving −1 and −4 empty so the
+ * coverage note, the dashed month chips and the "nothing uploaded" empty state
+ * all have something real to show. The −5 month is left failing reconciliation
+ * so the needs-review banner is demonstrable too.
  */
+const BACK_MONTHS = [2, 3, 5] as const;
+
 async function synthesiseEarlierMonths(fixtures: string[]): Promise<number> {
   let written = 0;
 
+  // One source per account: the newest fixture for it. Two sources would write
+  // colliding statement ids for the same month.
+  const newestPerAccount = new Map<string, Parsed>();
   for (const file of fixtures.sort()) {
     const text = readFileSync(resolve('fixtures', file), 'utf8');
     const attempt = runDeterministicParser(parserInputFor(text));
     const source = attempt?.output?.statement;
     if (!source) continue;
+    const key = `${source.account.issuer}|${source.account.type}|${source.account.last4}`;
+    const existing = newestPerAccount.get(key);
+    if (!existing || source.periodEnd > existing.periodEnd) newestPerAccount.set(key, source);
+  }
 
-    // Skip one month between the real statement and the synthetic ones, so the
-    // library shows a genuine gap.
-    for (const [index, back] of [2, 3].entries()) {
+  for (const source of newestPerAccount.values()) {
+    for (const [index, back] of BACK_MONTHS.entries()) {
       const scale = 0.72 + index * 0.16;
       const shifted = shiftStatement(source, -back, scale);
       const account = await upsertAccountFromStatement(USER_ID, shifted.account);
       const period = shifted.periodEnd.slice(0, 7);
       const statementId = statementIdFor(account.accountId, period);
+
+      // The oldest synthetic month is left not adding up, on purpose: the
+      // needs-review banner and the library's warning badge need a real case to
+      // show, and a demo where everything is perfect teaches nothing.
+      const broken = back === BACK_MONTHS[BACK_MONTHS.length - 1];
+      if (broken) breakReconciliation(shifted);
       const reconciliation = reconcile(shifted);
       const { categories } = categoriseLocally(shifted.transactions, { userRules: new Map() });
 
@@ -153,7 +171,7 @@ async function synthesiseEarlierMonths(fixtures: string[]): Promise<number> {
         statementDate: shifted.statementDate,
         dueDate: shifted.dueDate,
         status: reconciliation.ok ? ('parsed' as const) : ('needs_review' as const),
-        parser: 'demo:synthesised',
+        parser: broken ? 'demo:synthesised-unreconciled' : 'demo:synthesised',
         llm: null,
         reconciliation,
         rowCount: transactions.length,
@@ -189,6 +207,16 @@ async function synthesiseEarlierMonths(fixtures: string[]): Promise<number> {
 }
 
 type Parsed = import('../src/server/domain/schemas').ParsedStatement;
+
+/** Nudges one figure so the statement no longer adds up, exactly as a
+ *  mis-parsed row would. */
+function breakReconciliation(statement: Parsed): void {
+  if (statement.accountType === 'savings') {
+    statement.savings.closingBalanceMinor += 124_000;
+  } else {
+    statement.card.totalDueMinor += 124_000;
+  }
+}
 
 function shiftStatement(source: Parsed, months: number, scale: number): Parsed {
   const shiftDate = (date: string): string => {

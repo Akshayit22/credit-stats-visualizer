@@ -93,6 +93,59 @@ export function buildSummary(input: SummaryInput): Summary {
   };
 }
 
+/**
+ * The `ALL#<period>` summary is the sum of that period's account summaries, not
+ * a fresh pass over calendar-month rows. A card cycle straddles two months — the
+ * Axis statement runs 17 May to 15 Jun — so counting rows by their date would
+ * split every bill across two months and make "Bill by month" understate all of
+ * them. A month means "what each account's statement for that month said".
+ */
+export function aggregateSummaries(period: Period, parts: Summary[]): Summary {
+  const byCategory: Record<string, CategoryTotal> = {};
+  const merchants = new Map<string, MerchantTotal>();
+
+  for (const part of parts) {
+    for (const [category, totals] of Object.entries(part.byCategory)) {
+      const bucket = byCategory[category] ?? { amountMinor: 0, count: 0 };
+      bucket.amountMinor += totals.amountMinor;
+      bucket.count += totals.count;
+      byCategory[category] = bucket;
+    }
+    for (const merchant of part.topMerchants) {
+      const entry = merchants.get(merchant.merchant) ?? {
+        merchant: merchant.merchant,
+        amountMinor: 0,
+        count: 0,
+      };
+      entry.amountMinor += merchant.amountMinor;
+      entry.count += merchant.count;
+      merchants.set(merchant.merchant, entry);
+    }
+  }
+
+  const sum = (pick: (part: Summary) => number) =>
+    parts.reduce((total, part) => total + pick(part), 0);
+
+  return {
+    scope: 'ALL',
+    period,
+    spendMinor: sum((part) => part.spendMinor),
+    incomeMinor: sum((part) => part.incomeMinor),
+    feesMinor: sum((part) => part.feesMinor),
+    interestMinor: sum((part) => part.interestMinor),
+    cashbackEarnedMinor: sum((part) => part.cashbackEarnedMinor),
+    cashbackCreditedMinor: sum((part) => part.cashbackCreditedMinor),
+    paymentsMinor: sum((part) => part.paymentsMinor),
+    closingBalanceMinor: sum((part) => part.closingBalanceMinor),
+    byCategory,
+    topMerchants: [...merchants.values()]
+      .sort((a, b) => b.amountMinor - a.amountMinor)
+      .slice(0, TOP_MERCHANTS),
+    txnCount: sum((part) => part.txnCount),
+    updatedAt: new Date().toISOString(),
+  };
+}
+
 function isCashbackCredit(txn: Transaction): boolean {
   return txn.direction === 'credit' && /cashback/i.test(txn.merchant || txn.descriptionRaw);
 }

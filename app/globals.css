@@ -6,20 +6,45 @@
  */
 
 :root {
-  /* Chart + status roles, mixed from the system's own ramps. */
+  /*
+   * Status roles. These are text-and-tile colours: they always ride a written
+   * label, never identity-by-colour-alone, and they are never used as a chart
+   * series palette — as a set they fail colour-vision separation badly
+   * (positive vs negative is ΔE 1.1 under deuteranopia).
+   */
   --color-positive: #7fb08f;
   --color-warning: #d0a46a;
   --color-negative: #c98b8b;
 
-  /* The categorical series ramp the donut and category bars use. */
-  --chart-1: var(--color-accent-400);
-  --chart-2: #8f83d6;
-  --chart-3: var(--color-accent-300);
-  --chart-4: #6f7fb0;
-  --chart-5: #a98fd0;
-  --chart-6: var(--color-accent-700);
-  --chart-7: #8f9fd8;
-  --chart-8: #4a4270;
+  /*
+   * Chart series palette. Three slots, assigned in fixed order and never
+   * cycled: no chart in this app plots more than three series. Validated
+   * against the #161826 ground for the dark lightness band, the chroma floor,
+   * colour-vision separation (worst adjacent ΔE 8.4 protan) and 3:1 contrast.
+   * Slot 1 sits in the accent's own hue so the set still reads as Nocturne.
+   */
+  --series-1: #9085e9;
+  --series-2: #199e70;
+  --series-3: #c98500;
+
+  /*
+   * Sequential ramp for the category breakdown — one hue, light to dark, in
+   * magnitude order. A ranked part-to-whole is a sequential job, not a
+   * categorical one, so identity comes from the labelled list beside it and
+   * from hover, never from telling two blurples apart.
+   */
+  --seq-1: #e7e5fe;
+  --seq-2: #d2cefd;
+  --seq-3: #b5abfc;
+  --seq-4: #a197ec;
+  --seq-5: #968ae0;
+  --seq-6: #796cbf;
+
+  /* Chart chrome. Recessive by construction. */
+  --chart-grid: color-mix(in srgb, var(--color-text) 6%, transparent);
+  --chart-axis: color-mix(in srgb, var(--color-text) 14%, transparent);
+  --chart-axis-text: color-mix(in srgb, var(--color-text) 48%, transparent);
+  --chart-crosshair: color-mix(in srgb, var(--color-text) 22%, transparent);
 
   /* Muted text, used often enough to earn a token. */
   --color-text-muted: color-mix(in srgb, var(--color-text) 55%, transparent);
@@ -74,6 +99,7 @@ body {
 }
 
 .app-main {
+  min-width: 0;
   padding: calc(var(--space-8) * 1.2) calc(var(--space-8) * 1.35) calc(var(--space-8) * 3);
   display: flex;
   flex-direction: column;
@@ -204,6 +230,7 @@ body {
 }
 .header-spacer {
   margin-left: auto;
+  flex: none;
 }
 .header-rule {
   width: 1px;
@@ -236,6 +263,18 @@ body {
 }
 
 /* The segmented control from the design system, as buttons rather than radios. */
+/* A row of segmented controls. It wraps rather than pushing the page wide —
+   two of these side by side do not fit a phone. */
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.seg {
+  max-width: 100%;
+}
+
 .seg-btn {
   padding: 7px 13px;
   font: inherit;
@@ -283,8 +322,14 @@ body {
   align-items: center;
   gap: var(--space-1);
   overflow-x: auto;
-  padding: 2px 0;
-  flex: 1;
+  /* A little right padding so the newest chip is never flush against the
+     coverage note when the strip is scrolled to its end. */
+  padding: 2px var(--space-2) 2px 0;
+  /* min-width:0 is what lets this actually scroll rather than push the
+     coverage note and the Upload button off the end of the header. */
+  flex: 1 1 200px;
+  min-width: 0;
+  scrollbar-width: thin;
 }
 
 .coverage {
@@ -350,6 +395,9 @@ body {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  /* Flex items default to min-width:auto, which lets a wide child (a chart, a
+     long merchant name) push the whole column past the viewport. */
+  min-width: 0;
 }
 .block-head {
   display: flex;
@@ -398,7 +446,7 @@ body {
 
 .tile-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 1fr));
   gap: calc(var(--space-8) * 1.35) calc(var(--space-8) * 1.5);
 }
 .tile-label {
@@ -639,7 +687,7 @@ body {
 
 .split {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr));
   gap: calc(var(--space-8) * 1.6);
 }
 .chart-split {
@@ -867,4 +915,271 @@ body {
 }
 .review-warnings li + li {
   margin-top: var(--space-1);
+}
+
+/* ── charts ───────────────────────────────────────────────────────────────── */
+
+.chart-tooltip {
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  padding: 9px 12px;
+  box-shadow: var(--shadow-md);
+  font-size: 12px;
+  min-width: 150px;
+}
+.chart-tooltip-title {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-bottom: 5px;
+}
+.chart-tooltip-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.chart-tooltip-row b {
+  font-weight: var(--font-heading-weight);
+  margin-left: auto;
+}
+.chart-tooltip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+}
+.chart-tooltip-label {
+  color: var(--color-text-muted);
+}
+.chart-tooltip-empty {
+  color: var(--color-text-faint);
+  font-size: 11.5px;
+}
+
+/* — the category ring and its legend — */
+
+.donut {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  height: 100%;
+}
+.donut-ring {
+  position: relative;
+  flex: none;
+  width: 100%;
+  height: 190px;
+}
+/* Ring beside its list once there is room; stacked below that. */
+@media (min-width: 560px) {
+  .donut {
+    flex-direction: row;
+    align-items: center;
+    gap: calc(var(--space-8) * 1.2);
+  }
+  .donut-ring {
+    width: 190px;
+    flex: none;
+  }
+  .donut-legend {
+    flex: 1;
+    min-width: 0;
+  }
+}
+.donut-centre {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  gap: 2px;
+}
+.donut-total {
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: 19px;
+  letter-spacing: -0.02em;
+}
+.donut-caption {
+  font-size: 10.5px;
+  color: var(--color-text-faint);
+}
+.donut-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 11.5px;
+}
+.donut-legend li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.donut-swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex: none;
+}
+.donut-legend-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-text-muted);
+}
+.donut-legend-value {
+  flex: none;
+  color: var(--color-text-muted);
+}
+
+/* recharts paints its own focus outline; ours is the themed one. */
+.recharts-wrapper:focus-visible,
+.recharts-surface:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.category-chip {
+  background: transparent;
+  border: 0;
+  border-bottom: 1px dotted color-mix(in srgb, var(--color-text) 25%, transparent);
+  color: inherit;
+  font: inherit;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+}
+.category-chip:hover {
+  color: var(--color-accent-200);
+  border-bottom-color: var(--color-accent);
+}
+
+/* ── card screen furniture ────────────────────────────────────────────────── */
+
+.reconciled {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--color-positive);
+  text-wrap: pretty;
+}
+.reconciled svg {
+  align-self: center;
+  flex: none;
+}
+
+.bar-row-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 12.5px;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bar-row-share {
+  font-size: 11px;
+  width: 46px;
+  text-align: right;
+}
+.bar-row-amount {
+  font-size: 12.5px;
+  width: 92px;
+  text-align: right;
+}
+
+.fee-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-4);
+  padding: 11px 2px;
+  border-bottom: 1px solid var(--color-hairline);
+}
+.fee-none {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-6) 2px;
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--color-text-muted);
+}
+
+.donut-legend-button {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: 5px 2px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--color-hairline);
+  color: inherit;
+  font: inherit;
+  font-size: 11.5px;
+  text-align: left;
+  cursor: pointer;
+}
+.donut-legend-button[data-static='true'] {
+  cursor: default;
+}
+button.donut-legend-button:hover {
+  background: color-mix(in srgb, var(--color-text) 4%, transparent);
+}
+.donut-legend-button[aria-pressed='true'] {
+  color: var(--color-accent-200);
+}
+.donut-legend-share {
+  flex: none;
+  width: 38px;
+  text-align: right;
+  color: var(--color-text-faint);
+}
+
+.cashback-cat {
+  padding: 9px 2px;
+  border-bottom: 1px solid var(--color-hairline);
+}
+
+/* ── settings ─────────────────────────────────────────────────────────────── */
+
+.settings-list {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+.settings-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-6);
+  padding: 11px 2px;
+  border-bottom: 1px solid var(--color-hairline);
+}
+.settings-row dt {
+  flex: none;
+  width: 160px;
+}
+.settings-row dd {
+  margin: 0;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.settings-note {
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: var(--color-text-muted);
+  max-width: 62ch;
+  text-wrap: pretty;
+  margin: 0;
 }

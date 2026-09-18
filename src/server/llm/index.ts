@@ -1,4 +1,5 @@
 import type { LlmFallback } from '@/server/domain/ingest';
+import type { ProviderInfo } from '@/client/screens/settings-screen';
 
 /**
  * The LLM fallback, resolved from `LLM_PROVIDER`. Filled in by M5 — until then
@@ -7,4 +8,15 @@ import type { LlmFallback } from '@/server/domain/ingest';
  */
 export function getLlmFallback(): LlmFallback | null {
   return null;
+}
+
+export function describeProvider(): ProviderInfo {
+  const id = process.env.LLM_PROVIDER ?? 'mock';
+  return {
+    id,
+    modelId: '',
+    configured: id === 'mock',
+    missing: [],
+    note: 'Provider wiring arrives in M5.',
+  };
 }

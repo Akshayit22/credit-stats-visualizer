@@ -1,15 +1,29 @@
-export default function OverviewPage() {
+import { requireSessionUser } from '@/server/auth/session';
+import { loadWorkspace, loadYear } from '@/server/db/workspace';
+import { OverviewScreen } from '@/client/screens/overview-screen';
+import { resolvePeriodWindow } from '@/server/domain/period-window';
+
+export const dynamic = 'force-dynamic';
+
+export default async function OverviewPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ period?: string; mode?: string; year?: string }>;
+}) {
+  const [params, user] = await Promise.all([searchParams, requireSessionUser()]);
+  const workspace = await loadWorkspace(user.userId);
+  const window = resolvePeriodWindow(workspace.periods, params);
+  const summaries = await loadYear(user.userId, window.year, null);
+
   return (
-    <main className="app-main">
-      <section className="section">
-        <div className="page-head">
-          <div>
-            <div className="page-kicker">Overview</div>
-            <h1 className="page-title">All accounts</h1>
-          </div>
-        </div>
-        <p className="page-sub">Dashboards arrive in M4.</p>
-      </section>
-    </main>
+    <OverviewScreen
+      accounts={workspace.accounts}
+      statements={workspace.statements}
+      summaries={summaries}
+      availablePeriods={window.periods}
+      selectedPeriod={window.selected}
+      mode={window.mode}
+      needsReview={workspace.needsReview}
+    />
   );
 }

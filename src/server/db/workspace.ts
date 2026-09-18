@@ -5,6 +5,7 @@ import { listSummaries } from './repositories/summaries';
 import {
   listTransactionsForAccountPeriod,
   listTransactionsForPeriod,
+  listTransactionsForStatement,
 } from './repositories/transactions';
 
 /**
@@ -61,6 +62,20 @@ export async function loadPeriod(
       a.date === b.date ? a.seq - b.seq : a.date.localeCompare(b.date),
     ),
   };
+}
+
+/**
+ * The rows of one statement, which is **not** the same as the rows dated in one
+ * calendar month. The Axis cycle runs 17 May to 15 Jun: four of its fifteen
+ * rows are dated in May, and a screen showing "the June statement" must show
+ * all fifteen. That is what the transactions gsi2 is for.
+ */
+export async function loadStatementRows(
+  userId: string,
+  statementId: string,
+): Promise<Transaction[]> {
+  const rows = await listTransactionsForStatement(userId, statementId);
+  return rows.sort((a, b) => (a.date === b.date ? a.seq - b.seq : a.date.localeCompare(b.date)));
 }
 
 export async function loadYear(

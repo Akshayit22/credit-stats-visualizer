@@ -62,7 +62,7 @@ ePe
 17 Jul '26	Interest Cr. for 16-Jul-2026	2022619852634	₹28.66	₹1,99,251.80
 18 Jul '26	Interest Cr. for 17-Jul-2026	2022619953224	₹28.66	₹1,99,280.46
 18 Jul '26	UPI-Debit-619980880780-SELF	20260718223678901	-₹8,000.00	₹1,91,280.46
-T-[ifsc]-[vpa]-Paymen
+-[ifsc]-[vpa]-Paymen
 t from slice
 19 Jul '26	Interest Cr. for 18-Jul-2026	2022620052254	₹27.51	₹1,91,307.97
 20 Jul '26	Interest Cr. for 19-Jul-2026	2022620155424	₹27.52	₹1,91,335.49
@@ -79,12 +79,12 @@ Need help? Contact our support team at [email] or [phone]	slice small finance ba
 27 Jul '26	Interest Cr. for 26-Jul-2026	2022620854264	₹27.54	₹1,91,528.21
 29 Jul '26	Interest Cr. for 28-Jul-2026	2022621061314	₹27.55	₹1,91,555.76
 29 Jul '26	UPI-Debit-621088809636-SELF	20260729419361401	-₹200.00	₹1,91,355.76
-ELAN-[ifsc]-[vpa]-P
+-[ifsc]-[vpa]-P
 ayment from slice
 30 Jul '26	Interest Cr. for 29-Jul-2026	2022621157254	₹27.53	₹1,91,383.29
 31 Jul '26	Interest Cr. for 30-Jul-2026	2022621257504	₹27.53	₹1,91,410.82
 31 Jul '26	UPI-Credit-621210031174-SELF	2026073172956201	₹84,500.00	₹2,75,910.82
-LAN-[ifsc]-[vpa]-Service
+-[ifsc]-[vpa]-Service
 s
 Generated on 02 Aug '26
 Need help? Contact our support team at [email] or [phone]	slice small finance bank

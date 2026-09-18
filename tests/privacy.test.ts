@@ -41,7 +41,11 @@ describe('the committed fixtures', () => {
   it.each(FIXTURE_FILES)('%s carries no holder name, address or nominee', (file) => {
     const text = readFileSync(resolve('fixtures', file), 'utf8');
     expect(text).not.toMatch(/AKSHAY/i);
-    expect(text).not.toMatch(/TELANG/i);
+    // Fragments too: a bank wraps a name mid-word, and "TELAN" is as much a
+    // leak as "TELANG".
+    expect(text).not.toMatch(/TELAN/i);
+    expect(text).not.toMatch(/LALUMAN/i);
+    expect(text).not.toMatch(/LUMAN/i);
     expect(text).not.toMatch(/PUSHPANJALI/i);
     expect(text).not.toMatch(/VADAPALANI/i);
     expect(text).not.toMatch(/Vanita/i);
@@ -59,7 +63,8 @@ describe('the parsed output', () => {
     for (const txn of statement.transactions) {
       const blob = `${txn.descriptionRaw} ${txn.merchant} ${txn.counterparty}`;
       expect(blob).not.toMatch(/AKSHAY/i);
-      expect(blob).not.toMatch(/TELANG/i);
+      expect(blob).not.toMatch(/TELAN/i);
+      expect(blob).not.toMatch(/LUMAN/i);
       // The seam bug: a name truncated by a line wrap must not survive as
       // "SELFLAN" once the continuation is joined on.
       expect(blob).not.toMatch(/SELF[A-Z]/);
@@ -173,5 +178,10 @@ describe('joinWrappedDetail', () => {
       'UPI-Debit-1234-SELF-SBIN0010486',
     );
     expect(joinWrappedDetail('to [phone]', '4921-XXX')).toBe('to [phone]-XXX');
+    // The tail can carry a space — "…AKSHAY LA" + "LUMAN TELAN-XXXX9652" —
+    // and the whole run up to the delimiter belongs to the masked value.
+    expect(joinWrappedDetail('TO SELF', 'LUMAN TELAN-XXXX9652-IMPS')).toBe(
+      'TO SELF-XXXX9652-IMPS',
+    );
   });
 });

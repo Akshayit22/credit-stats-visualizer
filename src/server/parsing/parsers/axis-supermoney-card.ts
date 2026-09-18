@@ -434,12 +434,20 @@ function classify(
   };
 }
 
-/** `SRI CHAKRA TEX` → `Sri Chakra Tex`. Shouting merchants read badly in a table. */
+/**
+ * `SRI CHAKRA TEX` → `Sri Chakra Tex`. Shouting merchants read badly in a table.
+ * Acronyms stay as they are: "Gst" and "Dcc Markup" look like mistakes.
+ */
+const ACRONYMS = new Set(['GST', 'DCC', 'UPI', 'IMPS', 'NEFT', 'RTGS', 'ATM', 'EMI', 'POS', 'BBPS']);
+
 export function titleise(value: string): string {
   return value
-    .toLowerCase()
     .split(/(\s+|\/)/)
-    .map((part) => (/^[a-z]/.test(part) ? part.charAt(0).toUpperCase() + part.slice(1) : part))
+    .map((part) => {
+      if (!/^[A-Za-z]/.test(part)) return part;
+      if (ACRONYMS.has(part.toUpperCase())) return part.toUpperCase();
+      return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+    })
     .join('')
     .trim();
 }

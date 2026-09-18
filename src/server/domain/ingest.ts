@@ -6,6 +6,7 @@ import type {
   ParsedStatementResult,
   Statement,
   StatementStatus,
+  Summary,
   Transaction,
 } from '@/shared/types';
 import { logger } from '@/server/log';
@@ -20,16 +21,16 @@ import {
 import {
   deleteTransactionsForStatement,
   listTransactionsForAccountPeriod,
-  listTransactionsForPeriod,
+  listTransactionsForStatement,
   putTransactions,
 } from '@/server/db/repositories/transactions';
-import { putSummary } from '@/server/db/repositories/summaries';
+import { listSummaries, putSummary } from '@/server/db/repositories/summaries';
 import { listStatements } from '@/server/db/repositories/statements';
 import { bumpStatementCount, listUserRules } from '@/server/db/repositories/users';
 import { applyLlmCategories, categoriseLocally, merchantLabel } from './categorise';
 import { periodForStatement } from './dates';
 import { checkCashback, reconcile } from './reconcile';
-import { buildSummary } from './summarise';
+import { aggregateSummaries, buildSummary } from './summarise';
 import type { ParsedStatement, ParsedTransaction } from './schemas';
 
 /**
@@ -350,8 +351,13 @@ function collectPeriods(transactions: Transaction[], statementPeriod: string): s
 }
 
 /**
- * Recomputes the `ALL#<period>` and `ACCOUNT#<id>#<period>` summaries for every
- * affected month, from the rows that are actually stored. Never incremental.
+ * Recomputes the `ACCOUNT#<id>#<period>` summaries for the affected months and
+ * then the `ALL#<period>` summary as their sum. Always from what is stored,
+ * never incremental — that is what makes re-parsing a statement idempotent.
+ *
+ * An account's month is its **statement**, not the calendar month. The Axis
+ * cycle runs 17 May to 15 Jun, so four of its rows are dated in May; counting by
+ * date would split the June bill across two months and understate both.
  */
 export async function recomputeSummaries(
   userId: string,
@@ -361,36 +367,46 @@ export async function recomputeSummaries(
   const statements = await listStatements(userId);
 
   for (const period of periods) {
-    const all = await listTransactionsForPeriod(userId, period);
-    await putSummary(
-      userId,
-      buildSummary({
-        scope: 'ALL',
-        period,
-        transactions: all,
-        statements: statements.filter((statement) => statement.period === period),
-      }),
-    );
-
-    const accountIds = accountId
-      ? new Set([accountId, ...all.map((txn) => txn.accountId)])
-      : new Set(all.map((txn) => txn.accountId));
+    const inPeriod = statements.filter((statement) => statement.period === period);
+    const accountIds = new Set<string>(inPeriod.map((statement) => statement.accountId));
+    if (accountId) accountIds.add(accountId);
 
     for (const id of accountIds) {
-      const rows = await listTransactionsForAccountPeriod(userId, id, period);
+      const statement = inPeriod.find((candidate) => candidate.accountId === id) ?? null;
+      const rows = statement
+        ? await listTransactionsForStatement(userId, statement.statementId)
+        : await listTransactionsForAccountPeriod(userId, id, period);
+
       await putSummary(
         userId,
         buildSummary({
           scope: id,
           period,
           transactions: rows,
-          statements: statements.filter(
-            (statement) => statement.period === period && statement.accountId === id,
-          ),
+          statements: statement ? [statement] : [],
         }),
       );
     }
+
+    // Then the month across accounts, as the sum of what each account's
+    // statement said — re-read rather than reused, so a summary written by an
+    // earlier request is included too.
+    const year = period.slice(0, 4);
+    const parts: Summary[] = [];
+    for (const id of await accountIdsWithData(userId, statements)) {
+      const forAccount = await listSummaries(userId, id, year);
+      const match = forAccount.find((summary) => summary.period === period);
+      if (match && match.txnCount > 0) parts.push(match);
+    }
+    await putSummary(userId, aggregateSummaries(period, parts));
   }
+}
+
+async function accountIdsWithData(userId: string, statements: Statement[]): Promise<string[]> {
+  const fromStatements = new Set(statements.map((statement) => statement.accountId));
+  const { listAccounts } = await import('@/server/db/repositories/accounts');
+  for (const account of await listAccounts(userId)) fromStatements.add(account.accountId);
+  return [...fromStatements];
 }
 
 async function upsertExistingAccount(userId: string, statement: Statement): Promise<Account> {

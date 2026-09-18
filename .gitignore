@@ -30,3 +30,6 @@ Thumbs.db
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# built by the postinstall step, version-locked to pdfjs-dist
+public/pdf.worker.min.mjs

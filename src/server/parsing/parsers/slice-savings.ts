@@ -351,7 +351,12 @@ function base(
  * counterparty name, tidied from the SHOUTING the bank prints.
  */
 function cleanName(value: string): string {
-  const trimmed = value.trim().replace(/^(?:MR|MRS|MS|DR)\.?\s+/i, '');
+  const trimmed = value
+    .trim()
+    // A mask that ended up inside the name segment is not part of the name.
+    .replace(/\[[a-z-]+\]/g, '')
+    .replace(/^[-\s]+|[-\s]+$/g, '')
+    .replace(/^(?:MR|MRS|MS|DR)\.?\s+/i, '');
   if (trimmed === 'SELF') return 'Self';
   if (trimmed.length === 0) return '';
   if (trimmed === trimmed.toUpperCase()) {

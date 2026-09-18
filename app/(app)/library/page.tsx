@@ -1,14 +1,17 @@
-export default function Page() {
+import { requireSessionUser } from '@/server/auth/session';
+import { loadWorkspace } from '@/server/db/workspace';
+import { LibraryScreen } from '@/client/screens/library-screen';
+
+export const dynamic = 'force-dynamic';
+
+export default async function LibraryPage() {
+  const user = await requireSessionUser();
+  const workspace = await loadWorkspace(user.userId);
+
   return (
-    <main className="app-main">
-      <section className="section">
-        <div className="page-head">
-          <div>
-            <div className="page-kicker">library</div>
-            <h1 className="page-title">library</h1>
-          </div>
-        </div>
-      </section>
-    </main>
+    <LibraryScreen
+      statements={workspace.statements}
+      accounts={workspace.accounts}
+    />
   );
 }

@@ -843,3 +843,28 @@ body {
   font-size: 11.5px;
   color: var(--color-text-faint);
 }
+
+/* ── upload review step ───────────────────────────────────────────────────── */
+
+.review-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-4) var(--space-6);
+  margin: 0;
+}
+.review-fact-value {
+  margin: 4px 0 0;
+  font-family: var(--font-heading);
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.review-warnings {
+  margin: 0;
+  padding-left: var(--space-6);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--color-text-muted);
+}
+.review-warnings li + li {
+  margin-top: var(--space-1);
+}

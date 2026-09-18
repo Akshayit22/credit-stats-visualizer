@@ -4,7 +4,17 @@ import next from 'eslint-config-next';
 import prettier from 'eslint-config-prettier';
 
 const config = [
-  { ignores: ['.next/**', 'node_modules/**', 'coverage/**', 'design/**', 'next-env.d.ts'] },
+  {
+    ignores: [
+      '.next/**',
+      'node_modules/**',
+      'coverage/**',
+      'design/**',
+      // The pdf.js worker is a vendored build artefact, copied in by postinstall.
+      'public/**',
+      'next-env.d.ts',
+    ],
+  },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   ...next,
@@ -23,7 +33,7 @@ const config = [
   },
   {
     // Scripts are CLIs: printing is the point.
-    files: ['scripts/**/*.ts'],
+    files: ['scripts/**/*.ts', 'scripts/**/*.mjs'],
     rules: { 'no-console': 'off' },
   },
 ];

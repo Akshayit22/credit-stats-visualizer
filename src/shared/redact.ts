@@ -309,8 +309,17 @@ export const MASK_AT_END = /(?:SELF|\[[a-z-]+\])$/;
  * is the rest of the value that was masked, and goes with it.
  */
 export function joinWrappedDetail(head: string, tail: string): string {
-  if (MASK_AT_END.test(head)) return head + tail.replace(/^[A-Za-z0-9.@_]+/, '');
-  return head + tail;
+  if (!MASK_AT_END.test(head)) return head + tail;
+
+  // The head ends in a mask, so the continuation's leading word run is the rest
+  // of the value that was masked and goes with it.
+  const rest = tail.replace(/^[A-Za-z0-9.@_]+/, '');
+
+  // A mask can also have swallowed the delimiter that separated the two fields
+  // (`T-IDFB-<mobile>@idfcfirst` is all one handle), leaving two masks flush
+  // against each other. Put the delimiter back rather than emit `SELF[vpa]`.
+  if (rest.startsWith('[')) return `${head}-${rest}`;
+  return head + rest;
 }
 
 /**

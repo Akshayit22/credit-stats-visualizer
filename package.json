@@ -11,6 +11,7 @@
     "dev:nollm": "LLM_PROVIDER=mock next dev",
     "build": "next build",
     "start": "next start",
+    "postinstall": "node scripts/copy-pdf-worker.mjs",
     "lint": "eslint .",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",

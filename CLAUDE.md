@@ -72,7 +72,7 @@ statement PDF, see where the money went. One Next.js app, DynamoDB, five tables.
 5. **recharts, not ECharts.** The design mockup is built on ECharts; the app
    uses recharts per the build spec, themed entirely from the CSS custom
    properties read at runtime. Chart role colours (`--color-positive`,
-   `--color-warning`, `--color-negative`) and the categorical ramp `--chart-1…8`
+   `--color-warning`, `--color-negative`) and the series slots `--series-1…3`
    are declared once in `app/globals.css`.
 6. **Three fixtures, not two.** Both slice statements (July and August) were
    available, so the savings parser is tested against two real months. The July
@@ -80,6 +80,27 @@ statement PDF, see where the money went. One Next.js app, DynamoDB, five tables.
 7. **Two redaction passes, not one.** `redactForStorage` strips PII and runs on
    the client and again on the server. `redactForLlm` additionally strips long
    digit runs and is applied only when building a prompt.
+8. **A statement's rows come from the transactions gsi2, not from the calendar
+   month.** The Axis cycle runs 17 May to 15 Jun, so four of its fifteen rows
+   are dated in May. For the same reason an account summary is per statement
+   cycle, and `ALL#<period>` is the sum of the account summaries rather than a
+   second pass over dated rows.
+9. **The chart palette is computed, not chosen.** The mockup's eight-blurple
+   ring and its green-vs-red pair both fail colour-vision separation on this
+   ground. `--series-1/2/3` are validated against the lightness band, the
+   chroma floor, adjacent-pair CVD separation and 3:1 contrast; no chart plots
+   more than three series, the category ring is a sequential ramp whose legend
+   is also its filter, and the status colours are never a series set.
+10. **The mock LLM provider refuses when it has no fixture** rather than
+   returning something plausible. A mock that invents figures would let a
+   broken pipeline look healthy.
+
+## Where the build is
+
+M0-M5 are done and committed; **M6 (ship-readiness) is what remains**.
+`RESUME.md` has the resume point: what is left, the verified figures the tests
+pin, and the four bugs the real statements caught that must not be simplified
+away.
 
 ## Commands
 

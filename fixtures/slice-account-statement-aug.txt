@@ -1,0 +1,106 @@
+@@PAGE 1
+01 Aug '26 - 31 Aug '26
+1/3
+SELF
+Customer ID	[customer-id]	Account	SAVING
+Phone	[phone]	A/C number	XXXX6993
+Email	[email]	IFSC	[ifsc]
+Nominee	[name]	Alternate IFSC	[ifsc]
+Address	[address]	MICR	[micr]
+[address]
+[address]	Branch	[address]
+[address]	Feet Rd, 3rd Block, Koramangala, Bengaluru,
+[address]
+Account Opening	21 Jun '26
+Date
+Opening balance	Total credits	Interest earned	Total debits	Closing balance
++	+	-	=
+₹2,75,938.37	₹1,02,031.00	₹1,048.09	₹61,326.19	₹3,17,691.27
+DATE	DETAILS	REF NO.	AMOUNT	BALANCE
+01 Aug '26	Interest Cr. for 31-Jul-2026	2022621364474	₹39.69	₹2,75,978.06
+01 Aug '26	UPI-Debit-621350153143-SELF	20260801222937201	-₹500.00	₹2,75,478.06
+LAN-[ifsc]-[vpa]
+01 Aug '26	UPI-Debit-621379304325-SELF	20260801303805101	-₹3,300.00	₹2,72,178.06
+ELAN-[ifsc]-[vpa]
+02 Aug '26	Interest Cr. for 01-Aug-2026	2022621469044	₹39.15	₹2,72,217.21
+03 Aug '26	Interest Cr. for 02-Aug-2026	2022621564674	₹39.15	₹2,72,256.36
+04 Aug '26	Interest Cr. for 03-Aug-2026	2022621665024	₹39.16	₹2,72,295.52
+04 Aug '26	UPI-Debit-621522629088-CheQ-[ifsc]	2026080414026601	-₹5,733.00	₹2,66,562.52
+-[vpa]-Pay
+05 Aug '26	Interest Cr. for 04-Aug-2026	2022621769834	₹38.34	₹2,66,600.86
+05 Aug '26	UPI-Debit-621766733915-Stable Broking Pvt L-	20260805493981101	-₹1.00	₹2,66,599.86
+[ifsc]-stablebrokingpennyvalidation.ca
+[vpa]
+05 Aug '26	UPI-Debit-621701931471-STABLE BROKING PRIV	20260805495854901	-₹10,782.19	₹2,55,817.67
+A-[ifsc]-[vpa]
+-[phone]
+Need help? Contact our support team at [email] or [phone]	slice small finance bank
+@@PAGE 2
+01 Aug '26 - 31 Aug '26
+2/3
+06 Aug '26	UPI-Credit-621854054099-Stable Broking Pvt L	202608065254701	₹1.00	₹2,55,818.67
+-[ifsc]-stablebrokingpennyvalidation.c
+[vpa]
+06 Aug '26	Interest Cr. for 05-Aug-2026	2022621864474	₹36.80	₹2,55,855.47
+07 Aug '26	Interest Cr. for 06-Aug-2026	2022621960534	₹36.80	₹2,55,892.27
+08 Aug '26	Interest Cr. for 07-Aug-2026	2022622059524	₹36.81	₹2,55,929.08
+08 Aug '26	UPI-Credit-420133122349-MR PRITAM HIRA-SC	20260808178507501	₹199.00	₹2,56,128.08
+[vpa]-Payment from
+PhonePe
+08 Aug '26	UPI-Debit-622048944320-SELF	20260808214341701	-₹2,500.00	₹2,53,628.08
+ELAN-[ifsc]-[vpa]
+08 Aug '26	IMPS-Credit-REF 622018098636-TO SELF	20260808322432401	₹1.00	₹2,53,629.08
+LUMAN TELAN-XXXX9652-[ifsc]-I
+MPS
+08 Aug '26	IMPS-Debit-REF 622013185847-TO SELF	20260808324891901	-₹10.00	₹2,53,619.08
+UMAN TELAN-XXXXXX4921-XXX5000-imps
+08 Aug '26	IMPS-Reversal-REF 622013185847-TO SELF	20260808324893801	₹10.00	₹2,53,629.08
+LALUMAN TELAN-XXXXXX4921-XXX5000-imps
+08 Aug '26	UPI-Debit-622024761111-SELF	20260808327766901	-₹38,500.00	₹2,15,129.08
+LAN-[ifsc]-[vpa]-Pa
+yment from slice
+09 Aug '26	Interest Cr. for 08-Aug-2026	2022622157084	₹30.94	₹2,15,160.02
+10 Aug '26	Interest Cr. for 09-Aug-2026	2022622256974	₹30.95	₹2,15,190.97
+11 Aug '26	Interest Cr. for 10-Aug-2026	2022622360254	₹30.95	₹2,15,221.92
+11 Aug '26	UPI-Credit-622303553199-SELF	2026081110598801	₹6,000.00	₹2,21,221.92
+ELAN-[ifsc]-[vpa]
+12 Aug '26	Interest Cr. for 11-Aug-2026	2022622461604	₹31.82	₹2,21,253.74
+12 Aug '26	UPI-Credit-622479182209-ANUP KUMAR MRIDH	20260812342691201	₹40.00	₹2,21,293.74
+A-[ifsc]-[vpa]
+12 Aug '26	UPI-Credit-626982585284-MR PRITAM HIRA-S	20260812472359901	₹180.00	₹2,21,473.74
+[vpa]-Payment fro
+m PhonePe
+13 Aug '26	Interest Cr. for 12-Aug-2026	2022622563274	₹31.86	₹2,21,505.60
+14 Aug '26	Interest Cr. for 13-Aug-2026	2022622659794	₹31.86	₹2,21,537.46
+15 Aug '26	Interest Cr. for 14-Aug-2026	2022622762324	₹31.86	₹2,21,569.32
+Need help? Contact our support team at [email] or [phone]	slice small finance bank
+@@PAGE 3
+01 Aug '26 - 31 Aug '26
+3/3
+16 Aug '26	Interest Cr. for 15-Aug-2026	2022622859374	₹31.87	₹2,21,601.19
+17 Aug '26	Interest Cr. for 16-Aug-2026	2022622955674	₹31.87	₹2,21,633.06
+18 Aug '26	Interest Cr. for 17-Aug-2026	20226230117494	₹31.88	₹2,21,664.94
+18 Aug '26	UPI-Credit-659626602580-ANUP KUMAR MRID	20260818701411801	₹100.00	₹2,21,764.94
+HA-[ifsc]-[vpa]
+is
+19 Aug '26	Interest Cr. for 18-Aug-2026	2022623123464	₹31.90	₹2,21,796.84
+20 Aug '26	Interest Cr. for 19-Aug-2026	2022623219114	₹31.90	₹2,21,828.74
+21 Aug '26	Interest Cr. for 20-Aug-2026	2022623320804	₹31.91	₹2,21,860.65
+22 Aug '26	Interest Cr. for 21-Aug-2026	2022623421684	₹31.91	₹2,21,892.56
+23 Aug '26	Interest Cr. for 22-Aug-2026	2022623511494	₹31.92	₹2,21,924.48
+24 Aug '26	Interest Cr. for 23-Aug-2026	2022623614744	₹31.92	₹2,21,956.40
+24 Aug '26	UPI-Credit-623611578745-SELF	20260824315446701	₹11,200.00	₹2,33,156.40
+ELAN-[ifsc]-[vpa]-Servic
+es
+25 Aug '26	Interest Cr. for 24-Aug-2026	2022623711964	₹33.54	₹2,33,189.94
+26 Aug '26	Interest Cr. for 25-Aug-2026	2022623818224	₹33.54	₹2,33,223.48
+27 Aug '26	Interest Cr. for 26-Aug-2026	2022623910774	₹33.55	₹2,33,257.03
+28 Aug '26	Interest Cr. for 27-Aug-2026	2022624010914	₹33.55	₹2,33,290.58
+29 Aug '26	Interest Cr. for 28-Aug-2026	202262417794	₹33.56	₹2,33,324.14
+30 Aug '26	Interest Cr. for 29-Aug-2026	202262427064	₹33.56	₹2,33,357.70
+31 Aug '26	Interest Cr. for 30-Aug-2026	202262437014	₹33.57	₹2,33,391.27
+31 Aug '26	UPI-Credit-624310117355-SELF	20260831286704101	₹84,300.00	₹3,17,691.27
+ELAN-[ifsc]-[vpa]-Shopp
+ing
+Generated on 02 Sep '26
+Need help? Contact our support team at [email] or [phone]	slice small finance bank

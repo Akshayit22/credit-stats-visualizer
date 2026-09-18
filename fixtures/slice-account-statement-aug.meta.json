@@ -1,0 +1,16 @@
+{
+  "pageCount": 3,
+  "contentHash": "d40947d9cdee9929104417e495900a91e02f95516055400bfccfa4870d1be5c0",
+  "redacted": {
+    "holderName": 11,
+    "customerId": 1,
+    "phone": 5,
+    "accountNumber": 2,
+    "email": 4,
+    "ifsc": 16,
+    "nominee": 1,
+    "address": 6,
+    "micr": 1,
+    "upiHandle": 15
+  }
+}

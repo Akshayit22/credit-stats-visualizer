@@ -1,0 +1,90 @@
+@@PAGE 1
+01 Jul '26 - 31 Jul '26
+1/3
+SELF
+Customer ID	[customer-id]	Account	SAVING
+Phone	[phone]	A/C number	XXXX6993
+Email	[email]	IFSC	[ifsc]
+Nominee	[name]	Alternate IFSC	[ifsc]
+Address	[address]	MICR	[micr]
+[address]
+[address]	Branch	[address]
+[address]	Feet Rd, 3rd Block, Koramangala, Bengaluru,
+[address]
+Account Opening	21 Jun '26
+Date
+Opening balance	Total credits	Interest earned	Total debits	Closing balance
++	+	-	=
+₹2,30,150.08	₹1,16,800.00	₹860.74	₹71,900.00	₹2,75,910.82
+DATE	DETAILS	REF NO.	AMOUNT	BALANCE
+01 Jul '26	Interest Cr. for 30-Jun-2026	20226182177754	₹33.10	₹2,30,183.18
+02 Jul '26	Interest Cr. for 01-Jul-2026	2022618359064	₹33.11	₹2,30,216.29
+03 Jul '26	Interest Cr. for 02-Jul-2026	2022618457484	₹33.11	₹2,30,249.40
+04 Jul '26	Interest Cr. for 03-Jul-2026	2022618558204	₹33.12	₹2,30,282.52
+04 Jul '26	UPI-Debit-618583314694-SELF	2026070493720801	-₹8,700.00	₹2,21,582.52
+-[vpa]-Payment from slic
+e
+04 Jul '26	UPI-Debit-618566069621-SELF	20260704155901301	-₹7,500.00	₹2,14,082.52
+-[vpa]-Payment from slic
+e
+04 Jul '26	UPI-Debit-618583653568-SELF	20260704169760501	-₹2,500.00	₹2,11,582.52
+[vpa]-Payment from sli
+ce
+05 Jul '26	Interest Cr. for 04-Jul-2026	2022618659554	₹30.43	₹2,11,612.95
+05 Jul '26	UPI-Debit-618600015510-SELF	2026070588814301	-₹15,000.00	₹1,96,612.95
+[vpa]-Payment from sli
+ce
+Need help? Contact our support team at [email] or [phone]	slice small finance bank
+@@PAGE 2
+01 Jul '26 - 31 Jul '26
+2/3
+05 Jul '26	UPI-Credit-917273294685-TEJAS SUDAM GAMA	20260705117840901	₹400.00	₹1,97,012.95
+[vpa]-Payment from Pho
+nePe
+05 Jul '26	UPI-Credit-882428911297-ADITYA PARSHURAM	20260705353432801	₹900.00	₹1,97,912.95
+[vpa]-Payment from Phon
+ePe
+06 Jul '26	Interest Cr. for 05-Jul-2026	2022618753754	₹28.47	₹1,97,941.42
+07 Jul '26	Interest Cr. for 06-Jul-2026	2022618853224	₹28.47	₹1,97,969.89
+07 Jul '26	UPI-Debit-618756822915-SELF	202607078122101	-₹30,000.00	₹1,67,969.89
+-[vpa]
+08 Jul '26	Interest Cr. for 07-Jul-2026	2022618957034	₹24.16	₹1,67,994.05
+08 Jul '26	UPI-Credit-618917560975-SELF	20260708253445601	₹31,000.00	₹1,98,994.05
+[vpa]-Shopping
+09 Jul '26	Interest Cr. for 08-Jul-2026	2022619051264	₹28.62	₹1,99,022.67
+10 Jul '26	Interest Cr. for 09-Jul-2026	2022619151954	₹28.63	₹1,99,051.30
+11 Jul '26	Interest Cr. for 10-Jul-2026	2022619253034	₹28.63	₹1,99,079.93
+12 Jul '26	Interest Cr. for 11-Jul-2026	2022619352414	₹28.63	₹1,99,108.56
+13 Jul '26	Interest Cr. for 12-Jul-2026	2022619448794	₹28.64	₹1,99,137.20
+14 Jul '26	Interest Cr. for 13-Jul-2026	2022619554914	₹28.64	₹1,99,165.84
+15 Jul '26	Interest Cr. for 14-Jul-2026	2022619654204	₹28.65	₹1,99,194.49
+16 Jul '26	Interest Cr. for 15-Jul-2026	2022619754514	₹28.65	₹1,99,223.14
+17 Jul '26	Interest Cr. for 16-Jul-2026	2022619852634	₹28.66	₹1,99,251.80
+18 Jul '26	Interest Cr. for 17-Jul-2026	2022619953224	₹28.66	₹1,99,280.46
+18 Jul '26	UPI-Debit-619980880780-SELF	20260718223678901	-₹8,000.00	₹1,91,280.46
+T-[ifsc]-[vpa]-Paymen
+t from slice
+19 Jul '26	Interest Cr. for 18-Jul-2026	2022620052254	₹27.51	₹1,91,307.97
+20 Jul '26	Interest Cr. for 19-Jul-2026	2022620155424	₹27.52	₹1,91,335.49
+21 Jul '26	Interest Cr. for 20-Jul-2026	2022620250324	₹27.52	₹1,91,363.01
+22 Jul '26	Interest Cr. for 21-Jul-2026	2022620355654	₹27.52	₹1,91,390.53
+23 Jul '26	Interest Cr. for 22-Jul-2026	2022620452304	₹27.53	₹1,91,418.06
+Need help? Contact our support team at [email] or [phone]	slice small finance bank
+@@PAGE 3
+01 Jul '26 - 31 Jul '26
+3/3
+24 Jul '26	Interest Cr. for 23-Jul-2026	2022620553044	₹27.53	₹1,91,445.59
+25 Jul '26	Interest Cr. for 24-Jul-2026	2022620652324	₹27.54	₹1,91,473.13
+26 Jul '26	Interest Cr. for 25-Jul-2026	2022620753904	₹27.54	₹1,91,500.67
+27 Jul '26	Interest Cr. for 26-Jul-2026	2022620854264	₹27.54	₹1,91,528.21
+29 Jul '26	Interest Cr. for 28-Jul-2026	2022621061314	₹27.55	₹1,91,555.76
+29 Jul '26	UPI-Debit-621088809636-SELF	20260729419361401	-₹200.00	₹1,91,355.76
+ELAN-[ifsc]-[vpa]-P
+ayment from slice
+30 Jul '26	Interest Cr. for 29-Jul-2026	2022621157254	₹27.53	₹1,91,383.29
+31 Jul '26	Interest Cr. for 30-Jul-2026	2022621257504	₹27.53	₹1,91,410.82
+31 Jul '26	UPI-Credit-621210031174-SELF	2026073172956201	₹84,500.00	₹2,75,910.82
+LAN-[ifsc]-[vpa]-Service
+s
+Generated on 02 Aug '26
+Need help? Contact our support team at [email] or [phone]	slice small finance bank

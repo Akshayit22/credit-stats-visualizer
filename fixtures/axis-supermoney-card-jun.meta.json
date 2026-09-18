@@ -1,0 +1,12 @@
+{
+  "pageCount": 2,
+  "contentHash": "347fcca232174490391a0cbfefaf7a4a0a4b0b5a5abca54d260e18eb30b5800b",
+  "redacted": {
+    "holderName": 2,
+    "address": 4,
+    "accountNumber": 3,
+    "upiHandle": 10,
+    "phone": 2,
+    "email": 6
+  }
+}

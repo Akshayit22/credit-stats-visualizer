@@ -33,12 +33,24 @@ export function stripInvisible(text: string): string {
 
 /**
  * Parse an Indian-format printed amount into paise.
- * Handles `₹2,30,150.08`, `-₹8,700.00`, `19,392.38`, `1,048.09`, `(250.00)`.
- * Returns `null` when the text holds no amount at all.
+ * Handles `₹2,30,150.08`, `-₹8,700.00`, `19,392.38`, `1,048.09`, `(250.00)`,
+ * and `5,808.40 Dr`.
+ *
+ * The `Dr` / `Cr` suffix is **not** a sign — callers decide direction from it,
+ * because on a card statement it means the opposite of what it means in a
+ * summary equation. Only a leading minus or brackets make the result negative.
+ *
+ * Anything else containing a letter is not an amount and returns `null`. That
+ * matters: `XXXX9581` is a masked card number, not ₹9,581.00, and a parser that
+ * reads it as money produces figures that look plausible and are wrong.
  */
 export function parseAmountToMinor(raw: string): number | null {
-  const text = stripInvisible(raw).trim();
+  const text = stripInvisible(raw)
+    .trim()
+    .replace(/\s*\b(?:Dr|Cr)\.?$/i, '')
+    .trim();
   if (text.length === 0) return null;
+  if (/[A-Za-z]/.test(text)) return null;
 
   const signChars = text.replace(/[^\d.,()-]/g, '');
   const negative = /^\(.*\)$/.test(text) || signChars.includes('-');

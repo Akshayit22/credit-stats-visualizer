@@ -136,7 +136,7 @@ AZURE_AI_API_VERSION=2024-10-21
 ```bash
 LLM_PROVIDER=bedrock
 AWS_REGION=ap-south-1
-BEDROCK_MODEL_ID=apac.anthropic.claude-sonnet-4-5-20250929-v1:0
+BEDROCK_MODEL_ID=anthropic.claude-sonnet-5
 # optional, only if you are not using a profile or an instance role:
 AWS_ACCESS_KEY_ID=...
 AWS_SECRET_ACCESS_KEY=...

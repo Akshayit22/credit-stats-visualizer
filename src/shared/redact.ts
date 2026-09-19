@@ -149,6 +149,32 @@ export function holderNamePattern(fullName: string): RegExp | null {
   return new RegExp(`${honorific}${escapeRegex(first)}${inner}`, 'gi');
 }
 
+/**
+ * The holder's name split into standalone words, for the wraps the whole-name
+ * pattern cannot see.
+ *
+ * IDFC spreads one description over three printed lines, with the data row in
+ * the middle: `…/AKS` / `HAY LALUMAN` / `TELANG/SBIN00`. The per-line pass
+ * masks `AKS` and the spill logic joins a continuation to the line above, but
+ * neither can reach a fragment stranded in the *middle* line's description
+ * cell — so `LALUMAN` and `TELANG` travelled into the prompt intact.
+ *
+ * Matching each word on its own catches them wherever they land. The floor of
+ * five characters is the safeguard: it keeps a genuine counterparty from being
+ * masked because it shares a short run with the holder (a `Ram` would swallow
+ * `RAMESH TRADERS`), while every word long enough to actually identify someone
+ * is covered. A 3-4 letter remnant left behind next to a `SELF` identifies
+ * nobody, which is the trade this floor makes deliberately.
+ */
+export function holderTokenPatterns(fullName: string): RegExp[] {
+  return fullName
+    .replace(/[^A-Za-z\s.]/g, ' ')
+    .split(/\s+/)
+    .map((token) => token.replace(/\./g, ''))
+    .filter((token) => token.length >= 5 && !/^(?:mr|mrs|ms|shri|smt|dr)$/i.test(token))
+    .map((token) => new RegExp(`\\b${escapeRegex(token)}\\b`, 'gi'));
+}
+
 function isNameLike(value: string): boolean {
   if (value.length < 6 || value.length > 60) return false;
   if (/\d/.test(value)) return false;
@@ -157,10 +183,24 @@ function isNameLike(value: string): boolean {
   return value.trim().split(/\s+/).length >= 2;
 }
 
+/** `Mr.`, `Mrs.`, `Shri` … — the one signal that a line is a person, not a heading. */
+const HONORIFIC = /^(?:mr|mrs|ms|shri|smt|dr)\.?\s+/i;
+
 /**
- * The account holder's name, from the two places statements print it: a
- * labelled `Name` row anywhere in the header, and the first bare all-caps line
- * near the top. Only the *first* bare line is taken — later all-caps headings
+ * The account holder's name, from the three places statements print it: a
+ * labelled `Name` row anywhere in the header, the first bare all-caps line near
+ * the top, and a bare line opening with an honorific.
+ *
+ * The honorific case exists because IDFC prints `Mr. Akshay Laluman Telang` in
+ * title case, and an all-caps-only test silently found nothing — no error, no
+ * warning, the name simply travelled into the prompt. Case is not a reliable
+ * signal across banks; an honorific is, which is why it is the only thing that
+ * licenses a non-all-caps line here. A bare title-case line without one stays
+ * ignored on purpose: in this very statement the address (`Phule Nagar
+ * Panchvati`) is also title case, and masking that as the holder would both
+ * miss the real name and corrupt the line.
+ *
+ * Only the *first* bare line of each kind is taken — later all-caps headings
  * ("IMPORTANT MESSAGE") would otherwise be mistaken for names.
  */
 export function detectHolderNames(text: string): string[] {
@@ -183,7 +223,11 @@ export function detectHolderNames(text: string): string[] {
     if (tookBareLine) return;
     const filled = cells.filter((cell) => cell.length > 0);
     const single = filled.length === 1 ? filled[0] : undefined;
-    if (single !== undefined && /^[A-Z][A-Z\s.]{5,48}$/.test(single) && isNameLike(single)) {
+    if (single === undefined) return;
+
+    const honorific = HONORIFIC.test(single);
+    const allCaps = /^[A-Z][A-Z\s.]{5,48}$/.test(single);
+    if ((honorific || allCaps) && isNameLike(single)) {
       found.add(single);
       tookBareLine = true;
     }
@@ -201,9 +245,11 @@ export function redactForStorage(rawText: string): RedactionResult {
   };
 
   const normalised = normaliseStatementText(rawText);
-  const holderPatterns = detectHolderNames(normalised)
+  const holderNames = detectHolderNames(normalised);
+  const holderPatterns = holderNames
     .map(holderNamePattern)
     .filter((pattern): pattern is RegExp => pattern !== null);
+  const holderTokens = holderNames.flatMap(holderTokenPatterns);
 
   const lines = normalised.split('\n');
   const zoneEnd = headerZoneEnd(lines);
@@ -283,6 +329,12 @@ export function redactForStorage(rawText: string): RedactionResult {
 
     // 4. The holder's own name, wherever it appears, truncated or not.
     for (const pattern of holderPatterns) {
+      joined = replaceCounting(joined, pattern, () => MASK.self, () => bump('holderName'));
+    }
+
+    // 5. …then each of its words alone, for the pieces a wrap stranded where
+    //    the whole-name pattern cannot reach them.
+    for (const pattern of holderTokens) {
       joined = replaceCounting(joined, pattern, () => MASK.self, () => bump('holderName'));
     }
 

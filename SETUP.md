@@ -9,9 +9,13 @@ working app with demo data: no Google account, no AWS account, no API key.
 
 | Need | Check |
 |---|---|
-| Node 20+ | `node -v` |
+| Node 20+ (22+ recommended) | `node -v` |
 | npm | `npm -v` |
 | Docker Desktop, running | `docker info` |
+
+Node 20 works today. The Docker image and CI both run **Node 22**, because the
+AWS SDK v3 — which is how this app reaches DynamoDB — requires node >= 22 from
+January 2027.
 
 ---
 
@@ -200,7 +204,17 @@ OPENAI_COMPATIBLE_MODEL=grok-4
 | `GROQ_API_KEY` / `GROQ_MODEL` | groq | §3 |
 | `OPENAI_COMPATIBLE_*` | openai-compatible | §3 |
 
-Missing provider variables fail loudly at first use, naming exactly what is absent.
+Missing provider variables fail loudly at first use, naming exactly what is
+absent — and the Settings screen shows the same list without you having to
+trigger a parse.
+
+The authority for these names is `REQUIRED_ENV` in
+`src/server/llm/factory.ts`. `tests/config.test.ts` checks this file documents
+every one of them, so the table above cannot quietly drift out of date.
+
+> **Put real keys in `.env.local`, never in `.env.example`.** `.env.example` is
+> committed; `.env.local` is gitignored. `tests/config.test.ts` fails the build
+> if a key ever appears in the example file.
 
 ---
 

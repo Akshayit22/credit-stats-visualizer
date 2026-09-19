@@ -94,13 +94,17 @@ statement PDF, see where the money went. One Next.js app, DynamoDB, five tables.
 10. **The mock LLM provider refuses when it has no fixture** rather than
    returning something plausible. A mock that invents figures would let a
    broken pipeline look healthy.
+11. **The Docker image and CI run Node 22, not the spec's Node 20.** The AWS
+   SDK v3 — the only way this app reaches DynamoDB — requires node >= 22 from
+   January 2027 and warns on every boot until then. `package.json` still
+   declares `engines: node >= 20`, so local development on 20 keeps working.
 
 ## Where the build is
 
-M0-M5 are done and committed; **M6 (ship-readiness) is what remains**.
-`RESUME.md` has the resume point: what is left, the verified figures the tests
-pin, and the four bugs the real statements caught that must not be simplified
-away.
+**Round 1 is complete — M0 through M6 are done and committed.** `RESUME.md` has
+the state: what was deliberately left out, what is worth doing next, the
+verified figures the tests pin, and the four bugs the real statements caught
+that must not be simplified away.
 
 ## Commands
 

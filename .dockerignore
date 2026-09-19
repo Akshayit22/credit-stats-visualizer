@@ -1,0 +1,36 @@
+# ── never into an image ─────────────────────────────────────────────────────
+# The real statements. They are gitignored too; an image is just another way to
+# hand them to someone.
+samples/
+
+# Secrets. .env.example is the only one that travels.
+.env
+.env.*
+!.env.example
+
+# ── not needed to build or run ──────────────────────────────────────────────
+node_modules/
+.next/
+out/
+build/
+dist/
+coverage/
+junit.xml
+.docker/
+.git/
+.github/
+.vscode/
+.idea/
+
+# The design package is a reference for humans, not an input to the build.
+design/
+
+# Docs and local-only scripts
+*.md
+!SETUP.md
+!RUNBOOK.md
+!SECURITY.md
+
+# OS noise
+.DS_Store
+Thumbs.db

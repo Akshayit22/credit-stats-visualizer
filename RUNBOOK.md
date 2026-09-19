@@ -27,12 +27,61 @@ rm -rf .docker       # nuclear: throws away the DynamoDB Local volume too
 ```bash
 npm run test                 # everything
 npm run test -- parsers      # just the parser suites
+npm run test -- privacy      # the redaction guarantees
+npm run test -- fallback     # the LLM fallback, end to end
 npm run test:watch
 npm run test -- --coverage
 ```
 
-Parser tests run entirely off the committed fixtures in `fixtures/`. They need
-no Docker and no network.
+Most suites run entirely off the committed fixtures in `fixtures/` — no Docker,
+no network, no API key.
+
+Two suites want DynamoDB Local (`tests/fallback.test.ts`, and anything that
+writes). They **skip with a message** when it is not reachable, so `npm test`
+still passes on a laptop with Docker stopped:
+
+```
+DynamoDB Local is not reachable — skipping the fallback integration test.
+Run `npm run db:up && npm run db:create` to include it.
+```
+
+If you see that line, you are running a smaller suite than CI does. Bring the
+containers up and run again before trusting a green result.
+
+No test ever calls a real model. `LLM_PROVIDER` is forced to `mock`, and the
+mock throws if it is asked for a fixture nobody registered — which is how
+`tests/fallback.test.ts` proves that a statement a deterministic parser covers
+never reaches a provider at all.
+
+## In a container
+
+```bash
+docker build -t cred-stats .
+npm run db:up                                   # the app needs a database
+docker run --rm -p 3000:3000 --network cred-stats_default \
+  -e DDB_ENDPOINT=http://dynamodb-local:8000 \
+  -e DDB_TABLE_PREFIX=cred-stats-local \
+  -e AWS_REGION=ap-south-1 \
+  -e AWS_ACCESS_KEY_ID=local -e AWS_SECRET_ACCESS_KEY=local \
+  -e AUTH_SECRET="$(openssl rand -base64 32)" \
+  -e NEXTAUTH_URL=http://localhost:3000 \
+  cred-stats
+```
+
+Or `docker compose --profile app up --build`, which wires the network for you.
+
+`docker inspect --format '{{.State.Health.Status}}' <container>` reports
+`healthy` once `/api/health` sees all five tables — so an unhealthy container
+usually means the tables were never created, not that the app is broken.
+
+Two things to check if you ever edit the Dockerfile:
+
+- **`.dockerignore` keeps `samples/` and every `.env*` out of the image.**
+  Verify after any change: `docker run --rm --entrypoint sh cred-stats -c 'ls -a /app'`
+  should show no `.env` files and no `samples` directory.
+- **The `deps` stage copies `scripts/copy-pdf-worker.mjs` before `npm ci`**,
+  because that is the `postinstall` script. Remove that line and `npm ci` fails
+  inside the image with `Cannot find module`.
 
 ## Refreshing the fixtures
 
@@ -117,7 +166,48 @@ Symptom: a statement lands in `needs_review` with
   statement, run the parser against its fixture in a test — that is the only
   place the text is visible.
 
+### The AI provider is selected but not configured
+
+Symptom: an unknown bank's statement is refused with *"No parser recognised this
+statement … and no AI provider is configured to fall back to"*, even though
+`LLM_PROVIDER` is set to a real provider.
+
+The app treats a half-configured provider as no provider, deliberately — better
+a clear refusal than a 401 from a vendor halfway through a parse.
+
+- **Settings** shows the active provider, the model id, and exactly which
+  variables are missing. Start there.
+- `/api/health` reports `llmProvider` too.
+- The variable names are in `REQUIRED_ENV` in `src/server/llm/factory.ts`, and
+  that is the authority — `.env.example` is checked against it by
+  `tests/config.test.ts`.
+- Restart `next dev` after editing `.env.local`. Next.js reads it at boot.
+
+One trap worth naming: `AWS_ACCESS_KEY_ID=local` from the DynamoDB Local
+section is in the same credential chain Bedrock uses. If you point
+`LLM_PROVIDER=bedrock` at a real account while developing locally, use a named
+AWS profile or real keys — DynamoDB Local ignores credentials entirely, so
+nothing breaks on that side.
+
 ### A statement says "already uploaded"
 
 Working as intended: `contentHash` (sha256 of the redacted, normalised text)
 already exists for this user. Delete the statement from the library to re-upload.
+
+Note the hash is recomputed **on the server**, over the text the server ends up
+with after its own redaction pass — so a doctored client hash cannot force a
+duplicate through, and two uploads of the same file always collide even if the
+browser's redaction changed between them.
+
+### A key ended up in `.env.example`
+
+`.env.example` is committed. `.env.local` is not. Pasting a real key into the
+first one is an easy mistake and an expensive one.
+
+`tests/config.test.ts` fails the build if any variable whose name contains
+`KEY`, `SECRET`, `TOKEN` or `PASSWORD` has a value in `.env.example` — the only
+exceptions being the dummy `local` DynamoDB credentials. If that test fails,
+move the value to `.env.local` and blank the line in `.env.example`.
+
+If such a key was ever **committed**, blanking it is not enough — it is in the
+history. Revoke it at the provider first, then worry about the history.

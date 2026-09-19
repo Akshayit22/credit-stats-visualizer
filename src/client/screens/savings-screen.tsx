@@ -147,6 +147,32 @@ function SavingsMonth({
     return out;
   }, [transactions, statement.periodStart, statement.periodEnd, savings.openingBalanceMinor]);
 
+  /**
+   * Interest, day by day, as a running total. slice credits it almost every
+   * day, so the interesting shape is the accumulation — a bar per day would be
+   * thirty-one near-identical marks saying nothing.
+   */
+  const interestDaily = useMemo(() => {
+    const byDate = new Map<string, number>();
+    for (const txn of transactions) {
+      if (!txn.isInterest) continue;
+      byDate.set(txn.date, (byDate.get(txn.date) ?? 0) + txn.amountMinor);
+    }
+    const out: Array<{ label: string; cumulative: number; onTheDay: number }> = [];
+    let running = 0;
+    const start = new Date(`${statement.periodStart}T00:00:00Z`);
+    const end = new Date(`${statement.periodEnd}T00:00:00Z`);
+    for (let day = start; day <= end; day = new Date(day.getTime() + 86_400_000)) {
+      const date = day.toISOString().slice(0, 10);
+      const onTheDay = byDate.get(date) ?? 0;
+      running += onTheDay;
+      out.push({ label: formatDayLabel(date), cumulative: running, onTheDay });
+      if (out.length > 120) break;
+    }
+    return out;
+  }, [transactions, statement.periodStart, statement.periodEnd]);
+
+  const daysCredited = interestDaily.filter((point) => point.onTheDay > 0).length;
   const balances = daily.map((point) => point.balance);
 
   return (
@@ -209,6 +235,38 @@ function SavingsMonth({
           series={[{ key: 'balance', name: 'Closing balance', role: 'primary', area: true }]}
         />
       </ChartBlock>
+
+      {savings.interestEarnedMinor > 0 && (
+        <ChartBlock
+          title="Interest earned"
+          subtitle={`day by day, running total \u00b7 credited on ${daysCredited} of ${interestDaily.length} days`}
+          markColor={theme ? seriesColor(theme, 'good') : undefined}
+          height={190}
+          stats={[
+            { label: 'Total', value: formatMinor(savings.interestEarnedMinor) },
+            {
+              label: 'Average a day',
+              value: formatMinor(
+                Math.round(savings.interestEarnedMinor / Math.max(daysCredited, 1)),
+              ),
+            },
+          ]}
+        >
+          <TrendChart
+            data={interestDaily}
+            series={[
+              { key: 'cumulative', name: 'Interest, month to date', role: 'good', area: true },
+            ]}
+            tooltipExtras={(point) => [
+              {
+                label: 'Credited that day',
+                value:
+                  Number(point.onTheDay) > 0 ? formatMinor(Number(point.onTheDay)) : 'nothing',
+              },
+            ]}
+          />
+        </ChartBlock>
+      )}
 
       <TransactionsTable
         transactions={transactions}

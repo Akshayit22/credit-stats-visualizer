@@ -11,6 +11,7 @@ import {
 import { ProviderConfigError, type ExtractJsonArgs, type LlmProvider } from '@/server/llm/provider';
 import { clearMockResponses, setMockResponse } from '@/server/llm/providers/mock';
 import { extractValidated } from '@/server/llm';
+import { parsedStatementSchema } from '@/server/domain/schemas';
 import { CATEGORISE_SYSTEM, EXTRACT_SYSTEM, extractUserPrompt } from '@/server/llm/prompts';
 import { findPiiLeaks } from '@/shared/redact';
 import { FIXTURE_NAMES, fixtureText } from './fixtures';
@@ -90,9 +91,9 @@ describe('the provider factory', () => {
   it('builds each provider once its environment is complete', () => {
     process.env.LLM_PROVIDER = 'groq';
     process.env.GROQ_API_KEY = 'gsk_test';
-    process.env.GROQ_MODEL = 'llama-3.3-70b-versatile';
+    process.env.GROQ_MODEL = 'openai/gpt-oss-120b';
     expect(getLlmProvider().id).toBe('groq');
-    expect(configuredModelId()).toBe('llama-3.3-70b-versatile');
+    expect(configuredModelId()).toBe('openai/gpt-oss-120b');
 
     resetLlmProvider();
     process.env.LLM_PROVIDER = 'openai-compatible';
@@ -145,6 +146,21 @@ describe('schema-validated extraction', () => {
     expect(provider.calls).toHaveLength(1);
   });
 
+  it('puts the schema in the prompt, because providers vary in reading it', async () => {
+    const provider = countingProvider([{ answer: 42 }]);
+    await extractValidated(provider, schema, {
+      system: 's',
+      user: 'extract this',
+      jsonSchema: { type: 'object', required: ['answer'], properties: { answer: { type: 'integer' } } },
+    });
+    // Every provider takes a jsonSchema and, for a while, every provider
+    // ignored it — the model was told the rules and never the field names.
+    const sent = provider.calls[0]?.user ?? '';
+    expect(sent).toContain('extract this');
+    expect(sent).toContain('"answer"');
+    expect(sent).toMatch(/schema exactly/i);
+  });
+
   it('retries exactly once, showing the model its own validation error', async () => {
     const provider = countingProvider([{ answer: 'forty-two' }, { answer: 42 }]);
     const result = await extractValidated(provider, schema, {
@@ -170,6 +186,63 @@ describe('schema-validated extraction', () => {
       extractValidated(provider, schema, { system: 's', user: 'u', jsonSchema: {} }),
     ).rejects.toThrow(/did not match the schema after a retry/);
     expect(provider.calls).toHaveLength(2);
+  });
+});
+
+describe('what the schema accepts from a real model', () => {
+  const minimal = {
+    accountType: 'savings',
+    periodStart: '2026-04-01',
+    periodEnd: '2026-04-30',
+    account: { type: 'savings', issuer: 'Some Bank', last4: '4417' },
+    savings: {
+      openingBalanceMinor: 1_250_000,
+      totalCreditsMinor: 4_000_000,
+      totalDebitsMinor: 1_825_000,
+      interestEarnedMinor: 0,
+      closingBalanceMinor: 3_425_000,
+    },
+    transactions: [
+      {
+        date: '2026-04-05',
+        descriptionRaw: 'UPI/BLINKIT/blinkit@ybl',
+        amountMinor: 125_000,
+        direction: 'debit',
+        mode: 'upi',
+      },
+    ],
+  };
+
+  it('fills in the fields a model simply leaves out', () => {
+    const parsed = parsedStatementSchema.parse(minimal);
+    expect(parsed.transactions[0]?.merchant).toBe('');
+    expect(parsed.transactions[0]?.isFee).toBe(false);
+    expect(parsed.account.productName).toBe('');
+  });
+
+  it('treats an explicit null the same as leaving the field out', () => {
+    // gpt-oss-120b answers `"counterparty": null` rather than omitting the
+    // key. That used to fail validation, burn the one retry, and throw away an
+    // otherwise perfect extraction.
+    const withNulls = {
+      ...minimal,
+      account: { ...minimal.account, productName: null, maskedNumber: null },
+      transactions: [
+        {
+          ...minimal.transactions[0],
+          counterparty: null,
+          merchant: null,
+          isFee: null,
+          isInterest: null,
+          isPayment: null,
+        },
+      ],
+    };
+    const parsed = parsedStatementSchema.parse(withNulls);
+    expect(parsed.transactions[0]?.counterparty).toBe('');
+    expect(parsed.transactions[0]?.merchant).toBe('');
+    expect(parsed.transactions[0]?.isPayment).toBe(false);
+    expect(parsed.account.maskedNumber).toBe('');
   });
 });
 

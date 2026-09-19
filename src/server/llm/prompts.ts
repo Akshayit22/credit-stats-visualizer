@@ -28,6 +28,10 @@ export const EXTRACT_SYSTEM = [
   '   example and a terms-and-conditions page are NOT transactions, however',
   '   many amounts and dates they contain.',
   '7. `last4` is the last four digits of the account or card number only.',
+  '8. `merchant` is who the money went to or came from, pulled out of the',
+  '   description: "UPI/BLINKIT/blinkit@ybl" is "Blinkit", "NEFT SALARY',
+  '   CREDIT" is "Salary". Never leave it empty when the description names',
+  '   anyone — it is what the spending categories are worked out from.',
   '',
   'The text you are given has already had personal details removed. Tokens like',
   '`SELF`, `[vpa]`, `[ifsc]` and `XXXX9581` are those removals — treat them as',
@@ -72,6 +76,27 @@ export function categoriseUserPrompt(merchants: readonly string[]): string {
     'Categorise these merchants:',
     '',
     ...merchants.map((merchant) => `- ${merchant}`),
+  ].join('\n');
+}
+
+/**
+ * Appends the JSON Schema the answer has to satisfy.
+ *
+ * Every provider takes a `jsonSchema` and, until this existed, every provider
+ * ignored it — the model was told the rules in prose and never told the field
+ * names, so it invented its own shape and failed validation twice. Putting the
+ * schema in the prompt works on every provider, including the ones with no
+ * structured-output mode at all.
+ */
+export function withSchema(user: string, schema: object): string {
+  return [
+    user,
+    '',
+    '---',
+    'Return JSON matching this schema exactly. Every required field must be',
+    'present, spelled exactly as written here, at the level shown.',
+    '',
+    JSON.stringify(schema),
   ].join('\n');
 }
 

@@ -22,6 +22,7 @@ import {
   categoriseUserPrompt,
   extractUserPrompt,
   retryPrompt,
+  withSchema,
 } from './prompts';
 import { LlmResponseError, type ExtractJsonArgs, type LlmProvider } from './provider';
 
@@ -51,7 +52,10 @@ export async function extractValidated<S extends z.ZodTypeAny>(
   const started = Date.now();
   let inputTokens = 0;
   let outputTokens = 0;
-  let user = args.user;
+  // The schema goes in the prompt, not just in the argument. Providers vary in
+  // whether they have a structured-output mode; every one of them can read.
+  const baseUser = withSchema(args.user, args.jsonSchema);
+  let user = baseUser;
   let lastError = '';
 
   for (let attempt = 0; attempt < 2; attempt += 1) {
@@ -81,7 +85,7 @@ export async function extractValidated<S extends z.ZodTypeAny>(
       .slice(0, 8)
       .map((issue) => `${issue.path.join('.') || '(root)'}: ${issue.code}`)
       .join('; ');
-    user = retryPrompt(args.user, lastError);
+    user = retryPrompt(baseUser, lastError);
   }
 
   logger.warn('llm.extract.failed', {

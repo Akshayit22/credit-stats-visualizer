@@ -51,6 +51,33 @@ statement PDF, see where the money went. One Next.js app, DynamoDB, five tables.
   `{ error: { code, message } }`.
 - Branches `feat/<slug>`, `fix/<slug>`, `chore/<slug>`. Conventional Commits.
 
+## Branching
+
+**Nothing is committed directly to `main`.** Every change — a feature, a bug
+fix, a docs pass — starts as a branch and arrives by merge.
+
+```bash
+git checkout main && git pull
+git checkout -b feat/savings-interest-chart
+
+# …work, then the four gates…
+npm run lint && npm run typecheck && npm run test && npm run build
+
+git commit                       # Conventional Commits, body says why
+git checkout main
+git merge --no-ff feat/savings-interest-chart
+git branch -d feat/savings-interest-chart
+```
+
+- `--no-ff` always. The merge commit is what makes a branch visible in
+  `git log --graph` afterwards; fast-forwarding throws that away.
+- **One concern per branch.** A fix and a feature that happen to touch the same
+  file are still two branches — the merge commits are the unit a reviewer reads,
+  and "fixed the nav and also added a chart" is not reviewable.
+- **The four gates pass on the branch, before the merge.** `main` is never the
+  place a failure is discovered.
+- Delete the branch after merging. The merge commit is the record.
+
 ## Decisions taken while building (and why)
 
 1. **Canonical statement text format.** The browser does not flatten the PDF to

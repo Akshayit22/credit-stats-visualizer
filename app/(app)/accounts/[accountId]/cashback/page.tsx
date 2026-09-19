@@ -44,7 +44,6 @@ export default async function CashbackPage({
   return (
     <CashbackScreen
       account={account}
-      accounts={workspace.accounts}
       statement={statement?.accountType === 'credit_card' ? statement : null}
       transactions={transactions}
       summaries={summaries}

@@ -11,11 +11,10 @@ import { TrendChart } from '@/client/charts/trend-chart';
 import { AppHeader, type PeriodMode } from '@/client/components/app-header';
 import { Icon } from '@/client/components/icon';
 import { StatTile, TileRow } from '@/client/components/stat-tile';
-import { formatDayShort, formatPeriodLabel, formatPeriodRange, formatPeriodShort } from '@/client/lib/format';
+import { accountShortName, formatDayShort, formatPeriodLabel, formatPeriodRange, formatPeriodShort } from '@/client/lib/format';
 
 export interface CashbackScreenProps {
   account: Account;
-  accounts: Account[];
   statement: CreditCardStatement | null;
   transactions: Transaction[];
   summaries: Summary[];
@@ -74,13 +73,11 @@ export function CashbackScreen(props: CashbackScreenProps) {
 
   const header = (
     <AppHeader
-      accounts={props.accounts}
+      title={`Cashback \u00b7 ${accountShortName(props.account)}`}
       availablePeriods={props.availablePeriods}
       periodsWithData={props.periodsWithData}
       selectedPeriod={props.selectedPeriod}
       mode={props.mode}
-      accountScope="credit_card"
-      selectedAccountId={props.account.accountId}
       coverage={{
         have: props.periodsWithData.length,
         total: props.availablePeriods.length,

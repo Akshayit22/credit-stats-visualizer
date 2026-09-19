@@ -104,8 +104,10 @@ export function TrendChart({
         )}
         {series.map((entry) => {
           const color = seriesColor(theme, entry.role);
+          // `key` is deliberately NOT in here. React reads it before props are
+          // applied, so spreading an object that contains one is a no-op that
+          // React warns about — it has to be written on the element itself.
           const common = {
-            key: entry.key,
             dataKey: entry.key,
             name: entry.name,
             stroke: color,
@@ -124,9 +126,9 @@ export function TrendChart({
           } as const;
 
           return entry.area ? (
-            <Area {...common} type="linear" fill={color} fillOpacity={0.1} />
+            <Area key={entry.key} {...common} type="linear" fill={color} fillOpacity={0.1} />
           ) : (
-            <Line {...common} type="linear" />
+            <Line key={entry.key} {...common} type="linear" />
           );
         })}
       </ComposedChart>

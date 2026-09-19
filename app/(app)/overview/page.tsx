@@ -1,5 +1,5 @@
 import { requireSessionUser } from '@/server/auth/session';
-import { loadWorkspace, loadYear } from '@/server/db/workspace';
+import { loadOverviewMonths, loadWorkspace } from '@/server/db/workspace';
 import { OverviewScreen } from '@/client/screens/overview-screen';
 import { resolvePeriodWindow } from '@/server/domain/period-window';
 
@@ -13,13 +13,13 @@ export default async function OverviewPage({
   const [params, user] = await Promise.all([searchParams, requireSessionUser()]);
   const workspace = await loadWorkspace(user.userId);
   const window = resolvePeriodWindow(workspace.periods, params);
-  const summaries = await loadYear(user.userId, window.year, null);
+  const months = await loadOverviewMonths(user.userId, window.year);
 
   return (
     <OverviewScreen
       accounts={workspace.accounts}
       statements={workspace.statements}
-      summaries={summaries}
+      months={months}
       availablePeriods={window.periods}
       selectedPeriod={window.selected}
       mode={window.mode}

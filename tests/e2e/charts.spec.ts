@@ -84,3 +84,28 @@ test('cashback per transaction is connected, not a scatter', async ({ page }) =>
   await expect(page.locator('.recharts-line-curve').first()).toBeVisible();
   await expect(page.locator('body')).toContainText('in the order they happened');
 });
+
+test('overview separates card figures from savings, and skips empty months', async ({ page }) => {
+  await page.goto('/overview?mode=year&year=2026');
+
+  // Charts start at the first month with data, not at January.
+  const body = page.locator('body');
+  await expect(body).toContainText('Jun ’26');
+  await expect(body).not.toContainText('Jan ’26');
+  await expect(body).not.toContainText('Feb ’26');
+
+  // Cashback and fees are card-only, so they plot the one card cycle rather
+  // than drawing zeros for the savings-only months.
+  await expect(body).toContainText('credit card only');
+  await expect(body).toContainText('₹267.00');
+});
+
+test('overview says a card figure is absent rather than zero', async ({ page }) => {
+  // August has a savings statement and no card statement.
+  await page.goto('/overview?period=2026-08');
+
+  const tiles = page.locator('.tile-row');
+  await expect(tiles).toContainText('no card statement this period');
+  // The misleading "₹0.00 cashback" is gone.
+  await expect(tiles).not.toContainText('₹0.00');
+});

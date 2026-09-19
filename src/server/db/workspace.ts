@@ -78,6 +78,82 @@ export async function loadStatementRows(
   return rows.sort((a, b) => (a.date === b.date ? a.seq - b.seq : a.date.localeCompare(b.date)));
 }
 
+/**
+ * One row per month for the Overview, with the card figures kept apart from
+ * everything else.
+ *
+ * Cashback and fees only exist on a credit card. Reading them off the combined
+ * `ALL#<period>` summary made a month where only a savings statement was
+ * uploaded look like a month where the card earned nothing — a zero that is
+ * really an absence. They come from the card accounts alone, and a month with
+ * no card statement carries no cashback point at all.
+ */
+export interface OverviewMonth {
+  period: Period;
+  /** Every account: what left the account or was charged to the card. */
+  spendMinor: number;
+  incomeMinor: number;
+  paymentsMinor: number;
+  /** Credit cards only. */
+  cardSpendMinor: number;
+  cashbackMinor: number;
+  feesMinor: number;
+  hasAnyStatement: boolean;
+  hasCardStatement: boolean;
+}
+
+export async function loadOverviewMonths(
+  userId: string,
+  year: string,
+): Promise<OverviewMonth[]> {
+  const [accounts, all] = await Promise.all([
+    listAccounts(userId),
+    listSummaries(userId, 'ALL', year),
+  ]);
+
+  const cardAccounts = accounts.filter((account) => account.type === 'credit_card');
+  const perCard = await Promise.all(
+    cardAccounts.map((account) => listSummaries(userId, account.accountId, year)),
+  );
+
+  const byPeriod = new Map<Period, OverviewMonth>();
+  const blank = (period: Period): OverviewMonth => ({
+    period,
+    spendMinor: 0,
+    incomeMinor: 0,
+    paymentsMinor: 0,
+    cardSpendMinor: 0,
+    cashbackMinor: 0,
+    feesMinor: 0,
+    hasAnyStatement: false,
+    hasCardStatement: false,
+  });
+
+  for (const summary of all) {
+    if (summary.txnCount === 0) continue;
+    const row = byPeriod.get(summary.period) ?? blank(summary.period);
+    row.spendMinor += summary.spendMinor;
+    row.incomeMinor += summary.incomeMinor;
+    row.paymentsMinor += summary.paymentsMinor;
+    row.hasAnyStatement = true;
+    byPeriod.set(summary.period, row);
+  }
+
+  for (const summaries of perCard) {
+    for (const summary of summaries) {
+      if (summary.txnCount === 0) continue;
+      const row = byPeriod.get(summary.period) ?? blank(summary.period);
+      row.cardSpendMinor += summary.spendMinor;
+      row.cashbackMinor += summary.cashbackEarnedMinor;
+      row.feesMinor += summary.feesMinor;
+      row.hasCardStatement = true;
+      byPeriod.set(summary.period, row);
+    }
+  }
+
+  return [...byPeriod.values()].sort((a, b) => a.period.localeCompare(b.period));
+}
+
 export async function loadYear(
   userId: string,
   year: string,

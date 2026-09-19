@@ -112,12 +112,19 @@ samples/        the real PDFs — gitignored, and must stay that way
 
 ```bash
 npm run lint && npm run typecheck && npm run test && npm run build
+npm run test:e2e     # the browser half, needs samples/ and a real Chrome
 ```
 
-101 tests. The parser suites run against redacted extracts of three real
-statements, so they assert real figures rather than invented ones. The
-repository and fallback suites run against DynamoDB Local when it is up, and
-skip with a clear message when it is not.
+111 unit and integration tests, plus 5 browser tests. The parser suites run
+against redacted extracts of three real statements, so they assert real figures
+rather than invented ones. The repository and fallback suites run against
+DynamoDB Local when it is up.
+
+The browser tests are the ones that prove the part a user actually touches:
+they upload the real card and savings PDFs through the dialog in a real Chrome,
+check the figures that come back reconcile, and assert that the request
+carries extracted text and no PDF bytes. Everything skips with a message when
+its prerequisites are absent, so a fresh clone still goes green.
 
 ## In a container
 
@@ -159,11 +166,11 @@ Then, with the app running and signed in as the demo user, capture at
 
 | File | Page | What it should show |
 |---|---|---|
-| `docs/screenshots/overview.png` | `/overview` | the needs-review banner, four tiles, three trend charts, the accounts list |
+| `docs/screenshots/overview.png` | `/overview` | four tiles, three trend charts, the accounts list |
 | `docs/screenshots/card.png` | `/accounts/axis-bank-credit-card-9581?period=2026-06` | totals reconciled, the cycle chart, the category ring, 15 transactions |
 | `docs/screenshots/savings.png` | `/savings/slice-small-finance-bank-savings-6993?period=2026-08` | the balance line, the interest tile, the folded-away interest note |
 | `docs/screenshots/cashback.png` | `/accounts/axis-bank-credit-card-9581/cashback?period=2026-06` | earned vs credited, the per-transaction scatter, "earned nothing" |
-| `docs/screenshots/library.png` | `/library` | parsed and needs-review badges, the privacy footer line |
+| `docs/screenshots/library.png` | `/library` | the parsed badges and the privacy footer line |
 
 For the responsive shot, note that headless Chrome clamps its viewport to a
 500px minimum — a 390px screenshot is really a 500px layout cropped, which will

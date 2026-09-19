@@ -118,19 +118,27 @@ export const DEFAULT_MAX_TOKENS = 8000;
  */
 export const MAX_OUTPUT_TOKENS = 8_192;
 
+/** A printed line carrying a rupee amount — one transaction, near enough. */
+const AMOUNT_LINE = /\d[\d,]*\.\d{2}/;
+
 /**
- * How much output a statement of this size needs.
+ * How much output this statement needs.
  *
- * The answer is the statement restated as JSON — one object per printed row —
- * so it tracks the input rather than being a constant. A measured 4-page
- * statement of 2,918 text tokens answered in 4,186, a ratio of 1.43; 1.6 is
- * that with room, because the two ways to be wrong are not equal. Too high
- * costs budget that may go unused and is recoverable by waiting; too low
- * truncates the JSON mid-object, which fails validation and burns the retry.
+ * Counted from the rows, not the character count, because the answer is one
+ * JSON object per printed row and banks are not alike in how much text a row
+ * costs. Measured: IDFC spends 2,879 text tokens on 21 rows (it wraps a
+ * description over three lines), slice spends 1,063 on 42 (it does not). A
+ * length-proportional estimate sized slice's request from the wrong number and
+ * the model was cut off mid-object, which the provider rejects outright.
+ *
+ * Over-estimating costs budget that may go unused and can be waited out;
+ * under-estimating truncates the JSON and fails the request. So this rounds up,
+ * and `chatCompletionJson` still retries at the ceiling if it was not enough.
  */
 export function estimateOutputTokens(text: string): number {
-  const inputTokens = Math.ceil(text.length / 3.6);
-  return Math.min(Math.max(2_000, Math.round(inputTokens * 1.6)), MAX_OUTPUT_TOKENS);
+  const rows = text.split('\n').filter((line) => AMOUNT_LINE.test(line)).length;
+  const needed = 1_200 + rows * 260;
+  return Math.min(Math.max(2_000, needed), MAX_OUTPUT_TOKENS);
 }
 
 /**

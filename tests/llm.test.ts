@@ -432,10 +432,22 @@ describe('being rate limited', () => {
 });
 
 describe('sizing the answer', () => {
-  it('asks for output in proportion to the statement, not a flat ceiling', () => {
-    const small = estimateOutputTokens('x'.repeat(3_600));
-    const large = estimateOutputTokens('x'.repeat(36_000));
-    expect(large).toBeGreaterThan(small);
+  const rows = (n: number) =>
+    Array.from({ length: n }, (_, i) => `05 Oct 25\tSOMETHING ${i}\t1,234.56\t9,999.00 CR`).join('\n');
+
+  it('sizes from the rows, not the character count', () => {
+    // The two are not interchangeable. IDFC spends 2,879 text tokens on 21
+    // rows because it wraps a description over three printed lines; slice
+    // spends 1,063 on 42 because it does not. Sizing slice from its length
+    // cut the model off mid-object and the provider rejected the answer.
+    const verbose = `${'filler text that carries no amount\n'.repeat(400)}${rows(5)}`;
+    const terse = rows(40);
+    expect(verbose.length).toBeGreaterThan(terse.length);
+    expect(estimateOutputTokens(terse)).toBeGreaterThan(estimateOutputTokens(verbose));
+  });
+
+  it('grows with the number of rows', () => {
+    expect(estimateOutputTokens(rows(30))).toBeGreaterThan(estimateOutputTokens(rows(5)));
   });
 
   it('never exceeds what real models accept', () => {
@@ -443,11 +455,79 @@ describe('sizing the answer', () => {
     // provider charges the *requested* output against the per-minute budget
     // whether the model uses it or not. The old flat 16,000 made a sizeable
     // statement a permanent 413 rather than a request that had to wait.
-    expect(estimateOutputTokens('x'.repeat(2_000_000))).toBe(MAX_OUTPUT_TOKENS);
+    expect(estimateOutputTokens(rows(500))).toBe(MAX_OUTPUT_TOKENS);
     expect(MAX_OUTPUT_TOKENS).toBeLessThanOrEqual(8_192);
   });
 
   it('keeps a floor, so a one-page statement still has room to answer', () => {
     expect(estimateOutputTokens('')).toBe(2_000);
+  });
+});
+
+describe('an answer cut off mid-object', () => {
+  const ORIGINAL_FETCH = globalThis.fetch;
+  afterEach(() => {
+    globalThis.fetch = ORIGINAL_FETCH;
+  });
+
+  const truncated = () =>
+    new Response(
+      JSON.stringify({
+        error: {
+          message: "Failed to validate JSON. See 'failed_generation' for more details.",
+          code: 'json_validate_failed',
+          failed_generation: '{"transactions":[{"descriptionRaw":"UPI/AKSHAY/pay"',
+        },
+      }),
+      { status: 400, statusText: 'Bad Request' },
+    );
+
+  function groqWith(maxTokens: number) {
+    process.env.LLM_PROVIDER = 'groq';
+    process.env.GROQ_API_KEY = 'gsk_test';
+    process.env.GROQ_MODEL = 'openai/gpt-oss-120b';
+    resetLlmProvider();
+    return getLlmProvider().extractJson({ system: 's', user: 'u', jsonSchema: {}, maxTokens });
+  }
+
+  it('asks again with room to finish rather than losing the upload', async () => {
+    // No estimate is right for every bank, and being cut off is not the
+    // user's mistake. The second ask uses the ceiling.
+    const sent: number[] = [];
+    globalThis.fetch = ((_url: string, init: RequestInit) => {
+      sent.push((JSON.parse(String(init.body)) as { max_tokens: number }).max_tokens);
+      return Promise.resolve(
+        sent.length === 1
+          ? truncated()
+          : new Response(
+              JSON.stringify({
+                choices: [{ message: { content: '{"ok":true}' } }],
+                usage: { prompt_tokens: 10, completion_tokens: 5 },
+              }),
+              { status: 200 },
+            ),
+      );
+    }) as unknown as typeof fetch;
+
+    await expect(groqWith(2_000)).resolves.toMatchObject({ data: { ok: true } });
+    expect(sent).toEqual([2_000, MAX_OUTPUT_TOKENS]);
+  });
+
+  it('grows once, not forever', async () => {
+    let calls = 0;
+    globalThis.fetch = (() => {
+      calls += 1;
+      return Promise.resolve(truncated());
+    }) as typeof fetch;
+
+    await expect(groqWith(2_000)).rejects.toThrow(/400 Bad Request/);
+    expect(calls).toBe(2);
+  });
+
+  it('keeps the partial generation out of the error, since it is statement text', async () => {
+    globalThis.fetch = (() => Promise.resolve(truncated())) as typeof fetch;
+    const error = await groqWith(MAX_OUTPUT_TOKENS).catch((caught: unknown) => caught);
+    expect((error as Error).message).toBe('The provider answered 400 Bad Request.');
+    expect((error as Error).message).not.toContain('AKSHAY');
   });
 });

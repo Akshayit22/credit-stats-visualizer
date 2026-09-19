@@ -4,6 +4,7 @@ import {
   LlmRateLimitError,
   LlmRequestTooLargeError,
   LlmResponseError,
+  MAX_OUTPUT_TOKENS,
   type ExtractJsonArgs,
   type LlmUsage,
   type ProviderId,
@@ -32,15 +33,17 @@ interface ChatResponse {
 }
 
 /**
- * How long we are willing to sit waiting out a rate limit, and how many times.
+ * How many times one call may be sent, and how long it may wait between tries.
  *
- * One statement costs more than a minute of a free-tier token budget — a real
- * 4-page statement measured 4,381 tokens in and 4,186 out against Groq's
- * 8,000/minute — so the second call of an upload is *expected* to be refused,
- * and waiting is the normal path rather than an error path. The ceiling keeps
- * the whole upload inside the route's 60s budget.
+ * Two things earn a retry here and both are ordinary rather than exceptional.
+ * A rate limit: one statement costs more than a minute of a free-tier token
+ * budget — a real 4-page statement measured 4,381 tokens in and 4,186 out
+ * against Groq's 8,000/minute — so the second call of an upload is *expected*
+ * to be refused. And a truncated answer, where the only thing wrong is that we
+ * did not ask for enough room. The wait ceiling keeps the whole upload inside
+ * the route's own budget.
  */
-const MAX_RATE_LIMIT_ATTEMPTS = 3;
+const MAX_ATTEMPTS = 3;
 const MAX_RATE_LIMIT_WAIT_MS = 20_000;
 
 /**
@@ -69,13 +72,35 @@ function sleep(ms: number): Promise<void> {
   });
 }
 
+/**
+ * Whether a 400 means "you cut me off", not "your request was wrong".
+ *
+ * A model that runs out of `max_tokens` mid-object leaves JSON that does not
+ * parse, and a provider in JSON mode rejects that as `json_validate_failed`.
+ * It is worth one more try with room to finish — no estimate is right for every
+ * bank, and being cut off is not a reason to lose the upload.
+ *
+ * Only the error code is read. The rest of that body carries the partial
+ * generation, which is statement text, and never leaves this function.
+ */
+function isTruncation(body: string): boolean {
+  try {
+    const parsed: unknown = JSON.parse(body);
+    const code: unknown = (parsed as { error?: { code?: unknown } }).error?.code;
+    return code === 'json_validate_failed';
+  } catch {
+    return false;
+  }
+}
+
 export async function chatCompletionJson<T>(
   options: ChatCallOptions,
   args: ExtractJsonArgs,
 ): Promise<{ data: T; usage: LlmUsage }> {
+  const requested = args.maxTokens ?? DEFAULT_MAX_TOKENS;
   const body: Record<string, unknown> = {
     model: options.model,
-    max_tokens: args.maxTokens ?? DEFAULT_MAX_TOKENS,
+    max_tokens: requested,
     temperature: 0,
     messages: [
       { role: 'system', content: args.system },
@@ -85,8 +110,9 @@ export async function chatCompletionJson<T>(
   if (options.jsonMode) body.response_format = { type: 'json_object' };
 
   let lastWaitMs = 0;
+  let grewOnce = false;
 
-  for (let attempt = 1; attempt <= MAX_RATE_LIMIT_ATTEMPTS; attempt += 1) {
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
     const response = await fetch(options.url, {
       method: 'POST',
       headers: { 'content-type': 'application/json', ...options.headers },
@@ -100,7 +126,7 @@ export async function chatCompletionJson<T>(
       // The only body we read on a failure, and only for the delay in it.
       const stated = retryAfterMs(response, await response.text());
       lastWaitMs = Math.min(stated ?? 10_000, MAX_RATE_LIMIT_WAIT_MS);
-      if (attempt === MAX_RATE_LIMIT_ATTEMPTS) break;
+      if (attempt === MAX_ATTEMPTS) break;
       await sleep(lastWaitMs + 500);
       continue;
     }
@@ -111,7 +137,19 @@ export async function chatCompletionJson<T>(
     }
 
     if (!response.ok) {
-      // The status and the provider, never the body: a 400 echoes the prompt.
+      // The body is read here and goes no further: a 400 echoes the prompt back.
+      const failure = await response.text();
+      const worthGrowing =
+        response.status === 400 &&
+        !grewOnce &&
+        attempt < MAX_ATTEMPTS &&
+        requested < MAX_OUTPUT_TOKENS &&
+        isTruncation(failure);
+      if (worthGrowing) {
+        grewOnce = true;
+        body.max_tokens = MAX_OUTPUT_TOKENS;
+        continue;
+      }
       throw new LlmResponseError(
         options.providerId,
         `The provider answered ${response.status} ${response.statusText}.`,

@@ -2,6 +2,7 @@
 
 import {
   Area,
+  Bar,
   CartesianGrid,
   ComposedChart,
   Legend,
@@ -30,6 +31,8 @@ export interface TrendSeries {
   area?: boolean;
 }
 
+export type TrendForm = 'line' | 'bar';
+
 /**
  * The line chart every trend uses: 2px lines, markers on every point, a
  * recessive hairline grid, a crosshair on hover, and gaps where a month has no
@@ -41,11 +44,27 @@ export function TrendChart({
   emptyMessage = 'no statement',
   yTickCount = 4,
   tooltipExtras,
+  form = 'line',
+  baseline = 'zero',
 }: {
   data: TrendPoint[];
   series: TrendSeries[];
   emptyMessage?: string;
   yTickCount?: number;
+  /**
+   * `line` for a continuous quantity read over time — a balance, a running
+   * total, a day-by-day figure. `bar` for comparing discrete buckets, which is
+   * what a month-by-month view is: a line between two months implies values in
+   * between that do not exist, and with one month it draws nothing at all.
+   */
+  form?: TrendForm;
+  /**
+   * `zero` anchors the axis at zero, which is the honest default and required
+   * for bars. `auto` fits the axis to the data — only for a line where the
+   * variation is the whole point and would otherwise be a flat line (daily
+   * interest moving between 30.43 and 39.69, say).
+   */
+  baseline?: 'zero' | 'auto';
   /**
    * Extra rows for the hovered point, from fields that are carried on the data
    * but not plotted. A running total is only readable as one line; what was
@@ -75,10 +94,16 @@ export function TrendChart({
           axisLine={false}
           width={56}
           tickCount={yTickCount}
+          domain={baseline === 'auto' ? ['dataMin', 'dataMax'] : [0, 'auto']}
+          allowDecimals={false}
           tickFormatter={(value: number) => formatMinorCompact(value)}
         />
         <Tooltip
-          cursor={{ stroke: theme.crosshair, strokeWidth: 1 }}
+          cursor={
+            form === 'bar'
+              ? { fill: 'color-mix(in srgb, currentColor 6%, transparent)' }
+              : { stroke: theme.crosshair, strokeWidth: 1 }
+          }
           content={({ active, payload, label }) => {
             if (!active || !payload || payload.length === 0) return null;
             const rows = payload.filter((entry) => entry.value !== null && entry.value !== undefined);
@@ -138,6 +163,21 @@ export function TrendChart({
             activeDot: { r: 5, fill: color, stroke: theme.ground, strokeWidth: 2 },
           } as const;
 
+          if (form === 'bar') {
+            return (
+              <Bar
+                key={entry.key}
+                dataKey={entry.key}
+                name={entry.name}
+                fill={color}
+                // Capped rather than filling the slot: the leftover is air.
+                maxBarSize={24}
+                // 4px rounded data-end, square at the baseline.
+                radius={[4, 4, 0, 0]}
+                isAnimationActive={false}
+              />
+            );
+          }
           return entry.area ? (
             <Area key={entry.key} {...common} type="linear" fill={color} fillOpacity={0.1} />
           ) : (

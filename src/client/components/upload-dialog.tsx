@@ -51,9 +51,12 @@ export function UploadDialog({
   }, []);
 
   const close = useCallback(() => {
+    // Refresh on the way out, once, so whatever is behind picks up the upload
+    // without shifting while the dialog is still open.
+    if (result !== null) router.refresh();
     reset();
     onClose();
-  }, [onClose, reset]);
+  }, [onClose, reset, result, router]);
 
   useEffect(() => {
     if (!open) return;
@@ -77,7 +80,10 @@ export function UploadDialog({
       const parsedResult = await postStatement(preparedUpload);
       setResult(parsedResult);
       setPhase('review');
-      router.refresh();
+      // Deliberately not refreshing here. The statement is already saved; the
+      // page behind the dialog does not need to know until the dialog closes,
+      // and refreshing now reflows the library underneath while you are still
+      // reading the review step.
     } catch (caught) {
       if (caught instanceof PdfPasswordRequiredError) {
         setNeedsPassword(true);

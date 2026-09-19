@@ -975,17 +975,18 @@ body {
   position: relative;
   flex: none;
   width: 100%;
-  height: 190px;
+  height: 260px;
 }
 /* Ring beside its list once there is room; stacked below that. */
-@media (min-width: 560px) {
+@media (min-width: 620px) {
   .donut {
     flex-direction: row;
     align-items: center;
-    gap: calc(var(--space-8) * 1.2);
+    gap: calc(var(--space-8) * 1.4);
   }
   .donut-ring {
-    width: 190px;
+    width: 260px;
+    height: 260px;
     flex: none;
   }
   .donut-legend {
@@ -993,21 +994,35 @@ body {
     min-width: 0;
   }
 }
+/* The hole is the readout. It shows the total at rest and the hovered slice
+   while one is under the pointer — which is why this chart has no tooltip. */
 .donut-centre {
   position: absolute;
-  inset: 0;
+  inset: 22%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  text-align: center;
   pointer-events: none;
-  gap: 2px;
+  gap: 1px;
+}
+.donut-centre-name {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .donut-total {
   font-family: var(--font-heading);
   font-weight: var(--font-heading-weight);
-  font-size: 19px;
+  font-size: 22px;
   letter-spacing: -0.02em;
+  line-height: 1.15;
 }
 .donut-caption {
   font-size: 10.5px;
@@ -1026,6 +1041,10 @@ body {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+}
+.recharts-sector {
+  transition: fill-opacity 0.12s ease;
+  outline: none;
 }
 .donut-swatch {
   width: 8px;
@@ -1302,4 +1321,26 @@ button.donut-legend-button:hover {
   .header-title {
     max-width: 100%;
   }
+}
+
+/* ── dialogs that outgrow the window ──────────────────────────────────────── */
+
+/*
+ * The design system centres a dialog in a fixed backdrop, which is right until
+ * the dialog is taller than the window — then its actions sit below the fold
+ * with no way to reach them, because a fixed parent does not scroll. The review
+ * step after parsing a statement is exactly that tall on a laptop.
+ */
+.dialog-backdrop {
+  overflow-y: auto;
+  /* Start at the top rather than centring, so a tall dialog is scrolled from
+     its beginning instead of its middle. */
+  align-items: start;
+  padding-block: var(--space-6);
+}
+.dialog {
+  max-height: calc(100vh - var(--space-8) * 2);
+  overflow-y: auto;
+  /* The scrollbar should not sit flush against the content. */
+  scrollbar-gutter: stable;
 }

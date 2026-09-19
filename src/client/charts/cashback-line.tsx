@@ -2,13 +2,12 @@
 
 import {
   CartesianGrid,
+  Line,
+  LineChart,
   ResponsiveContainer,
-  Scatter,
-  ScatterChart,
   Tooltip,
   XAxis,
   YAxis,
-  ZAxis,
 } from 'recharts';
 import { formatMinor, formatMinorCompact, formatPct } from '@/shared/money';
 import { chartTheme, seriesColor } from './theme';
@@ -22,59 +21,58 @@ export interface CashbackPoint {
 }
 
 /**
- * Cashback against spend, one dot per purchase. A scatter rather than the
- * mockup's line: these points have no order along x, and joining them would
- * draw a trend that does not exist.
+ * Cashback, purchase by purchase, **in the order they happened**.
  *
- * Rows that earned nothing sit on the zero line, which is the point — they are
- * the ones worth noticing, and the "Earned nothing" list names them.
+ * This used to be a scatter of cashback against spend. That plot is technically
+ * defensible — the two are correlated, which is what it showed — but it was
+ * nearly all whitespace with one point in the far corner, and it answered a
+ * question nobody asks. "Did this purchase earn anything?" is the question, and
+ * it is a sequence through the cycle, so the points connect.
+ *
+ * A purchase that earned nothing sits on zero, which is exactly the dip you
+ * want to notice; the "Earned nothing" list below names each one.
  */
-export function CashbackScatter({ points }: { points: CashbackPoint[] }) {
+export function CashbackLine({ points }: { points: CashbackPoint[] }) {
   const theme = chartTheme();
-  const earning = points.filter((point) => point.cashbackMinor > 0);
-  const nothing = points.filter((point) => point.cashbackMinor === 0);
   const good = seriesColor(theme, 'good');
-  const muted = theme.axisText;
+
+  const data = points.map((point, index) => ({
+    ...point,
+    index,
+    // A short label; the tooltip carries the full merchant name.
+    label: point.date,
+  }));
 
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <ScatterChart margin={{ top: 8, right: 16, left: 4, bottom: 18 }}>
-        <CartesianGrid stroke={theme.grid} strokeWidth={1} />
+      <LineChart data={data} margin={{ top: 8, right: 16, left: 4, bottom: 4 }}>
+        <CartesianGrid stroke={theme.grid} strokeWidth={1} vertical={false} />
         <XAxis
-          type="number"
-          dataKey="spendMinor"
-          name="Spend"
+          dataKey="label"
           tick={{ fill: theme.axisText, fontSize: 11, fontFamily: theme.font }}
           tickLine={false}
           axisLine={{ stroke: theme.axis }}
-          tickFormatter={(value: number) => formatMinorCompact(value)}
-          label={{
-            value: 'spend',
-            position: 'insideBottomRight',
-            offset: -10,
-            fill: theme.axisText,
-            fontSize: 10,
-          }}
+          interval="preserveStartEnd"
+          minTickGap={24}
         />
         <YAxis
-          type="number"
-          dataKey="cashbackMinor"
-          name="Cashback"
           tick={{ fill: theme.axisText, fontSize: 11, fontFamily: theme.font }}
           tickLine={false}
           axisLine={false}
           width={56}
+          tickCount={4}
+          domain={[0, 'auto']}
           tickFormatter={(value: number) => formatMinorCompact(value)}
         />
-        <ZAxis range={[60, 60]} />
         <Tooltip
           cursor={{ stroke: theme.crosshair, strokeWidth: 1 }}
           content={({ active, payload }) => {
-            const point = payload?.[0]?.payload as CashbackPoint | undefined;
+            const point = payload?.[0]?.payload as (CashbackPoint & { label: string }) | undefined;
             if (!active || !point) return null;
             const rate = point.spendMinor > 0 ? (point.cashbackMinor / point.spendMinor) * 100 : 0;
             return (
               <TooltipShell title={point.merchant}>
+                <TooltipRow label="Date" value={point.date} />
                 <TooltipRow label="Spend" value={formatMinor(point.spendMinor)} />
                 <TooltipRow
                   label="Cashback"
@@ -83,30 +81,21 @@ export function CashbackScatter({ points }: { points: CashbackPoint[] }) {
                   tone={point.cashbackMinor > 0 ? 'positive' : 'muted'}
                 />
                 <TooltipRow label="Rate" value={formatPct(rate, 2)} />
-                <TooltipRow label="Date" value={point.date} />
               </TooltipShell>
             );
           }}
         />
-        <Scatter
-          name="Earned cashback"
-          data={earning}
-          fill={good}
-          stroke={theme.ground}
+        <Line
+          type="linear"
+          dataKey="cashbackMinor"
+          name="Cashback"
+          stroke={good}
           strokeWidth={2}
           isAnimationActive={false}
+          dot={{ r: 4, fill: good, stroke: theme.ground, strokeWidth: 2 }}
+          activeDot={{ r: 5, fill: good, stroke: theme.ground, strokeWidth: 2 }}
         />
-        {/* Hollow, muted marks: same shape, no colour claim. The list below
-            names every one of them. */}
-        <Scatter
-          name="Earned nothing"
-          data={nothing}
-          fill="transparent"
-          stroke={muted}
-          strokeWidth={1.5}
-          isAnimationActive={false}
-        />
-      </ScatterChart>
+      </LineChart>
     </ResponsiveContainer>
   );
 }

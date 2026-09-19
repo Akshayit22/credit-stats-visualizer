@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useMemo } from 'react';
 import { formatMinor, formatPct } from '@/shared/money';
 import type { Account, CreditCardStatement, Period, Summary, Transaction } from '@/shared/types';
-import { CashbackScatter } from '@/client/charts/cashback-scatter';
+import { CashbackLine } from '@/client/charts/cashback-line';
 import { ChartBlock, useMounted } from '@/client/charts/chart-frame';
 import { chartTheme, seriesColor } from '@/client/charts/theme';
 import { TrendChart } from '@/client/charts/trend-chart';
@@ -27,6 +27,7 @@ export interface CashbackScreenProps {
 export function CashbackScreen(props: CashbackScreenProps) {
   const mounted = useMounted();
   const theme = mounted ? chartTheme() : null;
+  const isYear = props.mode === 'year';
 
   const purchases = useMemo(
     () =>
@@ -58,14 +59,12 @@ export function CashbackScreen(props: CashbackScreenProps) {
   }, [purchases]);
   const biggestCashback = byCategory[0]?.cashback ?? 1;
 
-  const monthly = props.availablePeriods.map((period) => {
-    const summary = props.summaries.find((item) => item.period === period);
-    const has = props.periodsWithData.includes(period);
-    return {
-      label: formatPeriodShort(period),
-      cashback: has ? (summary?.cashbackEarnedMinor ?? 0) : null,
-    };
-  });
+  // Only months with a statement. A line stretched across eight empty months
+  // to reach one data point says nothing and looks broken.
+  const monthly = props.periodsWithData.map((period) => ({
+    label: formatPeriodShort(period),
+    cashback: props.summaries.find((item) => item.period === period)?.cashbackEarnedMinor ?? 0,
+  }));
 
   const best = [...earning].sort(
     (a, b) => (b.cashbackMinor ?? 0) - (a.cashbackMinor ?? 0),
@@ -96,16 +95,29 @@ export function CashbackScreen(props: CashbackScreenProps) {
           <div className="page-head">
             <div>
               <div className="page-kicker">Cashback · {props.account.displayName}</div>
-              <h1 className="page-title">{formatPeriodLabel(props.selectedPeriod)}</h1>
+              <h1 className="page-title">
+                {isYear
+                  ? `Calendar ${props.selectedPeriod.slice(0, 4)}`
+                  : formatPeriodLabel(props.selectedPeriod)}
+              </h1>
             </div>
             <div className="page-sub">
-              {props.statement
-                ? formatPeriodRange(props.statement.periodStart, props.statement.periodEnd)
-                : props.account.maskedNumber}
+              {isYear
+                ? `${props.periodsWithData.length} cycle${props.periodsWithData.length === 1 ? '' : 's'} uploaded`
+                : props.statement
+                  ? formatPeriodRange(props.statement.periodStart, props.statement.periodEnd)
+                  : props.account.maskedNumber}
             </div>
           </div>
 
-          {!props.statement ? (
+          {isYear ? (
+            <CashbackYear
+              periodsWithData={props.periodsWithData}
+              summaries={props.summaries}
+              monthly={monthly}
+              theme={theme}
+            />
+          ) : !props.statement ? (
             <div className="empty-state">
               <Icon.Percent size={24} style={{ opacity: 0.5 }} />
               <p className="empty-title">
@@ -151,7 +163,7 @@ export function CashbackScreen(props: CashbackScreenProps) {
 
               <ChartBlock
                 title="Cashback, transaction by transaction"
-                subtitle="each dot is one purchase · hover for the merchant and the rate"
+                subtitle="in the order they happened · a dip to zero earned nothing"
                 markColor={theme ? seriesColor(theme, 'good') : undefined}
                 height={230}
                 stats={
@@ -165,7 +177,7 @@ export function CashbackScreen(props: CashbackScreenProps) {
                     : undefined
                 }
               >
-                <CashbackScatter
+                <CashbackLine
                   points={purchases.map((txn) => ({
                     merchant: txn.merchant || txn.descriptionRaw,
                     date: formatDayShort(txn.date),
@@ -184,7 +196,8 @@ export function CashbackScreen(props: CashbackScreenProps) {
                 >
                   <TrendChart
                     data={monthly}
-                    series={[{ key: 'cashback', name: 'Cashback', role: 'good', area: true }]}
+                    form="bar"
+                    series={[{ key: 'cashback', name: 'Cashback', role: 'good' }]}
                   />
                 </ChartBlock>
 
@@ -272,6 +285,134 @@ export function CashbackScreen(props: CashbackScreenProps) {
           )}
         </section>
       </main>
+    </>
+  );
+}
+
+/**
+ * Cashback across a whole year. The month view is per cycle; this is the same
+ * question asked of every cycle at once, which is what "Year" was silently
+ * failing to answer — it used to land on December, find no statement there, and
+ * say "nothing uploaded" while eight months of data sat beside it.
+ */
+function CashbackYear({
+  periodsWithData,
+  summaries,
+  monthly,
+  theme,
+}: {
+  periodsWithData: Period[];
+  summaries: Summary[];
+  monthly: Array<{ label: string; cashback: number }>;
+  theme: ReturnType<typeof chartTheme> | null;
+}) {
+  const inYear = summaries.filter((summary) => periodsWithData.includes(summary.period));
+
+  if (inYear.length === 0) {
+    return (
+      <div className="empty-state">
+        <Icon.Percent size={24} style={{ opacity: 0.5 }} />
+        <p className="empty-title">No statements for this year yet</p>
+        <p className="empty-body">
+          Upload a cycle&rsquo;s statement and the year fills in.
+        </p>
+      </div>
+    );
+  }
+
+  const earned = inYear.reduce((total, summary) => total + summary.cashbackEarnedMinor, 0);
+  const credited = inYear.reduce((total, summary) => total + summary.cashbackCreditedMinor, 0);
+  const spend = inYear.reduce((total, summary) => total + summary.spendMinor, 0);
+  const best = [...inYear].sort((a, b) => b.cashbackEarnedMinor - a.cashbackEarnedMinor)[0];
+
+  return (
+    <>
+      <TileRow>
+        <StatTile
+          label="Earned this year"
+          value={formatMinor(earned)}
+          tone="positive"
+          note={`across ${inYear.length} cycle${inYear.length === 1 ? '' : 's'}`}
+        />
+        <StatTile
+          label="Credited this year"
+          value={formatMinor(credited)}
+          note="each cycle is credited in the next"
+        />
+        <StatTile
+          label="Effective rate"
+          value={spend > 0 ? formatPct((earned / spend) * 100, 2) : '\u2014'}
+          note={`on ${formatMinor(spend, 0)} of spend`}
+        />
+        <StatTile
+          label="Best cycle"
+          value={best ? formatMinor(best.cashbackEarnedMinor) : '\u2014'}
+          note={best ? formatPeriodLabel(best.period) : undefined}
+        />
+      </TileRow>
+
+      <ChartBlock
+        title="Cashback by cycle"
+        subtitle="only months with a statement"
+        markColor={theme ? seriesColor(theme, 'good') : undefined}
+        height={200}
+        stats={[
+          { label: 'Total', value: formatMinor(earned) },
+          {
+            label: 'Average',
+            value: formatMinor(Math.round(earned / Math.max(inYear.length, 1))),
+          },
+        ]}
+      >
+        <TrendChart
+          data={monthly}
+          form="bar"
+          series={[{ key: 'cashback', name: 'Cashback', role: 'good' }]}
+        />
+      </ChartBlock>
+
+      <section className="block">
+        <div className="block-head">
+          <h3 className="block-title">Cycle by cycle</h3>
+        </div>
+        <div className="table-scroll">
+          <table className="table" style={{ minWidth: 520 }}>
+            <thead>
+              <tr>
+                <th style={{ width: 130 }}>Cycle</th>
+                <th className="num">Spend</th>
+                <th className="num">Earned</th>
+                <th className="num">Credited</th>
+                <th className="num">Rate</th>
+              </tr>
+            </thead>
+            <tbody>
+              {inYear.map((summary) => (
+                <tr key={summary.period}>
+                  <td style={{ fontSize: 12.5 }}>{formatPeriodLabel(summary.period)}</td>
+                  <td className="num">{formatMinor(summary.spendMinor, 0)}</td>
+                  <td className="num is-positive">{formatMinor(summary.cashbackEarnedMinor)}</td>
+                  <td className="num">{formatMinor(summary.cashbackCreditedMinor)}</td>
+                  <td className="num is-muted">
+                    {summary.spendMinor > 0
+                      ? formatPct((summary.cashbackEarnedMinor / summary.spendMinor) * 100, 2)
+                      : '\u2014'}
+                  </td>
+                </tr>
+              ))}
+              <tr className="total-row">
+                <td style={{ fontSize: 12.5 }}>Total</td>
+                <td className="num">{formatMinor(spend, 0)}</td>
+                <td className="num is-positive">{formatMinor(earned)}</td>
+                <td className="num">{formatMinor(credited)}</td>
+                <td className="num is-muted">
+                  {spend > 0 ? formatPct((earned / spend) * 100, 2) : '\u2014'}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
     </>
   );
 }

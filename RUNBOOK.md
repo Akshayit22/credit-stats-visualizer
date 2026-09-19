@@ -48,6 +48,30 @@ Run `npm run db:up && npm run db:create` to include it.
 If you see that line, you are running a smaller suite than CI does. Bring the
 containers up and run again before trusting a green result.
 
+### Browser tests
+
+```bash
+npm run test:e2e             # Playwright, against a real Chrome
+npm run test:e2e -- --ui     # step through it
+```
+
+These cover the half the vitest suites cannot: pdf.js fetching its worker,
+opening a real PDF, extracting text with positions, redacting it, hashing it
+with `crypto.subtle`, and posting it. The parser suites start from text
+something else already produced, so they prove none of that.
+
+They need the real PDFs in `samples/` and a running app. Playwright starts the
+app itself (or reuses one already on :3000), and every case **skips** when
+`samples/` is absent — so this never fails on a clone that does not have them.
+
+They use the Chrome already installed on the machine rather than downloading
+one. If `channel: 'chrome'` cannot find it, either install Chrome or run
+`npx playwright install chromium` and drop the `channel` line from
+`playwright.config.ts`.
+
+The suite uploads statements, so run `npm run db:reset` afterwards if you want
+the demo data back exactly as seeded.
+
 No test ever calls a real model. `LLM_PROVIDER` is forced to `mock`, and the
 mock throws if it is asked for a fixture nobody registered — which is how
 `tests/fallback.test.ts` proves that a statement a deterministic parser covers

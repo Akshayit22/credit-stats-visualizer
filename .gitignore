@@ -33,3 +33,8 @@ Thumbs.db
 
 # built by the postinstall step, version-locked to pdfjs-dist
 public/pdf.worker.min.mjs
+
+# playwright
+test-results/
+playwright-report/
+junit-e2e.xml

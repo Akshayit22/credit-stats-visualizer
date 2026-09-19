@@ -56,6 +56,12 @@ component state that outlives the dialog. See `src/client/lib/pdf-text.ts`.
 `application/json`, so a multipart upload cannot reach the pipeline even by
 mistake.
 
+**This is asserted, not assumed.** `tests/e2e/upload.spec.ts` uploads the real
+PDFs in a real browser, intercepts the outgoing request, and checks that the
+body is JSON, that it does not contain `%PDF`, and that the holder's name,
+address, account number and email are already absent — before the server has
+had any chance to remove them.
+
 ---
 
 ## What redaction removes

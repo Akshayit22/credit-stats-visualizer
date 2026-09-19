@@ -18,6 +18,7 @@ export const CATEGORIES = [
   'Entertainment',
   'Digital & subscriptions',
   'Cash & transfers',
+  'Investments',
   'Fees & interest',
   'Income',
   'Uncategorised',

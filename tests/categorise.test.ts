@@ -57,6 +57,22 @@ describe('built-in merchant rules', () => {
     expect(categoryForMerchantRule('ZOMATO ORDER')).toBe('Food & dining');
   });
 
+  it('separates investing from moving money around', () => {
+    // Buying into a broker is not the same as shuffling cash between your own
+    // accounts, even though both are "money that left without being spent".
+    expect(categoryForMerchantRule('UPI/STABLE BROKING PRIVA/x')).toBe('Investments');
+    expect(categoryForMerchantRule('ZERODHA BROKING')).toBe('Investments');
+    expect(categoryForMerchantRule('GROWW MUTUAL FUND SIP')).toBe('Investments');
+    expect(categoryForMerchantRule('NPS CONTRIBUTION')).toBe('Investments');
+
+    // The specific rule wins even when a transfer word is in the same row.
+    expect(categoryForMerchantRule('NEFT TO ZERODHA SECURITIES')).toBe('Investments');
+
+    // And a plain self-transfer stays where it was.
+    expect(categoryForMerchantRule('UPI-Debit-123-SELF-x')).toBe('Cash & transfers');
+    expect(categoryForMerchantRule('ATM CASH WITHDRAWAL')).toBe('Cash & transfers');
+  });
+
   it('places fees and interest', () => {
     expect(categoryForMerchantRule('DCC MARKUP')).toBe('Fees & interest');
     expect(categoryForMerchantRule('GST')).toBe('Fees & interest');

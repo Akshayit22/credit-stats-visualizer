@@ -54,12 +54,20 @@ export const MERCHANT_RULES: readonly MerchantRule[] = [
   { pattern: /\b(?:BOOKMYSHOW|PVR|INOX|CINEPOLIS|CINEMA|MULTIPLEX)\b/, category: 'Entertainment' },
   { pattern: /\b(?:NETFLIX|SPOTIFY|PRIME VIDEO|HOTSTAR|JIOCINEMA|SONYLIV|ZEE5|YOUTUBE PREMIUM|APPLE\.COM\/BILL|ICLOUD|GOOGLE ONE|GOOGLE PLAY|PLAYSTORE|APP STORE|OPENAI|CHATGPT|ANTHROPIC|CLAUDE\.AI|GITHUB|NOTION|FIGMA|ADOBE|MICROSOFT|CANVA)\b/, category: 'Digital & subscriptions' },
 
+  // Investing is its own thing. It was folded into transfers on the grounds
+  // that the money is moved rather than spent — true, but it makes a month
+  // where you invested look identical to one where you shuffled cash between
+  // your own accounts, which is the opposite of useful.
+  //
+  // Above the transfer rules on purpose: a broker's UPI row often carries a
+  // transfer word too, and "bought shares" is the more specific fact.
+  { pattern: /\b(?:ZERODHA|GROWW|UPSTOX|ANGEL ?ONE|STABLE BROKING|BROKING|SECURITIES|DEMAT|MUTUAL ?FUND|SMALLCASE|KUVERA|INDMONEY|PAYTM MONEY|COIN ?DCX|WAZIRX|VAULTED|SIP)\b/, category: 'Investments' },
+  { pattern: /\b(?:NPS|PPF|ELSS|SOVEREIGN GOLD|RECURRING DEPOSIT|FIXED DEPOSIT)\b/, category: 'Investments' },
+
   // Transfers and ATM.
   { pattern: /\b(?:ATM|CASH WITHDRAWAL|CASH ADVANCE)\b/, category: 'Cash & transfers' },
   { pattern: /\b(?:SELF|OWN ACCOUNT|IMPS|NEFT|RTGS|FUND TRANSFER)\b/, category: 'Cash & transfers' },
 
-  // Investing sits under transfers: money moved, not money spent.
-  { pattern: /\b(?:ZERODHA|GROWW|UPSTOX|ANGEL ONE|STABLE BROKING|BROKING|MUTUAL FUND|SIP|KUVERA|COIN DCX|SMALLCASE)\b/, category: 'Cash & transfers' },
 ];
 
 /**

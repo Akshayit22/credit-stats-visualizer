@@ -17,6 +17,10 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   testDir: './tests/e2e',
+  // Both specs want a known database: the chart tests need the sample
+  // statements present, the upload tests need them absent. Seeding once up
+  // front means neither depends on what the other left behind.
+  globalSetup: './tests/e2e/global-setup.ts',
   timeout: 90_000,
   expect: { timeout: 15_000 },
   fullyParallel: false,

@@ -61,6 +61,12 @@ async function uploadAndParse(page: Page, pdfPath: string): Promise<void> {
 test.describe('uploading a statement in a browser', () => {
   test.beforeEach(async ({ page }) => {
     await signIn(page);
+    // These tests upload the very statements the seed loads, so a seeded
+    // database would make every one of them a duplicate. Start from nothing;
+    // the uploads themselves put the data back.
+    await page.request.post('/api/account/delete', {
+      data: { confirm: 'delete my data' },
+    });
   });
 
   test('parses a credit card PDF and reconciles it', async ({ page }) => {

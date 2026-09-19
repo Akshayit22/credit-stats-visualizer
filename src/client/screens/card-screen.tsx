@@ -322,14 +322,17 @@ function YearView({
   const theme = mounted ? chartTheme() : null;
   const byPeriod = new Map(summaries.map((summary) => [summary.period, summary]));
 
-  const data = periods.map((period) => {
+  // Only cycles that exist. Stretching an axis across eleven empty months to
+  // reach one bar tells you nothing you did not already know from the coverage
+  // note, and reads as a broken chart.
+  const shown = periods.filter((period) => withData.includes(period));
+  const data = shown.map((period) => {
     const summary = byPeriod.get(period);
-    const has = withData.includes(period);
     return {
       label: formatPeriodShort(period),
-      spend: has ? (summary?.spendMinor ?? 0) : null,
-      cashback: has ? (summary?.cashbackEarnedMinor ?? 0) : null,
-      fees: has ? (summary?.feesMinor ?? 0) : null,
+      spend: summary?.spendMinor ?? 0,
+      cashback: summary?.cashbackEarnedMinor ?? 0,
+      fees: summary?.feesMinor ?? 0,
     };
   });
 
@@ -337,8 +340,17 @@ function YearView({
     data.reduce((sum, point) => sum + (point[key] ?? 0), 0);
   const count = withData.length || 1;
 
-  const lastWithData = [...periods].reverse().find((period) => withData.includes(period));
+  const lastWithData = [...shown].reverse().pop() ?? shown[shown.length - 1];
   const closing = lastWithData ? (byPeriod.get(lastWithData)?.closingBalanceMinor ?? 0) : 0;
+  if (shown.length === 0) {
+    return (
+      <div className="empty-state">
+        <Icon.CalendarX size={26} style={{ color: 'var(--color-accent)', opacity: 0.75 }} />
+        <p className="empty-title">No statements for this year yet</p>
+        <p className="empty-body">Upload a cycle&rsquo;s statement and the year fills in.</p>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -352,7 +364,7 @@ function YearView({
         <ChartBlock
           key={block.key}
           title={block.title}
-          subtitle="per statement cycle"
+          subtitle={`${shown.length} cycle${shown.length === 1 ? '' : 's'} uploaded`}
           markColor={theme ? seriesColor(theme, block.role) : undefined}
           height={180}
           stats={[
@@ -362,7 +374,8 @@ function YearView({
         >
           <TrendChart
             data={data}
-            series={[{ key: block.key, name: block.title, role: block.role, area: true }]}
+            form="bar"
+            series={[{ key: block.key, name: block.title, role: block.role }]}
           />
         </ChartBlock>
       ))}
@@ -384,30 +397,26 @@ function YearView({
               </tr>
             </thead>
             <tbody>
-              {periods.map((period) => {
+              {shown.map((period) => {
                 const summary = byPeriod.get(period);
-                const has = withData.includes(period);
+                const fees = summary?.feesMinor ?? 0;
                 return (
-                  <tr key={period} data-empty={!has}>
+                  <tr key={period}>
                     <td style={{ fontSize: 12.5 }}>{formatPeriodLabel(period)}</td>
-                    <td className="num">{has ? formatMinor(summary?.spendMinor ?? 0) : 'no statement'}</td>
-                    <td className={`num ${has ? 'is-positive' : 'is-muted'}`}>
-                      {has ? formatMinor(summary?.cashbackEarnedMinor ?? 0) : '—'}
+                    <td className="num">{formatMinor(summary?.spendMinor ?? 0)}</td>
+                    <td className="num is-positive">
+                      {formatMinor(summary?.cashbackEarnedMinor ?? 0)}
                     </td>
-                    <td className={`num ${has && (summary?.feesMinor ?? 0) > 0 ? 'is-warning' : 'is-muted'}`}>
-                      {has && (summary?.feesMinor ?? 0) > 0 ? formatMinor(summary?.feesMinor ?? 0) : '—'}
+                    <td className={`num ${fees > 0 ? 'is-warning' : 'is-muted'}`}>
+                      {fees > 0 ? formatMinor(fees) : '—'}
                     </td>
-                    <td className="num">{has ? formatMinor(summary?.paymentsMinor ?? 0) : '—'}</td>
-                    <td className="num">
-                      {has ? formatMinor(summary?.closingBalanceMinor ?? 0) : '—'}
-                    </td>
+                    <td className="num">{formatMinor(summary?.paymentsMinor ?? 0)}</td>
+                    <td className="num">{formatMinor(summary?.closingBalanceMinor ?? 0)}</td>
                   </tr>
                 );
               })}
               <tr className="total-row">
-                <td style={{ fontSize: 12.5 }}>
-                  Total{withData.length < periods.length ? '*' : ''}
-                </td>
+                <td style={{ fontSize: 12.5 }}>Total</td>
                 <td className="num">{formatMinor(totals('spend'), 0)}</td>
                 <td className="num is-positive">{formatMinor(totals('cashback'), 0)}</td>
                 <td className="num is-warning">{formatMinor(totals('fees'), 0)}</td>
@@ -422,10 +431,11 @@ function YearView({
             </tbody>
           </table>
         </div>
-        {withData.length < periods.length && (
-          <p className="is-warning" style={{ fontSize: 11.5, margin: 0 }}>
-            * Built from {withData.length} of {periods.length} months. Shaded rows have no statement
-            uploaded.
+        {shown.length < periods.length && (
+          <p className="block-sub" style={{ margin: 0 }}>
+            Built from the {shown.length} month{shown.length === 1 ? '' : 's'} you have uploaded, of{' '}
+            {periods.length} in view. Months with no statement are left out rather than shown as
+            zero.
           </p>
         )}
       </section>

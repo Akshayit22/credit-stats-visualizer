@@ -69,8 +69,11 @@ one. If `channel: 'chrome'` cannot find it, either install Chrome or run
 `npx playwright install chromium` and drop the `channel` line from
 `playwright.config.ts`.
 
-The suite uploads statements, so run `npm run db:reset` afterwards if you want
-the demo data back exactly as seeded.
+A global setup resets and reseeds the database before every run, because the
+two specs want opposite things from it — the chart tests need the sample
+statements present, the upload tests need them absent — and whichever ran last
+used to decide what the other found. The run leaves the database in whatever
+state the last test put it; `npm run db:reset` puts the demo data back.
 
 No test ever calls a real model. `LLM_PROVIDER` is forced to `mock`, and the
 mock throws if it is asked for a fixture nobody registered — which is how

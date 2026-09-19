@@ -170,6 +170,11 @@ function SavingsMonth({
   }, [transactions, statement.periodStart, statement.periodEnd]);
 
   const daysCredited = interestDaily.filter((point) => point.onTheDay > 0).length;
+  const creditedAmounts = interestDaily
+    .filter((point) => point.onTheDay > 0)
+    .map((point) => point.onTheDay);
+  const lowestCredit = creditedAmounts.length > 0 ? Math.min(...creditedAmounts) : 0;
+  const highestCredit = creditedAmounts.length > 0 ? Math.max(...creditedAmounts) : 0;
   const balances = daily.map((point) => point.balance);
 
   return (
@@ -235,6 +240,29 @@ function SavingsMonth({
 
       {savings.interestEarnedMinor > 0 && (
         <ChartBlock
+          title="Interest credited each day"
+          subtitle="what landed that day, not the running total"
+          markColor={theme ? seriesColor(theme, 'good') : undefined}
+          height={180}
+          stats={[
+            { label: 'Lowest', value: formatMinor(lowestCredit) },
+            { label: 'Highest', value: formatMinor(highestCredit) },
+          ]}
+        >
+          <TrendChart
+            data={interestDaily.filter((point) => point.onTheDay > 0)}
+            series={[{ key: 'onTheDay', name: 'Credited', role: 'good' }]}
+            // Fitted, not anchored at zero: these sit between roughly 24 and 40
+            // rupees, and an axis starting at zero draws a flat line that hides
+            // the very thing this chart exists to show.
+            baseline="auto"
+            yTickCount={5}
+          />
+        </ChartBlock>
+      )}
+
+      {savings.interestEarnedMinor > 0 && (
+        <ChartBlock
           title="Interest earned"
           subtitle={`day by day, running total \u00b7 credited on ${daysCredited} of ${interestDaily.length} days`}
           markColor={theme ? seriesColor(theme, 'good') : undefined}
@@ -287,36 +315,50 @@ function YearFlow({
   const theme = mounted ? chartTheme() : null;
   const byPeriod = new Map(summaries.map((summary) => [summary.period, summary]));
 
-  const data = periods.map((period) => {
+  // Only months with a statement — an axis stretched across empty months to
+  // reach two points reads as a broken chart rather than as missing data.
+  const shown = periods.filter((period) => withData.includes(period));
+  const data = shown.map((period) => {
     const summary = byPeriod.get(period);
-    const has = withData.includes(period);
     return {
       label: formatPeriodShort(period),
-      moneyIn: has ? (summary?.incomeMinor ?? 0) : null,
-      moneyOut: has ? (summary?.spendMinor ?? 0) : null,
-      interest: has ? (summary?.interestMinor ?? 0) : null,
+      moneyIn: summary?.incomeMinor ?? 0,
+      moneyOut: summary?.spendMinor ?? 0,
+      interest: summary?.interestMinor ?? 0,
     };
   });
 
   const total = (key: 'moneyIn' | 'moneyOut' | 'interest') =>
     data.reduce((sum, point) => sum + (point[key] ?? 0), 0);
-  const count = withData.length || 1;
+  const count = shown.length || 1;
+
+  if (shown.length === 0) {
+    return (
+      <div className="empty-state">
+        <Icon.CalendarX size={26} style={{ color: 'var(--color-accent)', opacity: 0.75 }} />
+        <p className="empty-title">No statements for this year yet</p>
+        <p className="empty-body">Upload a month&rsquo;s statement and the year fills in.</p>
+      </div>
+    );
+  }
 
   return (
     <>
       <ChartBlock
         title="Money in and out"
-        subtitle="per month"
+        subtitle={`${shown.length} month${shown.length === 1 ? '' : 's'} uploaded`}
         height={200}
         stats={[
           { label: 'In', value: formatMinor(total('moneyIn'), 0) },
           { label: 'Out', value: formatMinor(total('moneyOut'), 0) },
         ]}
       >
-        {/* Two series, so a legend is always present — the identity channel
-            never rests on telling two colours apart. */}
+        {/* Bars side by side: months are buckets to compare, not a continuum.
+            Two series, so a legend is always present — identity never rests on
+            telling two colours apart. */}
         <TrendChart
           data={data}
+          form="bar"
           series={[
             { key: 'moneyIn', name: 'Money in', role: 'good' },
             { key: 'moneyOut', name: 'Money out', role: 'primary' },
@@ -336,7 +378,8 @@ function YearFlow({
       >
         <TrendChart
           data={data}
-          series={[{ key: 'interest', name: 'Interest earned', role: 'good', area: true }]}
+          form="bar"
+          series={[{ key: 'interest', name: 'Interest earned', role: 'good' }]}
         />
       </ChartBlock>
 
@@ -356,32 +399,38 @@ function YearFlow({
               </tr>
             </thead>
             <tbody>
-              {periods.map((period) => {
+              {shown.map((period) => {
                 const summary = byPeriod.get(period);
-                const has = withData.includes(period);
                 return (
-                  <tr key={period} data-empty={!has}>
+                  <tr key={period}>
                     <td style={{ fontSize: 12.5 }}>{formatPeriodLabel(period)}</td>
-                    <td className="num">
-                      {has ? formatMinor(summary?.incomeMinor ?? 0, 0) : 'no statement'}
-                    </td>
-                    <td className="num">{has ? formatMinor(summary?.spendMinor ?? 0, 0) : '—'}</td>
-                    <td className={`num ${has ? 'is-positive' : 'is-muted'}`}>
-                      {has ? formatMinor(summary?.interestMinor ?? 0) : '—'}
-                    </td>
-                    <td className="num">
-                      {has ? formatMinor(summary?.closingBalanceMinor ?? 0, 0) : '—'}
-                    </td>
+                    <td className="num">{formatMinor(summary?.incomeMinor ?? 0, 0)}</td>
+                    <td className="num">{formatMinor(summary?.spendMinor ?? 0, 0)}</td>
+                    <td className="num is-positive">{formatMinor(summary?.interestMinor ?? 0)}</td>
+                    <td className="num">{formatMinor(summary?.closingBalanceMinor ?? 0, 0)}</td>
                   </tr>
                 );
               })}
+              <tr className="total-row">
+                <td style={{ fontSize: 12.5 }}>Total</td>
+                <td className="num">{formatMinor(total('moneyIn'), 0)}</td>
+                <td className="num">{formatMinor(total('moneyOut'), 0)}</td>
+                <td className="num is-positive">{formatMinor(total('interest'))}</td>
+                <td className="num">
+                  {formatMinor(
+                    byPeriod.get(shown[shown.length - 1] ?? '')?.closingBalanceMinor ?? 0,
+                    0,
+                  )}
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
-        {withData.length < periods.length && (
-          <p className="is-warning" style={{ fontSize: 11.5, margin: 0 }}>
-            * Built from {withData.length} of {periods.length} months. Shaded rows have no statement
-            uploaded.
+        {shown.length < periods.length && (
+          <p className="block-sub" style={{ margin: 0 }}>
+            Built from the {shown.length} month{shown.length === 1 ? '' : 's'} you have uploaded, of{' '}
+            {periods.length} in view. Months with no statement are left out rather than shown as
+            zero.
           </p>
         )}
       </section>

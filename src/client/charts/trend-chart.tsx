@@ -40,11 +40,19 @@ export function TrendChart({
   series,
   emptyMessage = 'no statement',
   yTickCount = 4,
+  tooltipExtras,
 }: {
   data: TrendPoint[];
   series: TrendSeries[];
   emptyMessage?: string;
   yTickCount?: number;
+  /**
+   * Extra rows for the hovered point, from fields that are carried on the data
+   * but not plotted. A running total is only readable as one line; what was
+   * credited on the day belongs in the tooltip, not as a second series nobody
+   * asked for.
+   */
+  tooltipExtras?: (point: TrendPoint) => Array<{ label: string; value: string }>;
 }) {
   const theme = chartTheme();
   const multi = series.length > 1;
@@ -77,6 +85,7 @@ export function TrendChart({
             if (rows.length === 0) {
               return <TooltipEmpty title={String(label)} message={emptyMessage} />;
             }
+            const point = rows[0]?.payload as TrendPoint | undefined;
             return (
               <TooltipShell title={String(label)}>
                 {rows.map((entry) => (
@@ -87,6 +96,10 @@ export function TrendChart({
                     color={String(entry.color)}
                   />
                 ))}
+                {point &&
+                  tooltipExtras?.(point).map((extra) => (
+                    <TooltipRow key={extra.label} label={extra.label} value={extra.value} />
+                  ))}
               </TooltipShell>
             );
           }}

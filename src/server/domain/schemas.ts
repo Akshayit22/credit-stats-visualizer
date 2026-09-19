@@ -15,6 +15,26 @@ const isoDate = z
 const minor = z.number().int();
 const positiveMinor = z.number().int().nonnegative();
 
+/**
+ * An optional field where "absent" and "null" mean the same thing.
+ *
+ * `.default()` only fills in `undefined`, and a model asked for a counterparty
+ * it cannot see answers `null` rather than omitting the key — a distinction
+ * without a difference here. Rejecting it sent a perfectly good extraction
+ * round the retry loop and then threw it away.
+ */
+const optionalText = (max: number) =>
+  z
+    .string()
+    .max(max)
+    .nullish()
+    .transform((value) => value ?? '');
+
+const optionalFlag = z
+  .boolean()
+  .nullish()
+  .transform((value) => value ?? false);
+
 export const txnDirectionSchema = z.enum(['debit', 'credit']);
 export const txnModeSchema = z.enum(['upi', 'card', 'interest', 'fee', 'payment', 'other']);
 export const accountTypeSchema = z.enum(['credit_card', 'savings']);
@@ -23,8 +43,8 @@ export const categorySchema = z.enum(CATEGORIES);
 export const parsedTransactionSchema = z.object({
   date: isoDate,
   descriptionRaw: z.string().min(1).max(400),
-  counterparty: z.string().max(200).default(''),
-  merchant: z.string().max(200).default(''),
+  counterparty: optionalText(200),
+  merchant: optionalText(200),
   issuerCategory: z.string().max(80).nullable().default(null),
   amountMinor: positiveMinor,
   direction: txnDirectionSchema,
@@ -32,9 +52,9 @@ export const parsedTransactionSchema = z.object({
   referenceNo: z.string().max(60).nullable().default(null),
   balanceAfterMinor: minor.nullable().default(null),
   cashbackMinor: positiveMinor.nullable().default(null),
-  isFee: z.boolean().default(false),
-  isInterest: z.boolean().default(false),
-  isPayment: z.boolean().default(false),
+  isFee: optionalFlag,
+  isInterest: optionalFlag,
+  isPayment: optionalFlag,
 });
 
 export type ParsedTransaction = z.infer<typeof parsedTransactionSchema>;
@@ -42,9 +62,9 @@ export type ParsedTransaction = z.infer<typeof parsedTransactionSchema>;
 export const parsedAccountSchema = z.object({
   type: accountTypeSchema,
   issuer: z.string().min(1).max(80),
-  productName: z.string().max(120).default(''),
+  productName: optionalText(120),
   last4: z.string().regex(/^\d{2,4}$/, 'expected the last digits only'),
-  maskedNumber: z.string().max(40).default(''),
+  maskedNumber: optionalText(40),
   creditLimitMinor: positiveMinor.nullable().default(null),
   cashLimitMinor: positiveMinor.nullable().default(null),
   openedAt: isoDate.nullable().default(null),

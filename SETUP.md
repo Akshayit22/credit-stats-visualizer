@@ -159,8 +159,16 @@ AWS_SECRET_ACCESS_KEY=...
 ```bash
 LLM_PROVIDER=groq
 GROQ_API_KEY=gsk_...
-GROQ_MODEL=llama-3.3-70b-versatile
+GROQ_MODEL=openai/gpt-oss-120b
 ```
+
+> Groq retires models, and a retired id fails at upload time with a 404 from
+> the vendor rather than at boot. `llama-3.3-70b-versatile`, which this section
+> used to recommend, is one of them. If extraction starts failing on a config
+> that used to work, check the model id against the list above first.
+>
+> Setting `GROQ_API_KEY` is not on its own enough — `LLM_PROVIDER` defaults to
+> `mock`, and mock refuses rather than inventing figures. Both lines are needed.
 
 ### `openai-compatible` — xAI Grok, OpenAI, OpenRouter, Ollama
 

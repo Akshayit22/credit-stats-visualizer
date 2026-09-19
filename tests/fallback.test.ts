@@ -176,16 +176,40 @@ describe('a bank no deterministic parser covers', () => {
     expect(runDeterministicParser(parserInputFor(UNKNOWN_BANK_TEXT))).toBeNull();
   });
 
-  it('fails honestly when no provider is configured', async () => {
+  it('fails honestly when no provider is configured — and says how to fix it', async () => {
     if (!available) return;
-    await expect(
-      ingestStatement({
-        userId: USER_ID,
-        text: UNKNOWN_BANK_TEXT,
-        contentHash: 'a'.repeat(64),
-        llm: null,
-      }),
-    ).rejects.toThrow(/No parser recognised this statement/);
+    const error = await ingestStatement({
+      userId: USER_ID,
+      text: UNKNOWN_BANK_TEXT,
+      contentHash: 'a'.repeat(64),
+      llm: null,
+    }).catch((caught: unknown) => caught);
+
+    const message = (error as Error).message;
+    expect(message).toMatch(/No built-in parser covers this statement/);
+    // The one case where "configure a provider" is the right thing to say.
+    expect(message).toMatch(/LLM_PROVIDER/);
+    expect(message).toMatch(/SETUP\.md/);
+  });
+
+  it('does not blame the configuration when a configured provider failed', async () => {
+    if (!available) return;
+    // The old message said "no AI provider is configured" for every failure
+    // here, including this one — where the provider is configured and working
+    // and simply refused this request. It sent people to the wrong file.
+    clearMockResponses();
+
+    const error = await ingestStatement({
+      userId: USER_ID,
+      text: UNKNOWN_BANK_TEXT,
+      contentHash: 'e'.repeat(64),
+      llm: getLlmFallback(),
+    }).catch((caught: unknown) => caught);
+
+    const message = (error as Error).message;
+    expect(message).toMatch(/No built-in parser covers this statement/);
+    expect(message).not.toMatch(/no AI provider is configured/);
+    expect(message).not.toMatch(/LLM_PROVIDER/);
   });
 
   it('falls back to the model, and stores what it returned', async () => {
@@ -248,7 +272,7 @@ describe('a bank no deterministic parser covers', () => {
 
     // With nothing to fall back *to*, the upload is refused rather than saved.
     expect(result).toBeInstanceOf(Error);
-    expect((result as Error).message).toMatch(/No parser recognised this statement/);
+    expect((result as Error).message).toMatch(/No built-in parser covers this statement/);
   });
 });
 

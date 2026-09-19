@@ -24,7 +24,12 @@ import {
   retryPrompt,
   withSchema,
 } from './prompts';
-import { LlmResponseError, type ExtractJsonArgs, type LlmProvider } from './provider';
+import {
+  LlmResponseError,
+  estimateOutputTokens,
+  type ExtractJsonArgs,
+  type LlmProvider,
+} from './provider';
 
 export { getLlmProvider, resetLlmProvider } from './factory';
 export { setMockResponse, clearMockResponses } from './providers/mock';
@@ -127,7 +132,10 @@ export function getLlmFallback(): LlmFallback | null {
         user: extractUserPrompt(safeText, hint),
         jsonSchema: PARSED_STATEMENT_JSON_SCHEMA,
         schemaName: 'parsed-statement',
-        maxTokens: 16_000,
+        // Sized to this statement. A flat 16,000 made every sizeable upload a
+        // permanent 413 on a free tier, because providers charge the requested
+        // output against the budget whether the model uses it or not.
+        maxTokens: estimateOutputTokens(safeText),
       });
       return { statement: result.data, usage: result.usage };
     },

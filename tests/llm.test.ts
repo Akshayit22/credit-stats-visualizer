@@ -8,7 +8,15 @@ import {
   providerMissingEnv,
   resetLlmProvider,
 } from '@/server/llm/factory';
-import { ProviderConfigError, type ExtractJsonArgs, type LlmProvider } from '@/server/llm/provider';
+import {
+  LlmRateLimitError,
+  LlmRequestTooLargeError,
+  MAX_OUTPUT_TOKENS,
+  ProviderConfigError,
+  estimateOutputTokens,
+  type ExtractJsonArgs,
+  type LlmProvider,
+} from '@/server/llm/provider';
 import { clearMockResponses, setMockResponse } from '@/server/llm/providers/mock';
 import { extractValidated } from '@/server/llm';
 import { parsedStatementSchema } from '@/server/domain/schemas';
@@ -307,5 +315,139 @@ describe('what actually reaches a provider', () => {
     expect(CATEGORISE_SYSTEM).toContain('Uncategorised');
     expect(CATEGORISE_SYSTEM).toContain('Cash & transfers');
     expect(CATEGORISE_SYSTEM).toMatch(/only JSON/);
+  });
+});
+
+describe('being rate limited', () => {
+  const ORIGINAL_FETCH = globalThis.fetch;
+
+  afterEach(() => {
+    globalThis.fetch = ORIGINAL_FETCH;
+  });
+
+  function groq(): LlmProvider {
+    process.env.LLM_PROVIDER = 'groq';
+    process.env.GROQ_API_KEY = 'gsk_test';
+    process.env.GROQ_MODEL = 'openai/gpt-oss-120b';
+    resetLlmProvider();
+    return getLlmProvider();
+  }
+
+  const answer = () =>
+    new Response(
+      JSON.stringify({
+        choices: [{ message: { content: '{"ok":true}' } }],
+        usage: { prompt_tokens: 4381, completion_tokens: 4186 },
+      }),
+      { status: 200, headers: { 'content-type': 'application/json' } },
+    );
+
+  const refusal = (headers: Record<string, string> = {}) =>
+    new Response(
+      JSON.stringify({
+        error: {
+          message:
+            'Rate limit reached for model `openai/gpt-oss-120b` on tokens per minute (TPM): ' +
+            'Limit 8000, Used 4859, Requested 4429. Please try again in 0.02s.',
+          code: 'rate_limit_exceeded',
+        },
+      }),
+      { status: 429, headers },
+    );
+
+  it('waits the delay the provider stated and tries again', async () => {
+    // One statement costs more than a minute of a free tier's budget, so the
+    // second call of an upload being refused is the normal path, not an error.
+    const calls: number[] = [];
+    globalThis.fetch = (() => {
+      calls.push(Date.now());
+      return Promise.resolve(calls.length === 1 ? refusal() : answer());
+    }) as typeof fetch;
+
+    const result = await groq().extractJson({ system: 's', user: 'u', jsonSchema: {} });
+    expect(result.data).toEqual({ ok: true });
+    expect(calls).toHaveLength(2);
+  });
+
+  it('prefers the retry-after header over the body', async () => {
+    let seen = 0;
+    globalThis.fetch = (() => {
+      seen += 1;
+      return Promise.resolve(seen === 1 ? refusal({ 'retry-after': '0' }) : answer());
+    }) as typeof fetch;
+
+    await expect(
+      groq().extractJson({ system: 's', user: 'u', jsonSchema: {} }),
+    ).resolves.toMatchObject({ data: { ok: true } });
+    expect(seen).toBe(2);
+  });
+
+  it('gives up as a rate limit, not as a generic failure', async () => {
+    // The distinction is the whole point: "wait a minute" and "your config is
+    // wrong" send someone to entirely different places.
+    globalThis.fetch = (() => Promise.resolve(refusal())) as typeof fetch;
+
+    const error = await groq()
+      .extractJson({ system: 's', user: 'u', jsonSchema: {} })
+      .catch((caught: unknown) => caught);
+
+    expect(error).toBeInstanceOf(LlmRateLimitError);
+    expect((error as LlmRateLimitError).providerId).toBe('groq');
+  });
+
+  it('treats "too large" as permanent, not as something to wait out', async () => {
+    // Requested = prompt + max_tokens, and a provider says 413 when that can
+    // never fit the account's budget. Retrying is pointless; saying "try again
+    // shortly" would send someone back for an answer that will not change.
+    let calls = 0;
+    globalThis.fetch = (() => {
+      calls += 1;
+      return Promise.resolve(new Response('{}', { status: 413, statusText: 'Payload Too Large' }));
+    }) as typeof fetch;
+
+    const error = await groq()
+      .extractJson({ system: 's', user: 'u', jsonSchema: {} })
+      .catch((caught: unknown) => caught);
+
+    expect(error).toBeInstanceOf(LlmRequestTooLargeError);
+    expect(calls).toBe(1);
+  });
+
+  it('never lets a failure body escape, however tempting it looks', async () => {
+    globalThis.fetch = (() =>
+      Promise.resolve(
+        new Response('{"error":{"message":"your prompt said UPI/AKSHAY/pay"}}', {
+          status: 400,
+          statusText: 'Bad Request',
+        }),
+      )) as typeof fetch;
+
+    const error = await groq()
+      .extractJson({ system: 's', user: 'u', jsonSchema: {} })
+      .catch((caught: unknown) => caught);
+
+    expect((error as Error).message).toBe('The provider answered 400 Bad Request.');
+    expect((error as Error).message).not.toContain('AKSHAY');
+  });
+});
+
+describe('sizing the answer', () => {
+  it('asks for output in proportion to the statement, not a flat ceiling', () => {
+    const small = estimateOutputTokens('x'.repeat(3_600));
+    const large = estimateOutputTokens('x'.repeat(36_000));
+    expect(large).toBeGreaterThan(small);
+  });
+
+  it('never exceeds what real models accept', () => {
+    // groq/compound rejects any max_tokens above 8,192 outright, and every
+    // provider charges the *requested* output against the per-minute budget
+    // whether the model uses it or not. The old flat 16,000 made a sizeable
+    // statement a permanent 413 rather than a request that had to wait.
+    expect(estimateOutputTokens('x'.repeat(2_000_000))).toBe(MAX_OUTPUT_TOKENS);
+    expect(MAX_OUTPUT_TOKENS).toBeLessThanOrEqual(8_192);
+  });
+
+  it('keeps a floor, so a one-page statement still has room to answer', () => {
+    expect(estimateOutputTokens('')).toBe(2_000);
   });
 });

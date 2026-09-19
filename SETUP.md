@@ -170,6 +170,19 @@ GROQ_MODEL=openai/gpt-oss-120b
 > Setting `GROQ_API_KEY` is not on its own enough — `LLM_PROVIDER` defaults to
 > `mock`, and mock refuses rather than inventing figures. Both lines are needed.
 
+**The free tier is 8,000 tokens per minute, and a statement is not small.** A
+measured 4-page savings statement costs about 4,300 tokens to send and 4,200 to
+answer — so it does not fit in one request on the free tier, and a 2-3 page one
+fits with little to spare. What you will see:
+
+| What happened | How it shows up |
+| --- | --- |
+| Over the limit right now | Upload is refused; retry it in a minute. The app waits out short limits by itself. |
+| Too large for the tier at all | Upload is refused immediately and says so — waiting will not help. |
+
+Groq's Dev Tier raises the limit. Any provider in this section with more room
+works too; the extraction is the same either way.
+
 ### `openai-compatible` — xAI Grok, OpenAI, OpenRouter, Ollama
 
 Any endpoint that speaks `POST {base}/chat/completions` with a bearer token.

@@ -11,11 +11,10 @@ import { Icon } from '@/client/components/icon';
 import { StatTile, TileRow } from '@/client/components/stat-tile';
 import { TransactionsTable } from '@/client/components/transactions-table';
 import { UploadDialog } from '@/client/components/upload-dialog';
-import { formatDayLabel, formatPeriodLabel, formatPeriodRange, formatPeriodShort } from '@/client/lib/format';
+import { accountShortName, formatDayLabel, formatPeriodLabel, formatPeriodRange, formatPeriodShort } from '@/client/lib/format';
 
 export interface SavingsScreenProps {
   account: Account;
-  accounts: Account[];
   statement: SavingsStatement | null;
   statements: Statement[];
   transactions: Transaction[];
@@ -31,13 +30,11 @@ export function SavingsScreen(props: SavingsScreenProps) {
 
   const header = (
     <AppHeader
-      accounts={props.accounts}
+      title={accountShortName(props.account)}
       availablePeriods={props.availablePeriods}
       periodsWithData={props.periodsWithData}
       selectedPeriod={props.selectedPeriod}
       mode={props.mode}
-      accountScope="savings"
-      selectedAccountId={props.account.accountId}
       coverage={{
         have: props.periodsWithData.length,
         total: props.availablePeriods.length,

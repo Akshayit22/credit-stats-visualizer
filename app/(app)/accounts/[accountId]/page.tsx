@@ -49,7 +49,6 @@ export default async function CardAccountPage({
   return (
     <CardScreen
       account={account}
-      accounts={workspace.accounts}
       statement={statement?.accountType === 'credit_card' ? statement : null}
       statements={workspace.statements}
       transactions={transactions}

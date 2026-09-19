@@ -63,13 +63,11 @@ export function OverviewScreen(props: OverviewScreenProps) {
   return (
     <>
       <AppHeader
-        accounts={props.accounts}
+        title="Overview"
         availablePeriods={props.availablePeriods}
         periodsWithData={periodsWithData}
         selectedPeriod={props.selectedPeriod}
         mode={props.mode}
-        accountScope="all"
-        selectedAccountId={null}
         coverage={{ have: covered.length, total: window.length, missing }}
       />
 

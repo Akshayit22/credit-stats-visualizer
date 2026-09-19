@@ -62,3 +62,20 @@ export function addMonths(period: Period, delta: number): Period {
 export function lastMonths(end: Period, count: number): Period[] {
   return Array.from({ length: count }, (_, index) => addMonths(end, index - count + 1));
 }
+
+/**
+ * The short form of an account's name — what the sidebar and the sticky header
+ * show. `displayName` is the full "Axis Bank · Supermoney RuPay Credit Card",
+ * which is right on a page heading and too long anywhere narrow.
+ */
+export function accountShortName(account: {
+  type: 'credit_card' | 'savings';
+  issuer: string;
+  productName: string;
+}): string {
+  if (account.type === 'savings') {
+    return `${account.issuer.split(' ')[0] ?? account.issuer} savings`;
+  }
+  const product = account.productName.replace(/credit card/i, '').trim();
+  return product.length > 0 ? product : account.issuer;
+}

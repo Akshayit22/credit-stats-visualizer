@@ -47,7 +47,6 @@ export default async function SavingsAccountPage({
   return (
     <SavingsScreen
       account={account}
-      accounts={workspace.accounts}
       statement={statement?.accountType === 'savings' ? statement : null}
       statements={workspace.statements}
       transactions={transactions}

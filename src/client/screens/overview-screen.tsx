@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { formatMinor, formatPct } from '@/shared/money';
-import type { Account, Period, Statement, Summary } from '@/shared/types';
+import type { Account, Period, Statement } from '@/shared/types';
+import type { OverviewMonth } from '@/server/db/workspace';
 import { TrendChart } from '@/client/charts/trend-chart';
 import { ChartBlock } from '@/client/charts/chart-frame';
 import { chartTheme, seriesColor } from '@/client/charts/theme';
@@ -17,8 +18,8 @@ import { formatPeriodLabel, formatPeriodShort } from '@/client/lib/format';
 export interface OverviewScreenProps {
   accounts: Account[];
   statements: Statement[];
-  /** `ALL#<period>` summaries for the whole window, oldest first. */
-  summaries: Summary[];
+  /** One row per month that has anything in it, oldest first. */
+  months: OverviewMonth[];
   /** The months the switcher offers, oldest first. */
   availablePeriods: Period[];
   selectedPeriod: Period;
@@ -28,15 +29,21 @@ export interface OverviewScreenProps {
 
 export function OverviewScreen(props: OverviewScreenProps) {
   const [uploadOpen, setUploadOpen] = useState(false);
-  const byPeriod = new Map(props.summaries.map((summary) => [summary.period, summary]));
-  const periodsWithData = props.summaries
-    .filter((summary) => summary.txnCount > 0)
-    .map((summary) => summary.period);
+
+  const byPeriod = new Map(props.months.map((month) => [month.period, month]));
+  const periodsWithData = props.months.map((month) => month.period);
 
   const scoped = props.mode === 'year';
+  const year = props.selectedPeriod.slice(0, 4);
   const window = scoped
-    ? props.availablePeriods.filter((period) => period.startsWith(props.selectedPeriod.slice(0, 4)))
+    ? props.availablePeriods.filter((period) => period.startsWith(year))
     : props.availablePeriods;
+
+  // Months the charts actually plot: the ones with something in them. A line
+  // dragged across five empty months to reach June says nothing.
+  const inScope = props.months.filter((month) =>
+    scoped ? month.period.startsWith(year) : window.includes(month.period),
+  );
 
   const current = byPeriod.get(props.selectedPeriod) ?? null;
   const previousPeriod = [...periodsWithData]
@@ -44,21 +51,27 @@ export function OverviewScreen(props: OverviewScreenProps) {
     .pop();
   const previous = previousPeriod ? (byPeriod.get(previousPeriod) ?? null) : null;
 
-  const totalOf = (pick: (summary: Summary) => number): number =>
-    window.reduce((total, period) => total + (byPeriod.get(period) ? pick(byPeriod.get(period) as Summary) : 0), 0);
+  const sum = (pick: (month: OverviewMonth) => number): number =>
+    inScope.reduce((total, month) => total + pick(month), 0);
 
-  const covered = window.filter((period) => periodsWithData.includes(period));
+  const covered = inScope.length;
   const missing = window.filter((period) => !periodsWithData.includes(period)).map(formatPeriodLabel);
 
-  const periodLabel = scoped
-    ? `Calendar ${props.selectedPeriod.slice(0, 4)}`
-    : formatPeriodLabel(props.selectedPeriod);
+  const periodLabel = scoped ? `Calendar ${year}` : formatPeriodLabel(props.selectedPeriod);
   const previousLabel = previousPeriod ? formatPeriodLabel(previousPeriod) : '';
 
-  const spend = scoped ? totalOf((s) => s.spendMinor) : (current?.spendMinor ?? 0);
-  const cashback = scoped ? totalOf((s) => s.cashbackEarnedMinor) : (current?.cashbackEarnedMinor ?? 0);
-  const fees = scoped ? totalOf((s) => s.feesMinor) : (current?.feesMinor ?? 0);
-  const payments = scoped ? totalOf((s) => s.paymentsMinor) : (current?.paymentsMinor ?? 0);
+  const spend = scoped ? sum((month) => month.spendMinor) : (current?.spendMinor ?? 0);
+  const cardSpend = scoped ? sum((month) => month.cardSpendMinor) : (current?.cardSpendMinor ?? 0);
+  const cashback = scoped ? sum((month) => month.cashbackMinor) : (current?.cashbackMinor ?? 0);
+  const fees = scoped ? sum((month) => month.feesMinor) : (current?.feesMinor ?? 0);
+  const payments = scoped ? sum((month) => month.paymentsMinor) : (current?.paymentsMinor ?? 0);
+
+  // Whether a card statement is behind these figures at all. Without one,
+  // cashback and fees are absent rather than zero, and showing ₹0.00 claims the
+  // card earned nothing in a month it was never asked about.
+  const hasCard = scoped
+    ? inScope.some((month) => month.hasCardStatement)
+    : (current?.hasCardStatement ?? false);
 
   return (
     <>
@@ -68,7 +81,7 @@ export function OverviewScreen(props: OverviewScreenProps) {
         periodsWithData={periodsWithData}
         selectedPeriod={props.selectedPeriod}
         mode={props.mode}
-        coverage={{ have: covered.length, total: window.length, missing }}
+        coverage={{ have: covered, total: window.length, missing }}
       />
 
       <main className="app-main">
@@ -80,7 +93,7 @@ export function OverviewScreen(props: OverviewScreenProps) {
             </div>
             <div className="page-sub">
               {props.accounts.length} account{props.accounts.length === 1 ? '' : 's'} ·{' '}
-              {covered.length} of {window.length} months uploaded
+              {covered} of {window.length} months uploaded
             </div>
           </div>
 
@@ -99,12 +112,12 @@ export function OverviewScreen(props: OverviewScreenProps) {
 
           {props.accounts.length === 0 ? (
             <EmptyWorkspace onUpload={() => setUploadOpen(true)} />
-          ) : !current && !scoped ? (
+          ) : inScope.length === 0 ? (
             <div className="empty-state">
               <Icon.CalendarX size={26} style={{ color: 'var(--color-accent)', opacity: 0.75 }} />
               <p className="empty-title">Nothing uploaded for {periodLabel}</p>
               <p className="empty-body">
-                Upload the statement PDF for this month and the charts fill in.
+                Upload a statement for this {scoped ? 'year' : 'month'} and the charts fill in.
               </p>
               <button
                 type="button"
@@ -130,36 +143,48 @@ export function OverviewScreen(props: OverviewScreenProps) {
                           previousLabel,
                         })
                   }
-                  note={scoped ? `${covered.length} months` : undefined}
+                  note={scoped ? `${covered} months` : 'every account'}
                 />
                 <StatTile
                   label="Cashback"
-                  value={formatMinor(cashback)}
-                  tone="positive"
+                  value={hasCard ? formatMinor(cashback) : '\u2014'}
+                  tone={hasCard ? 'positive' : 'muted'}
                   size="lg"
                   delta={
-                    scoped
+                    scoped || !hasCard
                       ? undefined
-                      : deltaBetween(cashback, previous?.cashbackEarnedMinor ?? null, {
-                          previousLabel,
-                        })
+                      : deltaBetween(cashback, previous?.cashbackMinor ?? null, { previousLabel })
                   }
-                  note={spend > 0 ? `${formatPct((cashback / spend) * 100, 2)} of spend` : undefined}
+                  // Against card spend, not total spend: cashback is a card
+                  // thing, and dividing it by a savings transfer is meaningless.
+                  note={
+                    !hasCard
+                      ? 'no card statement this period'
+                      : cardSpend > 0
+                        ? `${formatPct((cashback / cardSpend) * 100, 2)} of card spend`
+                        : 'no card spend'
+                  }
                 />
                 <StatTile
                   label="Fees & interest"
-                  value={fees > 0 ? formatMinor(fees) : 'None'}
-                  tone={fees > 0 ? 'warning' : 'positive'}
+                  value={!hasCard ? '\u2014' : fees > 0 ? formatMinor(fees) : 'None'}
+                  tone={!hasCard ? 'muted' : fees > 0 ? 'warning' : 'positive'}
                   size="lg"
                   delta={
-                    scoped
+                    scoped || !hasCard
                       ? undefined
                       : deltaBetween(fees, previous?.feesMinor ?? null, {
                           goodWhenDown: true,
                           previousLabel,
                         })
                   }
-                  note={fees > 0 ? undefined : 'nothing charged'}
+                  note={
+                    !hasCard
+                      ? 'no card statement this period'
+                      : fees > 0
+                        ? 'charged on the card'
+                        : 'nothing charged'
+                  }
                 />
                 <StatTile
                   label="Payments"
@@ -169,7 +194,7 @@ export function OverviewScreen(props: OverviewScreenProps) {
                 />
               </TileRow>
 
-              <OverviewCharts periods={window} byPeriod={byPeriod} />
+              <OverviewCharts months={inScope} />
 
               <AccountsList
                 accounts={props.accounts}
@@ -190,73 +215,98 @@ export function OverviewScreen(props: OverviewScreenProps) {
   );
 }
 
-function OverviewCharts({
-  periods,
-  byPeriod,
-}: {
-  periods: Period[];
-  byPeriod: Map<Period, Summary>;
-}) {
+/**
+ * Three charts, each plotting only the months that have the thing it charts.
+ *
+ * They used to share one x-axis built from every month in the window, so a
+ * month with a savings statement and no card statement drew a cashback of
+ * zero — a zero that means "no card statement", not "the card earned nothing".
+ * Cashback and fees now come from the card accounts alone and skip a month
+ * entirely when there is no card statement behind it.
+ */
+function OverviewCharts({ months }: { months: OverviewMonth[] }) {
   const mounted = useMounted();
   const theme = mounted ? chartTheme() : null;
 
-  const data = periods.map((period) => {
-    const summary = byPeriod.get(period);
-    return {
-      label: formatPeriodShort(period),
-      spend: summary && summary.txnCount > 0 ? summary.spendMinor : null,
-      cashback: summary && summary.txnCount > 0 ? summary.cashbackEarnedMinor : null,
-      fees: summary && summary.txnCount > 0 ? summary.feesMinor : null,
-    };
-  });
-
-  const withData = data.filter((point) => point.spend !== null).length || 1;
-  const total = (key: 'spend' | 'cashback' | 'fees') =>
-    data.reduce((sum, point) => sum + (point[key] ?? 0), 0);
+  const cardMonths = months.filter((month) => month.hasCardStatement);
 
   const blocks = [
     {
-      key: 'spend' as const,
-      title: 'Bill by month',
-      subtitle: 'purchases and charges per statement',
+      key: 'value' as const,
+      title: 'Spend by month',
+      subtitle: `every account · ${months.length} month${months.length === 1 ? '' : 's'}`,
       role: 'primary' as const,
+      rows: months.map((month) => ({
+        label: formatPeriodShort(month.period),
+        value: month.spendMinor,
+      })),
     },
     {
-      key: 'cashback' as const,
+      key: 'value' as const,
       title: 'Cashback',
-      subtitle: 'earned per cycle',
+      subtitle:
+        cardMonths.length > 0
+          ? `credit card only · ${cardMonths.length} cycle${cardMonths.length === 1 ? '' : 's'}`
+          : 'no card statements yet',
       role: 'good' as const,
+      rows: cardMonths.map((month) => ({
+        label: formatPeriodShort(month.period),
+        value: month.cashbackMinor,
+      })),
     },
     {
-      key: 'fees' as const,
+      key: 'value' as const,
       title: 'Fees & interest',
-      subtitle: 'charged per cycle',
+      subtitle:
+        cardMonths.length > 0
+          ? `credit card only · ${cardMonths.length} cycle${cardMonths.length === 1 ? '' : 's'}`
+          : 'no card statements yet',
       role: 'cost' as const,
+      rows: cardMonths.map((month) => ({
+        label: formatPeriodShort(month.period),
+        value: month.feesMinor,
+      })),
     },
   ];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--space-8) * 1.35)' }}>
-      {blocks.map((block) => (
-        <ChartBlock
-          key={block.key}
-          title={block.title}
-          subtitle={block.subtitle}
-          markColor={theme ? seriesColor(theme, block.role) : undefined}
-          height={180}
-          stats={[
-            { label: 'Total', value: formatMinor(total(block.key), 0) },
-            { label: 'Average', value: formatMinor(Math.round(total(block.key) / withData), 0) },
-          ]}
-        >
-          <TrendChart
-            data={data}
-            series={[
-              { key: block.key, name: block.title, role: block.role, area: true },
-            ]}
-          />
-        </ChartBlock>
-      ))}
+      {blocks.map((block) => {
+        const total = block.rows.reduce((sum, row) => sum + row.value, 0);
+        return (
+          <ChartBlock
+            key={block.title}
+            title={block.title}
+            subtitle={block.subtitle}
+            markColor={theme ? seriesColor(theme, block.role) : undefined}
+            height={180}
+            stats={
+              block.rows.length > 0
+                ? [
+                    { label: 'Total', value: formatMinor(total, 0) },
+                    {
+                      label: 'Average',
+                      value: formatMinor(Math.round(total / block.rows.length), 0),
+                    },
+                  ]
+                : undefined
+            }
+          >
+            {block.rows.length > 0 ? (
+              <TrendChart
+                data={block.rows}
+                form="bar"
+                series={[{ key: 'value', name: block.title, role: block.role }]}
+              />
+            ) : (
+              <p className="fee-none">
+                <Icon.CalendarX size={15} aria-hidden="true" />
+                Upload a credit card statement and this fills in.
+              </p>
+            )}
+          </ChartBlock>
+        );
+      })}
     </div>
   );
 }
@@ -277,10 +327,14 @@ function AccountsList({
       </div>
       <div className="row-list">
         {accounts.map((account) => {
-          const statement =
-            statements.find((item) => item.accountId === account.accountId && item.period === period) ??
-            statements.find((item) => item.accountId === account.accountId) ??
-            null;
+          // The selected month if this account has one, otherwise its newest —
+          // newest **by period**, not by upload time. A statement uploaded
+          // today can be for a month long past, and the list was showing that
+          // one as if it were the current state of the account.
+          const mine = statements
+            .filter((item) => item.accountId === account.accountId)
+            .sort((a, b) => b.period.localeCompare(a.period));
+          const statement = mine.find((item) => item.period === period) ?? mine[0] ?? null;
           const href =
             account.type === 'savings'
               ? `/savings/${account.accountId}?period=${statement?.period ?? period}`

@@ -5,7 +5,16 @@ import { requireSessionUser } from '@/server/auth/session';
 
 const NAV: NavItem[] = [
   { href: '/overview', label: 'Overview', icon: 'SquaresFour' },
-  { href: '/accounts', label: 'Credit card', icon: 'CreditCard', match: ['/accounts'] },
+  {
+    href: '/accounts',
+    label: 'Credit card',
+    icon: 'CreditCard',
+    match: ['/accounts'],
+    // A card's cashback screen lives under /accounts/<id>/cashback but belongs
+    // to the Cashback link below.
+    exclude: ['/cashback'],
+  },
+  { href: '/cashback', label: 'Cashback', icon: 'Percent', matchSuffix: '/cashback' },
   { href: '/savings', label: 'Savings', icon: 'Bank', match: ['/savings'] },
   { href: '/library', label: 'Statements', icon: 'Files' },
   { href: '/settings', label: 'Settings', icon: 'Gear' },

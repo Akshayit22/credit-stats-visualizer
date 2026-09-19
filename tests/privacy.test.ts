@@ -6,6 +6,7 @@ import {
   detectHolderNames,
   findPiiLeaks,
   holderNamePattern,
+  holderTokenPatterns,
   joinWrappedDetail,
   redactForLlm,
   redactForStorage,
@@ -117,6 +118,63 @@ describe('holder-name matching', () => {
 
   it('does not mistake an all-caps heading for a name', () => {
     expect(detectHolderNames('IMPORTANT MESSAGE\nPAYMENT SUMMARY\nCASHBACK DETAILS')).toEqual([]);
+  });
+
+  it('finds a title-case name behind an honorific', () => {
+    // IDFC prints the holder in title case. An all-caps-only test found
+    // nothing here and the name travelled into the prompt — silently, because
+    // "no holder detected" is indistinguishable from "no holder printed".
+    const raw = [
+      '@@PAGE 1',
+      'CONSOLIDATED STATEMENT',
+      'CUSTOMER ID\t[customer-id]',
+      'Mr. Akshay Laluman Telang',
+      'Phule Nagar Panchvati Panchvati',
+    ].join('\n');
+    expect(detectHolderNames(raw)).toEqual(['Mr. Akshay Laluman Telang']);
+  });
+
+  it('leaves a bare title-case line alone when nothing marks it as a person', () => {
+    // The address in that same header is title case too. Taking it would both
+    // miss the real name and corrupt the line, so an honorific is required.
+    const raw = '@@PAGE 1\nConsolidated Statement\nPhule Nagar Panchvati\nNashik India';
+    expect(detectHolderNames(raw)).toEqual([]);
+  });
+
+  it('masks each word of the name on its own, for the wraps a line pass cannot see', () => {
+    // IDFC spreads one description over three printed lines with the data row
+    // in the middle, stranding `LALUMAN` and `TELANG` in a cell that neither
+    // the whole-name pattern nor the spill logic reaches.
+    const raw = [
+      '@@PAGE 1',
+      'Mr. Akshay Laluman Telang',
+      'NEFT/IDFB527549230399/AKS',
+      '01 Oct 25 19:23\t01 Oct 25\tHAY LALUMAN\t100,000.00\t592,635.00 CR',
+      'TELANG/SBIN00',
+    ].join('\n');
+    const out = redactForStorage(raw).text;
+    expect(out).not.toMatch(/LALUMAN/i);
+    expect(out).not.toMatch(/TELANG/i);
+  });
+
+  it('gives a short word no standalone pattern of its own', () => {
+    // The five-character floor. A standalone `\bRam\b` would match every
+    // `RAM ENTERPRISES` in the file; the whole-name pattern is anchored by the
+    // rest of the name and can afford to be greedy, a lone word cannot.
+    expect(holderTokenPatterns('Mr. Ram Iyer')).toEqual([]);
+    expect(holderTokenPatterns('Mr. Akshay Laluman Telang').map((r) => r.source)).toEqual([
+      '\\bAkshay\\b',
+      '\\bLaluman\\b',
+      '\\bTelang\\b',
+    ]);
+  });
+
+  it('matches a whole word wherever it landed, in any case', () => {
+    const [pattern] = holderTokenPatterns('Mr. Akshay Laluman Telang').slice(1);
+    expect(pattern).toBeDefined();
+    if (!pattern) return;
+    pattern.lastIndex = 0;
+    expect(pattern.test('HAY LALUMAN')).toBe(true);
   });
 });
 

@@ -54,18 +54,26 @@ export const PATCH = withUser(async (user, request) => {
     throw error;
   }
 
+  const rows = await listTransactionsForAccountPeriod(
+    user.userId,
+    body.accountId,
+    body.date.slice(0, 7),
+  );
+  const edited = rows.find((row) => row.txnId === body.txnId);
+
   if (body.applyToMerchant) {
-    const rows = await listTransactionsForAccountPeriod(
-      user.userId,
-      body.accountId,
-      body.date.slice(0, 7),
-    );
-    const edited = rows.find((row) => row.txnId === body.txnId);
     const merchant = edited?.merchant || edited?.counterparty || '';
     if (merchant.length > 0) await putUserRule(user.userId, merchant, body.category);
   }
 
-  await recomputeSummaries(user.userId, [body.date.slice(0, 7)], body.accountId);
+  // The month to recompute is the row's **statement**, not the month its date
+  // falls in — a card cycle straddles two, and the row belongs to the cycle.
+  const period = edited?.statementId.slice(edited.statementId.lastIndexOf('_') + 1);
+  await recomputeSummaries(
+    user.userId,
+    [period ?? body.date.slice(0, 7)],
+    body.accountId,
+  );
 
   logger.info('transaction.recategorised', {
     user: userIdLogPrefix(user.userId),

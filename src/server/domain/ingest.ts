@@ -20,11 +20,10 @@ import {
 } from '@/server/db/repositories/statements';
 import {
   deleteTransactionsForStatement,
-  listTransactionsForAccountPeriod,
   listTransactionsForStatement,
   putTransactions,
 } from '@/server/db/repositories/transactions';
-import { listSummaries, putSummary } from '@/server/db/repositories/summaries';
+import { deleteSummary, listSummaries, putSummary } from '@/server/db/repositories/summaries';
 import { listStatements } from '@/server/db/repositories/statements';
 import { bumpStatementCount, listUserRules } from '@/server/db/repositories/users';
 import { applyLlmCategories, categoriseLocally, merchantLabel } from './categorise';
@@ -236,7 +235,7 @@ export async function ingestStatement(input: IngestInput): Promise<ParsedStateme
   await putTransactions(input.userId, transactions);
   await putStatement(input.userId, statement);
   await bumpStatementCount(input.userId, 1);
-  await recomputeSummaries(input.userId, collectPeriods(transactions, period), account.accountId);
+  await recomputeSummaries(input.userId, [period], account.accountId);
 
   logger.info('statement.ingested', {
     user: userIdLogPrefix(input.userId),
@@ -343,13 +342,6 @@ function toTransaction(
   };
 }
 
-/** Every month the rows touch, plus the statement's own — a cycle spans two. */
-function collectPeriods(transactions: Transaction[], statementPeriod: string): string[] {
-  const periods = new Set<string>([statementPeriod]);
-  for (const txn of transactions) periods.add(txn.date.slice(0, 7));
-  return [...periods];
-}
-
 /**
  * Recomputes the `ACCOUNT#<id>#<period>` summaries for the affected months and
  * then the `ALL#<period>` summary as their sum. Always from what is stored,
@@ -373,17 +365,23 @@ export async function recomputeSummaries(
 
     for (const id of accountIds) {
       const statement = inPeriod.find((candidate) => candidate.accountId === id) ?? null;
-      const rows = statement
-        ? await listTransactionsForStatement(userId, statement.statementId)
-        : await listTransactionsForAccountPeriod(userId, id, period);
+
+      // No statement for this account in this month means the month is empty,
+      // even if rows dated inside it exist — a card cycle running 17 May to
+      // 15 Jun puts four June-statement rows in May, and counting those as a
+      // May summary invents a month the user never uploaded.
+      if (!statement) {
+        await deleteSummary(userId, id, period);
+        continue;
+      }
 
       await putSummary(
         userId,
         buildSummary({
           scope: id,
           period,
-          transactions: rows,
-          statements: statement ? [statement] : [],
+          transactions: await listTransactionsForStatement(userId, statement.statementId),
+          statements: [statement],
         }),
       );
     }
@@ -398,7 +396,9 @@ export async function recomputeSummaries(
       const match = forAccount.find((summary) => summary.period === period);
       if (match && match.txnCount > 0) parts.push(match);
     }
-    await putSummary(userId, aggregateSummaries(period, parts));
+
+    if (parts.length === 0) await deleteSummary(userId, 'ALL', period);
+    else await putSummary(userId, aggregateSummaries(period, parts));
   }
 }
 

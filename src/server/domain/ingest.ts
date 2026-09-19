@@ -12,6 +12,7 @@ import type {
 import { logger } from '@/server/log';
 import { userIdLogPrefix } from '@/server/auth/user-id';
 import { parserInputFor, runDeterministicParser } from '@/server/parsing/registry';
+import { LlmRateLimitError, LlmRequestTooLargeError } from '@/server/llm/provider';
 import { accountIdFor, upsertAccountFromStatement } from '@/server/db/repositories/accounts';
 import {
   findByContentHash,
@@ -127,6 +128,8 @@ export async function ingestStatement(input: IngestInput): Promise<ParsedStateme
   let reconciliation = parsed ? reconcile(parsed) : null;
 
   const needsLlm = parsed === null || reconciliation?.ok === false;
+  /** Why the model did not rescue this statement, for the message at the end. */
+  let llmFailure: string | null = null;
   if (needsLlm && input.llm) {
     try {
       const result = await input.llm.extract(text, {
@@ -149,21 +152,17 @@ export async function ingestStatement(input: IngestInput): Promise<ParsedStateme
         });
       }
     } catch (error) {
-      warnings.push({
-        code: 'llm_failed',
-        message: `The model could not extract this statement (${
-          error instanceof Error ? error.name : 'unknown error'
-        }).`,
-      });
+      llmFailure = describeLlmFailure(error);
+      warnings.push({ code: 'llm_failed', message: llmFailure });
     }
   }
 
   if (!parsed || !reconciliation) {
-    throw new UnparseableStatementError(
-      parserInput.detection.parserId === null
-        ? `No parser recognised this statement (${parserInput.detection.reason}), and no AI provider is configured to fall back to.`
-        : 'The statement could not be parsed.',
-    );
+    // Say which of the three things actually happened. The old message named
+    // only the last one and said it unconditionally, so an upload that failed
+    // because the provider rate-limited us reported a provider that was not
+    // configured — and the configuration was fine.
+    throw new UnparseableStatementError(unparseableReason(parserInput.detection, input.llm !== null, llmFailure));
   }
 
   // 9. Categorise: user rules, then the issuer's column, then our rules, then
@@ -259,6 +258,57 @@ export class UnparseableStatementError extends Error {
     super(message);
     this.name = 'UnparseableStatementError';
   }
+}
+
+/**
+ * Why the model did not read this statement, in the user's terms.
+ *
+ * The two limit failures are deliberately worded differently because the thing
+ * to *do* about them differs. A rate limit clears on its own; a request that is
+ * too large never will, and telling someone to "try again shortly" when the
+ * answer is "this account cannot process a statement this size" wastes their
+ * afternoon.
+ */
+function describeLlmFailure(error: unknown): string {
+  if (error instanceof LlmRateLimitError) {
+    return (
+      `${error.providerId} is over its rate limit. Upload this again in a minute — ` +
+      'one statement can cost more than a minute of a free tier\u2019s token budget.'
+    );
+  }
+  if (error instanceof LlmRequestTooLargeError) {
+    return (
+      `This statement is larger than ${error.providerId} allows this account in one request, ` +
+      'so waiting will not help. Raise the limit with the provider, or point LLM_PROVIDER at ' +
+      'one with more room — SETUP.md §3 lists the alternatives.'
+    );
+  }
+  return `The model could not extract this statement (${
+    error instanceof Error ? error.name : 'unknown error'
+  }).`;
+}
+
+/**
+ * Why an upload could not be turned into figures, in the user's terms.
+ *
+ * Three different failures used to share one sentence, and the sentence named
+ * the rarest of them. Someone whose provider was configured correctly and was
+ * merely rate limited was told no provider was configured, and went looking in
+ * the wrong place — which is exactly what happened with an IDFC statement.
+ */
+function unparseableReason(
+  detection: { parserId: string | null; reason: string },
+  hasProvider: boolean,
+  llmFailure: string | null,
+): string {
+  if (detection.parserId !== null) return 'The statement could not be parsed.';
+  const unrecognised = `No built-in parser covers this statement (${detection.reason}).`;
+  if (llmFailure !== null) return `${unrecognised} ${llmFailure}`;
+  if (hasProvider) return `${unrecognised} The model could not read it either.`;
+  return (
+    `${unrecognised} Set LLM_PROVIDER and its key in .env.local to have a model read ` +
+    'the statements no parser covers — SETUP.md §3 says where each value comes from.'
+  );
 }
 
 /* ── helpers ─────────────────────────────────────────────────────────────── */

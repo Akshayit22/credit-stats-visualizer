@@ -67,6 +67,14 @@ const MASKED_PAN = /\b[0-9X]{4,8}[*X]{4,8}(\d{4})\b/g;
  * four, which is all that identifies an account across months.
  */
 const INLINE_ACCOUNT_NUMBER = /\b(A\/C|ACCOUNT)\s*(?:NO\.?|NUMBER)?\s*:\s*(\d{6,18})\b/gi;
+/**
+ * A MICR code printed inline with its label: `MICR: 600036009 IFSC: SCBL0036078`.
+ *
+ * The same shape as the account number above — label and value in one cell, so
+ * the labelled-field rules never see it. The IFSC beside it is caught by its
+ * own free-text pattern, which is why only half of that line was masked.
+ */
+const INLINE_MICR = /\bMICR\s*:?\s*(\d{9})\b/gi;
 /** A bare Indian PIN code standing alone in a cell. */
 const PIN_CODE = /^\d{6}$/;
 
@@ -355,6 +363,7 @@ export function redactForStorage(rawText: string): RedactionResult {
       (_match, label: string, digits: string) => `${label} : XXXX${digits.slice(-4)}`,
       () => bump('accountNumber'),
     );
+    joined = replaceCounting(joined, INLINE_MICR, () => `MICR: ${MASK.micr}`, () => bump('micr'));
     joined = replaceCounting(joined, EMAIL, () => MASK.email, () => bump('email'));
     // Order matters here.
     //  - IFSC before VPA: a VPA's local part may contain hyphens

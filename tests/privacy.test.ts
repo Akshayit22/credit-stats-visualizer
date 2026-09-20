@@ -405,3 +405,25 @@ describe('a MICR code printed inside its own label', () => {
     expect(out).toContain('[ifsc]');
   });
 });
+
+describe('digits stuck to a mask', () => {
+  it('takes a date of birth glued onto the holder name', () => {
+    // Standard Chartered prints a transfer alias as `AKSHAYLT15012003` — the
+    // name run together with what is plainly a date of birth. Masking the name
+    // half alone leaves `SELF15012003`, which still carries it.
+    expect(redactFreeText('SC 2510-08012346 SELF15012003 IDFC FIRST BAN')).toBe(
+      'SC 2510-08012346 SELF IDFC FIRST BAN',
+    );
+  });
+
+  it('does not eat the counterparty one word per pass', () => {
+    // This ran as a loop until the digits case made the flaw reachable: each
+    // round collapsed `SELF <word>` to `SELF`, so a bank whose payer followed
+    // the mask lost its name a word at a time. One pass, scanning forward.
+    expect(redactFreeText('SELF IDFC FIRST BANK LIMITED')).toBe('SELF IDFC FIRST BANK LIMITED');
+  });
+
+  it('leaves a number that is merely nearby', () => {
+    expect(redactFreeText('SELF 500')).toBe('SELF 500');
+  });
+});

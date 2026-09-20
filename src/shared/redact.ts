@@ -55,6 +55,18 @@ const PHONE = /(?:\+?91[\s-]?)?\b[6-9]\d{9}\b/g;
 const IFSC = /\b[A-Z]{4}0[A-Z0-9]{6}\b/g;
 /** `652984******9581`, `XXXXXXXX9652`. */
 const MASKED_PAN = /\b[0-9X]{4,8}[*X]{4,8}(\d{4})\b/g;
+/**
+ * An account number printed inline with its own label, rather than in the next
+ * column: `SAVINGS ACCOUNT DETAILS FOR A/C : 10240951741`.
+ *
+ * The labelled-field rules read a label in one cell and its value in the next,
+ * which is how most banks lay a header out. IDFC puts the whole thing in one
+ * cell inside a heading, so nothing matched it and the full number was kept —
+ * in the stored text and in a committed fixture. The label is preserved so the
+ * parsers can still find the line; only the digits are cut back to the last
+ * four, which is all that identifies an account across months.
+ */
+const INLINE_ACCOUNT_NUMBER = /\b(A\/C|ACCOUNT)\s*(?:NO\.?|NUMBER)?\s*:\s*(\d{6,18})\b/gi;
 /** A bare Indian PIN code standing alone in a cell. */
 const PIN_CODE = /^\d{6}$/;
 
@@ -313,6 +325,12 @@ export function redactForStorage(rawText: string): RedactionResult {
       joined,
       MASKED_PAN,
       (_match, last4) => `XXXX${last4}`,
+      () => bump('accountNumber'),
+    );
+    joined = replaceCounting(
+      joined,
+      INLINE_ACCOUNT_NUMBER,
+      (_match, label: string, digits: string) => `${label} : XXXX${digits.slice(-4)}`,
       () => bump('accountNumber'),
     );
     joined = replaceCounting(joined, EMAIL, () => MASK.email, () => bump('email'));

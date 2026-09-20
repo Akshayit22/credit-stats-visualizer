@@ -311,3 +311,29 @@ describe('letters left stranded beside a mask', () => {
     );
   });
 });
+
+describe('an account number printed inside its own label', () => {
+  // The labelled-field rules read a label in one cell and the value in the
+  // next. IDFC puts both in one cell inside a heading, so nothing matched it
+  // and the full number survived into the stored text and a committed fixture.
+  it('cuts the digits back to the last four, keeping the label', () => {
+    const raw = '@@PAGE 1\nSAVINGS ACCOUNT DETAILS FOR A/C : 10240951741';
+    const out = redactForStorage(raw).text;
+    expect(out).not.toContain('10240951741');
+    expect(out).toContain('XXXX1741');
+    // The label has to survive: it is how the parser finds the line at all.
+    expect(out).toMatch(/SAVINGS ACCOUNT DETAILS FOR A\/C/);
+  });
+
+  it('counts it as an account number, so the review step can say so', () => {
+    const { counts } = redactForStorage('@@PAGE 1\nACCOUNT NUMBER : 10240951741');
+    expect(counts.accountNumber).toBeGreaterThanOrEqual(1);
+  });
+
+  it('leaves a reference number that merely follows a colon', () => {
+    // Only an account-ish label triggers this; a UPI reference is not one, and
+    // the descriptions are what categorisation reads.
+    const raw = '@@PAGE 1\nUPI/DR/527407308477/ZERODHA/ICIC/pay';
+    expect(redactForStorage(raw).text).toContain('527407308477');
+  });
+});

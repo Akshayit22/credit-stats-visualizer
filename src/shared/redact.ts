@@ -341,7 +341,70 @@ export function redactForStorage(rawText: string): RedactionResult {
     return joined;
   });
 
-  return { text: normaliseStatementText(dropMaskSpill(redacted).join('\n')), counts };
+  const spilled = dropMaskSpill(redacted);
+  const rejoined = maskNamesSplitByWrap(spilled, holderPatterns, () => bump('holderName'));
+  return { text: normaliseStatementText(rejoined.join('\n')), counts };
+}
+
+/** How far either side of a line break a split name is looked for. */
+const MAX_WRAP_FRAGMENT = 14;
+
+/**
+ * Masks a holder name that only exists once two printed lines are put together.
+ *
+ * Redaction runs a line at a time, and `holderNamePattern` requires the first
+ * name whole, so a bank that breaks `AKSHAY` across a line boundary defeats
+ * both: `…/AKS` ends one line, `HAY <surname>` begins the next, and neither
+ * half is a name by itself. Nothing looked wrong — until a parser joined the
+ * description back together, as IDFC's layout forces it to, and the name was
+ * there again in the reassembled text.
+ *
+ * So the seam is checked directly: every suffix of one line against every
+ * prefix of the next, and a pair that spells the holder is masked on both
+ * sides. The first name cannot be made truncatable instead — a lone `A` would
+ * then match half the statement.
+ */
+function maskNamesSplitByWrap(
+  lines: string[],
+  holderPatterns: RegExp[],
+  bump: () => void,
+): string[] {
+  if (holderPatterns.length === 0) return lines;
+
+  const matchesWhole = (candidate: string): boolean =>
+    holderPatterns.some((pattern) => {
+      pattern.lastIndex = 0;
+      const found = pattern.exec(candidate);
+      pattern.lastIndex = 0;
+      return found !== null && found[0].length === candidate.length;
+    });
+
+  const out = [...lines];
+  for (let i = 0; i < out.length - 1; i += 1) {
+    const head = out[i];
+    const tail = out[i + 1];
+    if (head === undefined || tail === undefined) continue;
+
+    // Only a letter run touching the break can be half of a split word.
+    const headRun = /[A-Za-z]+$/.exec(head)?.[0] ?? '';
+    const tailRun = /^[A-Za-z]+/.exec(tail)?.[0] ?? '';
+    if (headRun.length < 2 || tailRun.length < 2) continue;
+
+    for (let take = Math.min(headRun.length, MAX_WRAP_FRAGMENT); take >= 2; take -= 1) {
+      const left = headRun.slice(-take);
+      let matched = false;
+      for (let give = Math.min(tailRun.length, MAX_WRAP_FRAGMENT); give >= 2; give -= 1) {
+        if (!matchesWhole(left + tailRun.slice(0, give))) continue;
+        out[i] = head.slice(0, head.length - take) + MASK.self;
+        out[i + 1] = tail.slice(give);
+        bump();
+        matched = true;
+        break;
+      }
+      if (matched) break;
+    }
+  }
+  return out;
 }
 
 /**

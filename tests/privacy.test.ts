@@ -339,3 +339,56 @@ describe('an account number printed inside its own label', () => {
     expect(redactForStorage(raw).text).toContain('527407308477');
   });
 });
+
+describe('a name printed beside labelled fields', () => {
+  // Standard Chartered lays its header out in two columns: the address block
+  // down the left, labelled fields on the right, all on the same rows. There
+  // is no bare line holding the name, so the bare-line rule found the address
+  // instead — masking that as the holder and leaving the real name untouched.
+  const header = [
+    '@@PAGE 1',
+    'MR AKSHAY LALUMAN TELANG\tBRANCH\t:\tAnna Nagar',
+    'GHAR NO 20\tSTATEMENT DATE\t:\t30 Nov 2025',
+    'PETH ROAD\tCURRENCY\t:\tINR',
+    'NEAR HANUMAN MANDIR',
+    'Date\tDescription\tCheque\tDeposit\tWithdrawal\tBalance',
+  ].join('\n');
+
+  it('finds the holder in the first cell of a labelled row', () => {
+    expect(detectHolderNames(header)).toEqual(['MR AKSHAY LALUMAN TELANG']);
+  });
+
+  it('does not mistake an address line for the holder', () => {
+    // `NEAR HANUMAN MANDIR` is three capitalised words with no digits — the
+    // same shape as a name. Taking it is wrong twice over: the address is
+    // masked as a person, and the real name loses its only candidate.
+    expect(detectHolderNames(header)).not.toContain('NEAR HANUMAN MANDIR');
+    expect(redactForStorage(header).text).toContain('NEAR HANUMAN MANDIR');
+  });
+
+  it('masks the name everywhere once it is found', () => {
+    const out = redactForStorage(`${header}\n01 Nov 2025\tUPI/1/\nMR. AKSHAY LALUMAN TELANG,`).text;
+    expect(out).not.toMatch(/AKSHAY|TELANG|LALUMAN/i);
+  });
+});
+
+describe('where holder detection stops looking', () => {
+  it('stops at the transaction table, not at a line count', () => {
+    // A wrapped continuation inside the table is bare and capitalised and
+    // reads like a name. Standard Chartered wraps `PRESIDIO SOLUTIONS
+    // PRIVATE LIMITED` under every salary credit, within the old fixed
+    // 28-line window. Masking an employer as the holder would erase the
+    // counterparty on exactly the rows worth naming.
+    const text = [
+      '@@PAGE 1',
+      'MR AKSHAY LALUMAN TELANG\tBRANCH\t:\tAnna Nagar',
+      'Date\tDescription\tCheque\tDeposit\tWithdrawal\tBalance',
+      '17 Nov 2025\t17 Nov 2025\tBT IN1BT25111709LYN\t7,366.63\t7,379.57',
+      'PRESIDIO SOLUTIONS PRIVATE',
+      'LIMITED STANDARD CHARTE',
+    ].join('\n');
+
+    expect(detectHolderNames(text)).toEqual(['MR AKSHAY LALUMAN TELANG']);
+    expect(redactForStorage(text).text).toContain('PRESIDIO SOLUTIONS PRIVATE');
+  });
+});

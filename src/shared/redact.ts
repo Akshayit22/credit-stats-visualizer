@@ -191,6 +191,11 @@ function isNameLike(value: string): boolean {
   if (value.length < 6 || value.length > 60) return false;
   if (/\d/.test(value)) return false;
   if (NOT_A_NAME.test(value)) return false;
+  // An address line is shaped exactly like a name — several capitalised words,
+  // no digits — and Standard Chartered prints the two in the same column. Taken
+  // as the holder it is wrong twice: the address gets masked as a person, and
+  // the real name, having no candidate left, is not masked at all.
+  if (ADDRESS_WORDS.test(value)) return false;
   if (!/^[A-Za-z][A-Za-z\s.'-]+$/.test(value)) return false;
   return value.trim().split(/\s+/).length >= 2;
 }
@@ -220,7 +225,13 @@ export function detectHolderNames(text: string): string[] {
   const lines = text.split('\n');
   let tookBareLine = false;
 
-  lines.slice(0, HEADER_ZONE_MAX_LINES).forEach((rawLine) => {
+  // Stop where the transaction table starts, not at a fixed line count. A
+  // continuation line inside the table is bare and capitalised and looks just
+  // like a name — Standard Chartered wraps `PRESIDIO SOLUTIONS PRIVATE
+  // LIMITED` under its salary credits, five lines inside the old fixed window.
+  // Masking an employer as the holder would erase the counterparty on every
+  // salary row, which is the one merchant on the statement worth naming.
+  lines.slice(0, headerZoneEnd(lines)).forEach((rawLine) => {
     const cells = rawLine.split(CELL).map((cell) => cell.trim());
 
     for (let i = 0; i < cells.length - 1; i += 1) {
@@ -230,6 +241,17 @@ export function detectHolderNames(text: string): string[] {
       if (/^(?:name|account\s*holder|customer\s*name)$/i.test(label) && isNameLike(value)) {
         found.add(value);
       }
+    }
+
+    // An honorific names a person wherever it appears, including the first
+    // column of a row whose other columns are labelled fields — which is how
+    // Standard Chartered lays its header out:
+    //   `MR AKSHAY LALUMAN TELANG | BRANCH | : | Anna Nagar`
+    // There is no bare line to find there, so without this the holder is never
+    // detected and never masked.
+    const leading = cells[0];
+    if (leading !== undefined && HONORIFIC.test(leading) && isNameLike(leading)) {
+      found.add(leading);
     }
 
     if (tookBareLine) return;

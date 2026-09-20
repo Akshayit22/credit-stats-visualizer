@@ -7,6 +7,10 @@ export const FIXTURE_NAMES = {
   card: 'axis-supermoney-card-jun',
   sliceJul: 'slice-account-statement-jul',
   sliceAug: 'slice-account-statement-aug',
+  /** IDFC prints the date and time in one cell on the money row. */
+  idfcOct: 'idfc-statement-oct-25',
+  /** The same bank, splitting that column across the lines above and below. */
+  idfcDec: 'idfc-statement-dec-25',
 } as const;
 
 export function fixtureText(name: string): string {

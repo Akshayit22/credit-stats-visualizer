@@ -1,0 +1,13 @@
+{
+  "pageCount": 4,
+  "contentHash": "8f1288e4308be1b4cc005a84cd9d6c9522d3b53c22d44c2558d136a0b96c8220",
+  "redacted": {
+    "customerId": 4,
+    "holderName": 19,
+    "address": 2,
+    "email": 8,
+    "accountNumber": 1,
+    "ifsc": 2,
+    "micr": 2
+  }
+}

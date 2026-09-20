@@ -45,6 +45,18 @@ export const FINGERPRINTS: readonly Fingerprint[] = [
       { text: 'other debit&charges', weight: 3 },
     ],
   },
+  {
+    id: 'idfc-savings',
+    issuer: 'IDFC FIRST Bank',
+    productName: 'Savings account',
+    accountType: 'savings',
+    markers: [
+      { text: 'idfc first bank', weight: 5 },
+      { text: 'consolidated statement', weight: 3 },
+      { text: 'summary of your relationship with us', weight: 3 },
+      { text: 'savings account details for a/c', weight: 3 },
+    ],
+  },
   // Known issuers with no deterministic parser yet: recognised so the account
   // is named properly and the LLM gets a hint, then handled by the fallback.
   {

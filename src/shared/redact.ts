@@ -387,6 +387,13 @@ export function redactForStorage(rawText: string): RedactionResult {
       joined = replaceCounting(joined, pattern, () => MASK.self, () => bump('holderName'));
     }
 
+    // 6. …and then whatever is still glued to the mask that leaves. A transfer
+    //    alias like `AKSHAYLT15012003` is one token, so masking the name half
+    //    strands a date of birth against a `SELF`.
+    const collapsed = collapseMaskRemnants(joined);
+    if (collapsed !== joined) bump('holderName');
+    joined = collapsed;
+
     return joined;
   });
 
@@ -519,8 +526,18 @@ export function redactFreeText(text: string): string {
   return out;
 }
 
-/** A loose letter run touching a `SELF`, with at most the space the wrap left. */
-const SELF_REMNANT = /\b[A-Za-z]{1,8} ?SELF\b|\bSELF ?[A-Za-z]{1,8}\b|(?:SELF){2,}/g;
+/**
+ * A run of characters touching a `SELF`, with at most the space a wrap left.
+ *
+ * The digits matter as much as the letters. Standard Chartered prints a
+ * transfer alias as `AKSHAYLT15012003` — the holder's name run together with
+ * what is plainly a date of birth. Masking the name half leaves `SELF15012003`,
+ * which still carries it. A run glued straight onto a mask with no separator is
+ * part of the same token, so it goes with it; a run with a space between is
+ * only taken when it is letters, since `SELF 500` is two things rather than a
+ * handle.
+ */
+const SELF_REMNANT = /(?:SELF){2,}|\b[A-Za-z]{1,8} ?SELF\b|\bSELF[A-Za-z0-9]{1,14}\b/g;
 
 /**
  * Drops the letters left stranded either side of a `SELF`.
@@ -539,18 +556,21 @@ const SELF_REMNANT = /\b[A-Za-z]{1,8} ?SELF\b|\bSELF ?[A-Za-z]{1,8}\b|(?:SELF){2
  * `SELF` is only ever emitted where a name was removed, so letters still stuck
  * to one are the rest of that name. They go.
  *
+ * Only the leading side tolerates a space, because that is where the evidence
+ * is: `HAY SELF` is a broken first name beside a masked surname. On the
+ * trailing side a space means a separate word — `SELF IDFC FIRST BANK` names
+ * the bank the money went to — so only a run glued straight on is taken.
+ *
  * The cost is a `TO SELF` becoming `SELF`, which loses nothing that
  * categorisation uses — a self-transfer is what both say.
  */
 function collapseMaskRemnants(text: string): string {
-  let out = text;
-  let previous = '';
-  // One pass leaves `SELFSELFSELF` half-collapsed; repeat until it settles.
-  while (out !== previous) {
-    previous = out;
-    out = out.replace(SELF_REMNANT, MASK.self);
-  }
-  return out;
+  // Deliberately one pass. Scanning resumes after each match, so a replacement
+  // cannot be re-examined — which is what stops `SELF15012003 IDFC FIRST BANK`
+  // from collapsing to `SELF` one word at a time, each round eating the next
+  // word of a counterparty that was never part of the name. Runs of masks are
+  // handled inside the pattern instead, which is why they come first in it.
+  return text.replace(SELF_REMNANT, MASK.self);
 }
 
 /**

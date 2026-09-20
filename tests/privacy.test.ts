@@ -38,6 +38,7 @@ describe('the committed fixtures', () => {
     expect(text).not.toContain('033325225226993');
     expect(text).not.toContain('652984');
     expect(text).not.toContain('380009067496');
+    expect(text).not.toContain('10240951741');
   });
 
   it.each(FIXTURE_FILES)('%s carries no holder name, address or nominee', (file) => {
@@ -187,6 +188,7 @@ describe('redactForStorage', () => {
     expect(text).toContain('Customer ID');
     expect(text).toContain('Account\tSAVING');
     expect(text).not.toContain('380009067496');
+    expect(text).not.toContain('10240951741');
     expect(text).not.toContain('9876543210');
   });
 

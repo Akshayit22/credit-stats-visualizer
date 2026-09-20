@@ -1,6 +1,7 @@
 import { toLines } from '@/shared/statement-text';
 import { detectStatement } from './detect';
 import { axisSupermoneyCardParser } from './parsers/axis-supermoney-card';
+import { idfcSavingsParser } from './parsers/idfc-savings';
 import { sliceSavingsParser } from './parsers/slice-savings';
 import type { ParserInput, ParserOutput, StatementParser } from './types';
 
@@ -8,7 +9,11 @@ import type { ParserInput, ParserOutput, StatementParser } from './types';
  * Deterministic parsers, keyed by the fingerprint id they answer to. Adding a
  * bank is: a fingerprint in `detect.ts`, a parser file, and one line here.
  */
-const PARSERS: readonly StatementParser[] = [sliceSavingsParser, axisSupermoneyCardParser];
+const PARSERS: readonly StatementParser[] = [
+  sliceSavingsParser,
+  axisSupermoneyCardParser,
+  idfcSavingsParser,
+];
 
 export function getParser(id: string | null): StatementParser | null {
   if (id === null) return null;

@@ -1,0 +1,206 @@
+@@PAGE 1
+CONSOLIDATED STATEMENT
+CUSTOMER ID	[customer-id]
+STATEMENT PERIOD	: 01-OCT-2025 to 31-OCT-2025
+SELF
+[address]
+Mandir,
+Phule Nagar Panchvati Panchvati
+Nashik,
+Nashik,
+Nasik,
+[address]
+India
+MOBILE NO	:******** 4921
+CKYC ID : ********** 4255
+EMAIL ID : a********[email]
+LANDLINE NO :******** 4921
+0
+SUMMARY OF YOUR RELATIONSHIP WITH US AS OF 31-OCT-2025
+Account Type	Balance	Account Type	Balance
+Savings	INR 169,747.00 CR	Loans	NA
+Current	NA
+Fixed Deposit	NA
+Recurring Deposit	NA
+TRANSACTION ACCOUNTS
+SAVINGS ACCOUNT DETAILS FOR A/C : XXXX1741
+Opening Balance	Number of	Number of Deposits	Withdrawals	Deposits	Closing Balance
+(INR)	Withdrawals	(INR)	(INR)	(INR)
+692,634.00 CR	008	010	793,732.00	270,845.00	169,747.00 CR
+Date and Time	Value Date	Transaction Details	Ref/Cheque	Withdrawals	Deposits	Balance
+No.	(INR)	(INR)	(INR)
+Opening Balance	692,634.00 CR
+UPI/DR/527407308477/IndianCl/I
+01 Oct 25 18:19	01 Oct 25	100,000.00	592,634.00 CR
+CIC/bsestar/t9iPzO8
+UPI/REV/527407308477/IndianCl
+01 Oct 25 18:19	01 Oct 25	100,000.00	692,634.00 CR
+/ICIC/bsestar/Reversa
+IMPS/527418468705/ZERODHA
+01 Oct 25 18:31	01 Oct 25	BROKINGL/[ifsc]/3413	1.00	692,635.00 CR
+/IMPStransaction
+NEFT/IDFB527449212322/AKS
+01 Oct 25 19:23	01 Oct 25	HAY SELF	100,000.00	592,635.00 CR
+/SBIN00
+NEFT/IDFB527449212944/AKS
+01 Oct 25 19:39	01 Oct 25	HAY SELF	500,000.00	92,635.00 CR
+/SBIN00
+REGISTERED OFFICE: IDFC FIRST BANK LIMITED, KRM Tower, 7th Floor, No. 1, Harrington Road, Chetpet,
+Chennai-600031, Tamil Nadu, INDIA.	Page 1 of 4
+@@PAGE 2
+CONSOLIDATED STATEMENT
+CUSTOMER ID	[customer-id]
+STATEMENT PERIOD	: 01-OCT-2025 to 31-OCT-2025
+Date and Time	Value Date	Transaction Details	Ref/Cheque	Withdrawals	Deposits	Balance
+No.	(INR)	(INR)	(INR)
+NEFT/IDFB527549230399/AKS
+02 Oct 25 01:36	02 Oct 25	HAY SELF	82.00	92,553.00 CR
+/[ifsc]
+NEFT/IDFB527549228538/AKS
+02 Oct 25 01:39	02 Oct 25	HAY SELF	82,000.00	10,553.00 CR
+/[ifsc]
+UPI/CR/527577427098/SELF
+02 Oct 25 01:40	02 Oct 25	82.00	10,635.00 CR
+L/SBIN/SELFt/UPI
+UPI/DR/527798815940/SELF
+04 Oct 25 10:39	04 Oct 25	50.00	10,585.00 CR
+L/SELFt/Pay req
+UPI/CR/527770958560/SELF
+04 Oct 25 10:45	04 Oct 25	65,000.00	75,585.00 CR
+L/SBIN/SELFt/UPI
+UPI/DR/528000405359/SELF
+07 Oct 25 10:08	07 Oct 25	6,600.00	68,985.00 CR
+L/SELFt/Pay req
+NEFT/SCBLH28100511952/SELF
+SELF
+08 Oct 25 01:32	08 Oct 25	6,765.00	75,750.00 CR
+SELF/[ifsc]//ACC/N
+EFT TRANSFER
+NEFT/SCBLH28100795405/AKS
+08 Oct 25 21:33	08 Oct 25	HAY SELF	5,000.00	80,750.00 CR
+/SCBL00
+UPI/DR/529206902939/SELF
+19 Oct 25 10:33	19 Oct 25	5,000.00	75,750.00 CR
+L/SELFt/Pay req
+UPI/CR/529649689980/SAMAD
+23 Oct 25 19:16	23 Oct 25	500.00	76,250.00 CR
+HAN/KKBK/ahersam/UPI
+UPI/CR/530217434352/SELF
+29 Oct 25 17:06	29 Oct 25	1.00	76,251.00 CR
+L/SCBL/SELFt/Shoppin
+UPI/CR/530410624760/SELF
+31 Oct 25 10:05	31 Oct 25	93,300.00	169,551.00 CR
+L/SCBL/SELFt/Shoppin
+MONTHLY SAVINGS
+31 Oct 25 02:43	31 Oct 25	196.00	169,747.00 CR
+INTEREST CREDIT
+CUSTOMER NAME	SELF	ACCOUNT BRANCH	NASHIK - GANGAPUR ROAD
+ACCOUNT NAME	SELF	BRANCH ADDRESS	GR FLR, 712/2A+2D/74,74,GOSHIBA
+NOMINATION	NOT REGISTERED	MAJESTY,,GANGAPUR ROAD, NASHIK,
+IFSC	[ifsc]
+MICR	[micr]
+ACCOUNT OPENING DATE	04-AUG-2025
+ACCOUNT STATUS	ACTIVE
+CURRENCY	INR
+If your Aadhaar is 10 year old, please update your Proof of Identity and Proof of Address documents.
+To update, please visit your nearest Aadhaar Center or visit https://myaadhaar.uidai.gov.in to upload the documents.
+REGISTERED OFFICE: IDFC FIRST BANK LIMITED, KRM Tower, 7th Floor, No. 1, Harrington Road, Chetpet,
+Chennai-600031, Tamil Nadu, INDIA.	Page 2 of 4
+@@PAGE 3
+CONSOLIDATED STATEMENT
+CUSTOMER ID	[customer-id]
+STATEMENT PERIOD	: 01-OCT-2025 to 31-OCT-2025
+IMPORTANT MESSAGE
+•	The closing balance as shown in this statement includes all cheques but does not include any holds, overdraft limits or linked deposits. Therefore, your
+closing balance may not always be equal to the effective available balance in your account. If you have any questions around this, please get in touch with
+our banker on call.
+•	'Value Date'is the effective date of a debit or credit to your account. This may not be the same as the actual transaction date.
+•	The maturity value of your RD is calculated assuming that all subsequent payments to your deposit are made as per your initial RD plan.
+•	IDFC FIRST Bank/ IDFC FIRST Bank-IBU never sends requests for your internet banking user name, password, debit or credit card numbers, bank
+account numbers or any other sensitive information by email. If you ever receive something of this sort, which appears to be from the bank, please do not
+respond. Instead, forward the email to [email] we can address the issue.
+NRI Customers please e-mail [email] Gift city customers to mark an email to [email]
+•	As per notification dated April 6, 2018, RBI has advised that, Bank shall not deal in Virtual Currencies (VCs) or provide services for facilitating any person or
+entity in dealing with or settling VCs. IDFC FIRST Bank does not encourage its customers to use their accounts maintained with us for carrying out
+transactions involving any kind of virtual/ crypto currencies and hence, we request you to refrain from transactions involving dealing in Bitcoin or any other
+virtual/ crypto currencies.
+•	We also wish to advise you that if transactions relating to any kind of VCs are witnessed in your account, the Bank may be constrained to close your
+account, as per RBI notification dated April 6, 2018.
+•	This statement is a system generated output and requires no signature.
+•	For any further information, please visit us at www.idfcfirstbank.com
+•	Your debit card offers free Personal accident, Air accident, Lost card and purchase protection cover by meeting certain eligibility criteria. We request you to
+refer the welcome letter / emailer received at the time of account opening or visit
+https://www.idfcfirstbank.com/personal-banking/payments/cards/debit-card or call us at 180010888 to know more.
+•	As per notification dated April 6, 2018, RBI has advised that, Bank shall not deal in Virtual Currencies (VCs) or provide services for facilitating any person or
+entity in dealing with or settling VCs. IDFC FIRST Bank-IBU does not encourage its customers to use their accounts maintained with us for carrying out
+transactions involving any kind of virtual/ crypto currencies and hence, we request you to refrain from transactions involving dealing in Bitcoin or any other
+virtual/ crypto currencies.
+•	We also wish to advise you that if transactions relating to any kind of VCs are witnessed in your account, the Bank may be constrained to close your account
+IMPORTANT MESSAGE (NRE/NRO/FCNR Accounts and Deposits-Except Gift City)
+•	The closing balance as shown in this statement includes all cheques but does not include any holds, overdraft limits or linked deposits. Therefore, your
+closing balance may not always be equal to the effective available balance in your account. If you have any questions around this, please get in touch with
+our banker on call.
+•	The maturity value of your RD is calculated assuming that all subsequent payments to your deposit are made as per your initial RD plan.
+•	Your Deposit accounts (Except Gift City Account & Deposit) are covered under deposit insurance scheme of DICGC, upto Rs. Five lakh. Refer
+www.dicgc.org.in for details.
+•	Your debit card offers free Personal accident, Air accident, Lost card and purchase protection cover by meeting certain eligibility criteria. We request you to
+refer the welcome letter / emailer received at the time of account opening or visit
+https://www.idfcfirstbank.com/personal-banking/payments/cards/debit-card or call us at 180010888 to know more.";
+IMPORTANT SAFETY TIPS
+•	Never sign blank cheques. Sign cheques only after filling up all details completely.
+•	Do not transact at ATM, if you find any suspicious device attached to the ATM machine.
+•	Never share your card number, PIN, CVV, OTP, internet banking User ID, password or URN with anyone on phone, even if the caller claims to be a bank
+employee. Sharing these details can lead to fraud in your account.
+Contact us :
+Reach our Banker on Call at 1800 10 888 or [email]
+Important Message (Gift City Accounts and Deposits)
+•	Accounts operations will be allowed as per the IFSCA directions and other applicable guidelines/rules/regulations if any.
+•	Accounts opened and maintained with the Gift City IBU is not covered under any deposit insurance scheme.";
+Grievance Redressal:
+If you are not satisfied with the response received from access channels, you can escalate your concern by contacting the Nodal Officer via email
+[email] or call 022-41652700 between 9:30 am to 6:00 pm (Monday to Saturday, excluding 2nd and 4th Saturdays and bank holidays). For
+any further escalation, write in to
+Mr. Vipul Raj, PNO, IDFC FIRST Bank Ltd. Building No.2, Raheja Mindspace, MIDC Industrial Area, Shiravane, Juinagar, Nerul, Navi Mumbai 400706,
+Maharashtra, India. Email - [email] or call 1800 209 9771 (24x7).
+For escalations related to your accounts and deposits in Gift City, kindly write an email to [email]
+•This statement is a system generated output and requires no signature.
+•For any further information, please visit us at www.idfcfirstbank.com
+REGISTERED OFFICE: IDFC FIRST BANK LIMITED, KRM Tower, 7th Floor, No. 1, Harrington Road, Chetpet,
+Chennai-600031, Tamil Nadu, INDIA.	Page 3 of 4
+@@PAGE 4
+CONSOLIDATED STATEMENT
+CUSTOMER ID	[customer-id]
+STATEMENT PERIOD	: 01-OCT-2025 to 31-OCT-2025
+COMMONLY USED ABBREVIATIONS
+A2A	Account to Account
+ATM	Automated Teller Machine
+CR	Credit
+CVV	Card Verification Value
+DR	Debit
+FD	Fixed Deposit
+FT	Fund Transfer
+FT-REV	Fund Transfer Reversal
+Fund Trf	Fund Transfer
+IDFC	Infrastructure Development Finance Company
+IFSC	[ifsc]
+IFT	Internet Fund Transfer
+IMPS	Immediate Payment Service
+IMPS-CIB	IMPS Corporate Internet Banking
+IMPS-INET	Immediate Payment Service Internet Banking
+IMPS-RIB	Immediate Payment Service Retail Internet Banking
+MICR	[micr]
+NEFT	National Electronic Funds Transfer
+OTP	One Time Password
+PIN	Personal Identification Number
+POS	Point of Sale
+RD	Recurring Deposit
+RTGS	Real Time Gross Settlement systems
+SI	Standing Instruction
+TPT	Third Party Transfer
+TRF	Transfer
+TXN	Transaction
+UPI	Unified Payment Interface
+URN	Unique Reference Number
+------- End of the statement -------
+REGISTERED OFFICE: IDFC FIRST BANK LIMITED, KRM Tower, 7th Floor, No. 1, Harrington Road, Chetpet,
+Chennai-600031, Tamil Nadu, INDIA.	Page 4 of 4

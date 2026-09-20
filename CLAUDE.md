@@ -121,7 +121,22 @@ git branch -d feat/savings-interest-chart
 10. **The mock LLM provider refuses when it has no fixture** rather than
    returning something plausible. A mock that invents figures would let a
    broken pipeline look healthy.
-11. **The Docker image and CI run Node 22, not the spec's Node 20.** The AWS
+11. **A transaction can be a block of lines, not a line.** IDFC renders the
+   description as a multi-line cell *around* the row carrying the money, and
+   the block is vertically centred — so the number of continuation lines below
+   a row equals the number above it. That arithmetic is what makes the rows
+   separable at all; without it there is no way to tell whether a line between
+   two transactions ends the first or begins the second. The same bank ships
+   two cell layouts, so the row carrying the running balance is the only fixed
+   point, and direction comes from that balance moving rather than from a
+   withdrawals/deposits column — an empty column is not printed.
+12. **A mask can be re-broken by putting lines back together.** Redaction runs
+   per line; a parser joining wrapped lines can spell a name no line contained
+   (`AKS` + `HAY <surname>`). Line-level passes cannot prevent it, because they
+   do not know which cells a parser will keep. So letters left touching a
+   `SELF` are treated as the rest of that name and dropped — a `SELF` is only
+   ever emitted where a name was.
+13. **The Docker image and CI run Node 22, not the spec's Node 20.** The AWS
    SDK v3 — the only way this app reaches DynamoDB — requires node >= 22 from
    January 2027 and warns on every boot until then. `package.json` still
    declares `engines: node >= 20`, so local development on 20 keeps working.

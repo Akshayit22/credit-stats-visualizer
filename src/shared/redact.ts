@@ -466,6 +466,41 @@ export function redactFreeText(text: string): string {
   out = out.replace(IFSC, MASK.ifsc);
   out = out.replace(VPA, MASK.vpa);
   out = out.replace(PHONE, MASK.phone);
+  out = collapseMaskRemnants(out);
+  return out;
+}
+
+/** A loose letter run touching a `SELF`, with at most the space the wrap left. */
+const SELF_REMNANT = /\b[A-Za-z]{1,8} ?SELF\b|\bSELF ?[A-Za-z]{1,8}\b|(?:SELF){2,}/g;
+
+/**
+ * Drops the letters left stranded either side of a `SELF`.
+ *
+ * A description assembled from wrapped lines can put a name back together that
+ * no single line contained. IDFC breaks `AKSHAY` into `AKS` at the end of one
+ * printed line and `HAY <surname>` in the middle of the next; per-line
+ * redaction masks the surname and leaves both fragments, because neither is a
+ * name on its own. Rejoin them — which is precisely what a parser must do to
+ * read the description at all — and `…/AKSHAY SELF/…` is back.
+ *
+ * The line-level passes cannot prevent this. They do not know which cells a
+ * parser will keep, and here it keeps the two fragments while dropping the
+ * dates and amounts printed between them, so the pieces only become adjacent
+ * after the parser has chosen. The reliable signal is at the seam instead: a
+ * `SELF` is only ever emitted where a name was removed, so letters still stuck
+ * to one are the rest of that name. They go.
+ *
+ * The cost is a `TO SELF` becoming `SELF`, which loses nothing that
+ * categorisation uses — a self-transfer is what both say.
+ */
+function collapseMaskRemnants(text: string): string {
+  let out = text;
+  let previous = '';
+  // One pass leaves `SELFSELFSELF` half-collapsed; repeat until it settles.
+  while (out !== previous) {
+    previous = out;
+    out = out.replace(SELF_REMNANT, MASK.self);
+  }
   return out;
 }
 

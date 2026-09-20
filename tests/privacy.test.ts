@@ -10,6 +10,7 @@ import {
   joinWrappedDetail,
   redactForLlm,
   redactForStorage,
+  redactFreeText,
 } from '@/shared/redact';
 import { runDeterministicParser } from '@/server/parsing/registry';
 
@@ -272,5 +273,41 @@ describe('a name broken across a line break', () => {
     const out = redactForStorage(raw).text;
     expect(out).toContain('ZERODHA');
     expect(out).toContain('BROKING');
+  });
+});
+
+describe('letters left stranded beside a mask', () => {
+  // A parser has to rejoin wrapped lines to read a description at all, and
+  // that can spell a name no single line contained. The line passes cannot
+  // stop it: they do not know which cells the parser keeps, and here it keeps
+  // two name fragments while dropping the dates printed between them.
+  it('drops the rest of a name that a rejoin put back', () => {
+    expect(redactFreeText('NEFT/IDFB527449212322/AKSHAY SELF/SBIN00')).toBe(
+      'NEFT/IDFB527449212322/SELF/SBIN00',
+    );
+  });
+
+  it('collapses a pile-up of masks into one', () => {
+    expect(redactFreeText('NEFT/SCBLH28100511952/SELFSELFSELF/x')).toBe(
+      'NEFT/SCBLH28100511952/SELF/x',
+    );
+  });
+
+  it('takes the trailing remnant too', () => {
+    expect(redactFreeText('UPI/CR/1/SELFL/SBIN/SELFt/UPI')).toBe('UPI/CR/1/SELF/SBIN/SELF/UPI');
+  });
+
+  it('leaves a counterparty that is merely near a mask', () => {
+    // slice writes the holder as its own `-SELF-` segment; nothing is touching
+    // it, so nothing is taken.
+    expect(redactFreeText('UPI-Debit-621350153143-SELF-[ifsc]-[vpa]')).toBe(
+      'UPI-Debit-621350153143-SELF-[ifsc]-[vpa]',
+    );
+    expect(redactFreeText('UPI/DR/1/SHOBHA D/shobha./From ak')).toBe(
+      'UPI/DR/1/SHOBHA D/shobha./From ak',
+    );
+    expect(redactFreeText('ATM-NFS/CASHWITHDRAWAL/SBIPANCHVATI 2ND ATM')).toBe(
+      'ATM-NFS/CASHWITHDRAWAL/SBIPANCHVATI 2ND ATM',
+    );
   });
 });

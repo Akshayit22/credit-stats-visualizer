@@ -243,3 +243,34 @@ describe('joinWrappedDetail', () => {
     );
   });
 });
+
+describe('a name broken across a line break', () => {
+  // The holder pattern needs the first name whole, so a bank that wraps
+  // `AKSHAY` into `AKS` + `HAY` defeated it from both sides: neither half is a
+  // name. Nothing looked wrong until a parser joined the description back
+  // together — which IDFC's layout forces — and the name was there again.
+  const holder = 'Mr. Akshay Laluman Telang';
+
+  it('masks the halves so rejoining them cannot spell the name', () => {
+    const raw = [
+      '@@PAGE 1',
+      holder,
+      'NEFT/IDFB527449212322/AKS',
+      '01 Oct 25 19:23\t01 Oct 25\tHAY LALUMAN\t100,000.00\t592,635.00 CR',
+      'TELANG/SBIN00',
+    ].join('\n');
+
+    const out = redactForStorage(raw).text;
+    expect(out).not.toMatch(/AKSHAY/i);
+    // And still not once every line is concatenated, which is what the parser
+    // does to rebuild a description.
+    expect(out.split('\n').join('')).not.toMatch(/AKSHAY/i);
+  });
+
+  it('leaves an ordinary wrap that spells nothing alone', () => {
+    const raw = ['@@PAGE 1', holder, 'UPI/DR/1/ZERODHA', 'BROKING/ICIC/pay'].join('\n');
+    const out = redactForStorage(raw).text;
+    expect(out).toContain('ZERODHA');
+    expect(out).toContain('BROKING');
+  });
+});

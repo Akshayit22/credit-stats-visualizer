@@ -136,7 +136,13 @@ git branch -d feat/savings-interest-chart
    do not know which cells a parser will keep. So letters left touching a
    `SELF` are treated as the rest of that name and dropped — a `SELF` is only
    ever emitted where a name was.
-13. **The Docker image and CI run Node 22, not the spec's Node 20.** The AWS
+13. **Continuation lines take a separator only where the bank uses one.**
+   slice and IDFC hard-wrap mid-word, so their parsers join with nothing at
+   all. Standard Chartered breaks a payer's name at a space across two lines
+   (`PRESIDIO SOLUTIONS PRIVATE` / `LIMITED STANDARD CHARTE`), so that parser
+   joins with a space. It is a per-bank fact, not a house style, and getting it
+   backwards corrupts every counterparty on the statement.
+14. **The Docker image and CI run Node 22, not the spec's Node 20.** The AWS
    SDK v3 — the only way this app reaches DynamoDB — requires node >= 22 from
    January 2027 and warns on every boot until then. `package.json` still
    declares `engines: node >= 20`, so local development on 20 keeps working.

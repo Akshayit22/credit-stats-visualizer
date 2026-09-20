@@ -11,6 +11,10 @@ export const FIXTURE_NAMES = {
   idfcOct: 'idfc-statement-oct-25',
   /** The same bank, splitting that column across the lines above and below. */
   idfcDec: 'idfc-statement-dec-25',
+  /** Standard Chartered: a month of salary credits and transfers out. */
+  scbNov: 'scb-salary-nov',
+  /** The quarter the account was paid its interest. */
+  scbSep: 'scb-salary-sep',
 } as const;
 
 export function fixtureText(name: string): string {

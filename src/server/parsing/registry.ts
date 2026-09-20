@@ -2,6 +2,7 @@ import { toLines } from '@/shared/statement-text';
 import { detectStatement } from './detect';
 import { axisSupermoneyCardParser } from './parsers/axis-supermoney-card';
 import { idfcSavingsParser } from './parsers/idfc-savings';
+import { scbSavingsParser } from './parsers/scb-savings';
 import { sliceSavingsParser } from './parsers/slice-savings';
 import type { ParserInput, ParserOutput, StatementParser } from './types';
 
@@ -13,6 +14,7 @@ const PARSERS: readonly StatementParser[] = [
   sliceSavingsParser,
   axisSupermoneyCardParser,
   idfcSavingsParser,
+  scbSavingsParser,
 ];
 
 export function getParser(id: string | null): StatementParser | null {

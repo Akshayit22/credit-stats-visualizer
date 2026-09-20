@@ -57,6 +57,18 @@ export const FINGERPRINTS: readonly Fingerprint[] = [
       { text: 'savings account details for a/c', weight: 3 },
     ],
   },
+  {
+    id: 'scb-savings',
+    issuer: 'Standard Chartered',
+    productName: 'Savings account',
+    accountType: 'savings',
+    markers: [
+      { text: 'standard chartered', weight: 5 },
+      { text: 'smart banking', weight: 3 },
+      { text: 'balance forward', weight: 3 },
+      { text: 'sc.com/in', weight: 2 },
+    ],
+  },
   // Known issuers with no deterministic parser yet: recognised so the account
   // is named properly and the LLM gets a hint, then handled by the fallback.
   {

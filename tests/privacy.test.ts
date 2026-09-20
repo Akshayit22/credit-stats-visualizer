@@ -392,3 +392,16 @@ describe('where holder detection stops looking', () => {
     expect(redactForStorage(text).text).toContain('PRESIDIO SOLUTIONS PRIVATE');
   });
 });
+
+describe('a MICR code printed inside its own label', () => {
+  it('masks it, like the account number beside it', () => {
+    // Standard Chartered prints `MICR: 600036009 IFSC: SCBL0036078` in a single
+    // cell. The IFSC has a free-text pattern of its own and was masked; the
+    // MICR had only a labelled-field rule, which never saw it, so half that
+    // line went through untouched.
+    const out = redactForStorage('@@PAGE 1\nMICR: 600036009 IFSC: SCBL0036078').text;
+    expect(out).not.toContain('600036009');
+    expect(out).toContain('[micr]');
+    expect(out).toContain('[ifsc]');
+  });
+});

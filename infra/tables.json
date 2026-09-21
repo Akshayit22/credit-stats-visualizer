@@ -15,7 +15,9 @@
     "UsersTable": {
       "Type": "AWS::DynamoDB::Table",
       "Properties": {
-        "TableName": "cred-stats-${Env}-users",
+        "TableName": {
+          "Fn::Sub": "cred-stats-${Env}-users"
+        },
         "BillingMode": "PAY_PER_REQUEST",
         "AttributeDefinitions": [
           {
@@ -49,7 +51,9 @@
     "AccountsTable": {
       "Type": "AWS::DynamoDB::Table",
       "Properties": {
-        "TableName": "cred-stats-${Env}-accounts",
+        "TableName": {
+          "Fn::Sub": "cred-stats-${Env}-accounts"
+        },
         "BillingMode": "PAY_PER_REQUEST",
         "AttributeDefinitions": [
           {
@@ -83,7 +87,9 @@
     "StatementsTable": {
       "Type": "AWS::DynamoDB::Table",
       "Properties": {
-        "TableName": "cred-stats-${Env}-statements",
+        "TableName": {
+          "Fn::Sub": "cred-stats-${Env}-statements"
+        },
         "BillingMode": "PAY_PER_REQUEST",
         "AttributeDefinitions": [
           {
@@ -167,7 +173,9 @@
     "TransactionsTable": {
       "Type": "AWS::DynamoDB::Table",
       "Properties": {
-        "TableName": "cred-stats-${Env}-transactions",
+        "TableName": {
+          "Fn::Sub": "cred-stats-${Env}-transactions"
+        },
         "BillingMode": "PAY_PER_REQUEST",
         "AttributeDefinitions": [
           {
@@ -251,7 +259,9 @@
     "SummariesTable": {
       "Type": "AWS::DynamoDB::Table",
       "Properties": {
-        "TableName": "cred-stats-${Env}-summaries",
+        "TableName": {
+          "Fn::Sub": "cred-stats-${Env}-summaries"
+        },
         "BillingMode": "PAY_PER_REQUEST",
         "AttributeDefinitions": [
           {

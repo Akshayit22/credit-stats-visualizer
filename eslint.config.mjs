@@ -12,6 +12,10 @@ const config = [
       'design/**',
       // The pdf.js worker is a vendored build artefact, copied in by postinstall.
       'public/**',
+      // SST's config runs against globals its platform generates at install
+      // time, so it is typechecked and linted by `sst` rather than by us.
+      '.sst/**',
+      'sst.config.ts',
       'next-env.d.ts',
     ],
   },

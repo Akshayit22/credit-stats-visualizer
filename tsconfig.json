@@ -45,6 +45,8 @@
   "exclude": [
     "node_modules",
     "design",
-    ".next"
+    ".next",
+    ".sst",
+    "sst.config.ts"
   ]
 }

@@ -77,7 +77,12 @@ function writeInfra(): void {
     return {
       Type: 'AWS::DynamoDB::Table',
       Properties: {
-        TableName: name.replace(tablePrefix(), 'cred-stats-${Env}'),
+        // `Fn::Sub`, not a bare string: CloudFormation only substitutes `${Env}`
+        // inside one. Emitted plainly it asks DynamoDB for a table literally
+        // named `cred-stats-${Env}-users`, and `$`, `{` and `}` are not legal
+        // in a table name — so the stack fails on create rather than making
+        // something wrong, which is the only mercy in it.
+        TableName: { 'Fn::Sub': name.replace(tablePrefix(), 'cred-stats-${Env}') },
         BillingMode: definition.BillingMode,
         AttributeDefinitions: definition.AttributeDefinitions,
         KeySchema: definition.KeySchema,

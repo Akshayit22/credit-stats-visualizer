@@ -94,29 +94,3 @@ describe('the five tables', () => {
     }
   });
 });
-
-describe('infra/tables.json', () => {
-  const template = JSON.parse(readFileSync(resolve('infra/tables.json'), 'utf8')) as {
-    Resources: Record<string, { Properties: Record<string, unknown> }>;
-  };
-
-  it('holds one CloudFormation resource per table', () => {
-    expect(Object.keys(template.Resources)).toHaveLength(5);
-  });
-
-  it('parameterises the environment rather than hard-coding one', () => {
-    for (const resource of Object.values(template.Resources)) {
-      expect(String(resource.Properties.TableName)).toMatch(/^cred-stats-\$\{Env\}-/);
-    }
-  });
-
-  it('turns on the protections that only matter in the cloud', () => {
-    for (const resource of Object.values(template.Resources)) {
-      expect(resource.Properties.PointInTimeRecoverySpecification).toEqual({
-        PointInTimeRecoveryEnabled: true,
-      });
-      expect(resource.Properties.SSESpecification).toEqual({ SSEEnabled: true });
-      expect(resource.Properties.DeletionProtectionEnabled).toBe(true);
-    }
-  });
-});

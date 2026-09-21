@@ -28,7 +28,7 @@ const ID = 'scb-savings';
  *
  * - **They are separate fields, not one hard-wrapped string**, which is why
  *   they are joined with a space here and with nothing at all in the slice and
- *   IDFC parsers. `PRESIDIO SOLUTIONS PRIVATE` and `LIMITED STANDARD CHARTE`
+ *   IDFC parsers. `ACME PAYROLL PRIVATE` and `LIMITED STANDARD CHARTE`
  *   are two lines of a payer's name broken at a space; running them together
  *   would give `PRIVATELIMITED`.
  *
@@ -158,7 +158,7 @@ function readStatementDate(lines: StatementLine[]): string | null {
   return null;
 }
 
-/** `ACCOUNT : XXXX9944`, or the raw number before redaction masked it. */
+/** `ACCOUNT : XXXX8765`, or the raw number before redaction masked it. */
 function readAccount(lines: StatementLine[]): { last4: string; maskedNumber: string } {
   for (const line of lines.slice(0, 24)) {
     const match = line.text.match(/\bACCOUNT\s*(?:NO\.?|NUMBER)?\s*:?\s*[X*]*(\d{4,})\b/i);
@@ -301,7 +301,7 @@ function modeOf(description: string, fee: boolean): ParsedTransaction['mode'] {
 /** A reference this bank prints beside the payer, which is never a name. */
 const REFERENCE = /^(?:BT|NEFT|IMPS|RTGS|UPI|IN1BT\w+|\d[\d-]*|CONCUR|SAL|EOPS)$/i;
 /**
- * A long word mixing letters and digits — `SCBLN520250909`, `IN1BT2509051062C`.
+ * A long word mixing letters and digits — `SCBREF0001`, `REF90002`.
  * Banks build these by gluing a code to a date, and no person or company is
  * named like one, so it ends a counterparty rather than joining it.
  */
@@ -310,8 +310,8 @@ const CODE_LIKE = /^(?=.*\d)(?=.*[A-Za-z])[A-Za-z0-9]{8,}$/;
 /**
  * Who the money moved to or from.
  *
- * A salary credit reads `BT IN1BT25111709LYN PRESIDIO SOLUTIONS PRIVATE
- * LIMITED STANDARD CHARTE IN1BT25111709LYN CONCUR 257` — the payer's name sits
+ * A salary credit reads `BT REF90001 ACME PAYROLL PRIVATE
+ * LIMITED STANDARD CHARTE REF90001 CONCUR 257` — the payer's name sits
  * between two copies of the transfer reference. A UPI row puts the
  * counterparty first instead. Either way the name is the first run of words
  * that are words rather than references, so that is what is taken.

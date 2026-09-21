@@ -108,11 +108,11 @@ id**. `tests/llm.test.ts` asserts this against a real fixture.
 Three real leaks were found while building this, all from the same root cause —
 **redaction runs one line at a time, and bank PDFs wrap fields mid-word.**
 
-1. `AKSHAY LALUMAN TE` on one line and `LAN-…` on the next. The first half was
+1. `AKSYA RAMACHANDRAN TE` on one line and `LAN-…` on the next. The first half was
    masked; the second half was not, and joining them gave `SELFLAN`.
-2. Later, the same wrap with a space in the tail gave `SELF TELAN` — the
+2. Later, the same wrap with a space in the tail gave `SELF NAI` — the
    surname, intact.
-3. `akshaytelang395@oksbi` is a *UPI handle*, not an email — no dot in the
+3. `priyanair395@oksbi` is a *UPI handle*, not an email — no dot in the
    domain — so the email pattern missed it entirely and the surname leaked.
 
 `maskSpillLength`, `joinWrappedDetail` and `dropMaskSpill` exist for exactly

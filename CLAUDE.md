@@ -87,7 +87,7 @@ git branch -d feat/savings-interest-chart
    as plain text, so redaction stays a regex pass and the LLM fallback still
    gets something readable. See `src/client/lib/pdf-text.ts`.
 2. **Wrapped description lines concatenate with no separator.** slice hard-wraps
-   mid-word (`…TE` + `LAN` → `…TELAN`). Joining with a space corrupts every
+   mid-word (`…TE` + `LAN` → `…NAI`). Joining with a space corrupts every
    counterparty name.
 3. **The account holder's own name becomes `SELF`** in transaction descriptions
    during the storage redaction pass. It is PII we have no reason to keep, and
@@ -139,7 +139,7 @@ git branch -d feat/savings-interest-chart
 13. **Continuation lines take a separator only where the bank uses one.**
    slice and IDFC hard-wrap mid-word, so their parsers join with nothing at
    all. Standard Chartered breaks a payer's name at a space across two lines
-   (`PRESIDIO SOLUTIONS PRIVATE` / `LIMITED STANDARD CHARTE`), so that parser
+   (`ACME PAYROLL PRIVATE` / `LIMITED STANDARD CHARTE`), so that parser
    joins with a space. It is a per-bank fact, not a house style, and getting it
    backwards corrupts every counterparty on the statement.
 14. **The Docker image and CI run Node 22, not the spec's Node 20.** The AWS

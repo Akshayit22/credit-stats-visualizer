@@ -185,7 +185,7 @@ interface Account {
 }
 
 /**
- * `SAVINGS ACCOUNT DETAILS FOR A/C : 10240951741`, or the same line once the
+ * `SAVINGS ACCOUNT DETAILS FOR A/C : 12345678901`, or the same line once the
  * redaction pass has masked it. Both shapes end in the digits we keep.
  */
 function readAccount(lines: StatementLine[]): Account {

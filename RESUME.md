@@ -118,10 +118,10 @@ Each has a test; do not "simplify" these away.
 
 1. **Wrapped-line seams.** slice hard-wraps a field mid-word, and redaction
    runs a line at a time, so a masked value's tail survives on the next line —
-   `AKSHAY LA` + `LUMAN TELAN-…` became `SELF` + `LUMAN TELAN-…`. Handled by
+   `PRIYA RA` + `MACHANDRAN NAI-…` became `SELF` + `MACHANDRAN NAI-…`. Handled by
    `maskSpillLength` / `joinWrappedDetail` / `dropMaskSpill` in
    `src/shared/redact.ts`.
-2. **UPI handles are not emails.** `akshaytelang395@oksbi` has no dot in the
+2. **UPI handles are not emails.** `priyanair395@oksbi` has no dot in the
    domain, so the email pattern missed it and the surname leaked. There is now
    a `VPA` pattern, and it must run **after** the IFSC pass — a VPA's local part
    can contain hyphens, so without IFSC already masked it runs left across

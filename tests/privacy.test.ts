@@ -38,7 +38,6 @@ describe('the committed fixtures', () => {
     expect(text).not.toContain('033325225226993');
     expect(text).not.toContain('652984');
     expect(text).not.toContain('380009067496');
-    expect(text).not.toContain('10240951741');
   });
 
   it.each(FIXTURE_FILES)('%s carries no holder name, address or nominee', (file) => {
@@ -188,7 +187,6 @@ describe('redactForStorage', () => {
     expect(text).toContain('Customer ID');
     expect(text).toContain('Account\tSAVING');
     expect(text).not.toContain('380009067496');
-    expect(text).not.toContain('10240951741');
     expect(text).not.toContain('9876543210');
   });
 
@@ -319,16 +317,16 @@ describe('an account number printed inside its own label', () => {
   // next. IDFC puts both in one cell inside a heading, so nothing matched it
   // and the full number survived into the stored text and a committed fixture.
   it('cuts the digits back to the last four, keeping the label', () => {
-    const raw = '@@PAGE 1\nSAVINGS ACCOUNT DETAILS FOR A/C : 10240951741';
+    const raw = '@@PAGE 1\nSAVINGS ACCOUNT DETAILS FOR A/C : 12345678901';
     const out = redactForStorage(raw).text;
-    expect(out).not.toContain('10240951741');
-    expect(out).toContain('XXXX1741');
+    expect(out).not.toContain('12345678901');
+    expect(out).toContain('XXXX8901');
     // The label has to survive: it is how the parser finds the line at all.
     expect(out).toMatch(/SAVINGS ACCOUNT DETAILS FOR A\/C/);
   });
 
   it('counts it as an account number, so the review step can say so', () => {
-    const { counts } = redactForStorage('@@PAGE 1\nACCOUNT NUMBER : 10240951741');
+    const { counts } = redactForStorage('@@PAGE 1\nACCOUNT NUMBER : 12345678901');
     expect(counts.accountNumber).toBeGreaterThanOrEqual(1);
   });
 

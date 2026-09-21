@@ -17,7 +17,7 @@ const ID = 'slice-savings';
  *   `₹33.10` is a credit, `-₹8,700.00` is a debit.
  * - `DETAILS` wraps over up to three physical lines and the bank hard-wraps
  *   mid-word, so continuation lines are joined with **no separator at all**:
- *   `…TE` + `LAN` is `…TELAN`, not `…TE LAN`.
+ *   `…TE` + `LAN` is `…NAI`, not `…TE LAN`.
  * - The BALANCE column is a running balance. Every row is checked against the
  *   previous row's balance, which is a far stronger test than the summary
  *   totals alone.

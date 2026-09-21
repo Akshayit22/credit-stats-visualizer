@@ -42,7 +42,7 @@ export const MASK = {
 
 const EMAIL = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
 /**
- * A UPI virtual payment address — `akshaytelang395@oksbi`, `q023830599@ybl`.
+ * A UPI virtual payment address — `priyanair395@oksbi`, `q023830599@ybl`.
  * Email-shaped but with no dot in the handle part, so the email pattern misses
  * it, and it routinely carries the holder's own name spelled without spaces.
  * The merchant or counterparty always sits in its own segment of the
@@ -57,7 +57,7 @@ const IFSC = /\b[A-Z]{4}0[A-Z0-9]{6}\b/g;
 const MASKED_PAN = /\b[0-9X]{4,8}[*X]{4,8}(\d{4})\b/g;
 /**
  * An account number printed inline with its own label, rather than in the next
- * column: `SAVINGS ACCOUNT DETAILS FOR A/C : 10240951741`.
+ * column: `SAVINGS ACCOUNT DETAILS FOR A/C : 12345678901`.
  *
  * The labelled-field rules read a label in one cell and its value in the next,
  * which is how most banks lay a header out. IDFC puts the whole thing in one
@@ -130,8 +130,8 @@ function escapeRegex(text: string): string {
 }
 
 /**
- * Bank PDFs truncate names to fit a column: `AKSHAY LALUMAN TELANG` prints as
- * `AKSHAY LALUMAN TELAN` inside one UPI description and as `Mr. Akshay Laluman T`
+ * Bank PDFs truncate names to fit a column: `PRIYA RAMACHANDRAN NAIR` prints as
+ * `PRIYA RAMACHANDRAN NAI` inside one UPI description and as `Mr. Priya Ramachandran N`
  * in another. So: every character after the first is optional, nested, which
  * matches any non-empty prefix and nothing longer.
  */
@@ -161,7 +161,7 @@ export function holderNamePattern(fullName: string): RegExp | null {
     const token = tokens[i];
     if (token === undefined) continue;
     // The separator is optional: a UPI handle runs the tokens together
-    // (`akshaytelang395@oksbi`), and matching there is the whole point.
+    // (`priyanair395@oksbi`), and matching there is the whole point.
     inner = `(?:[\\s.-]*${truncatablePrefix(token)}${inner})?`;
   }
 
@@ -174,10 +174,10 @@ export function holderNamePattern(fullName: string): RegExp | null {
  * pattern cannot see.
  *
  * IDFC spreads one description over three printed lines, with the data row in
- * the middle: `…/AKS` / `HAY LALUMAN` / `TELANG/SBIN00`. The per-line pass
+ * the middle: `…/AKS` / `YA RAMACHANDRAN` / `NAIR/SBIN00`. The per-line pass
  * masks `AKS` and the spill logic joins a continuation to the line above, but
  * neither can reach a fragment stranded in the *middle* line's description
- * cell — so `LALUMAN` and `TELANG` travelled into the prompt intact.
+ * cell — so `RAMACHANDRAN` and `NAIR` travelled into the prompt intact.
  *
  * Matching each word on its own catches them wherever they land. The floor of
  * five characters is the safeguard: it keeps a genuine counterparty from being
@@ -216,13 +216,13 @@ const HONORIFIC = /^(?:mr|mrs|ms|shri|smt|dr)\.?\s+/i;
  * labelled `Name` row anywhere in the header, the first bare all-caps line near
  * the top, and a bare line opening with an honorific.
  *
- * The honorific case exists because IDFC prints `Mr. Akshay Laluman Telang` in
+ * The honorific case exists because IDFC prints `Mr. Priya Ramachandran Nair` in
  * title case, and an all-caps-only test silently found nothing — no error, no
  * warning, the name simply travelled into the prompt. Case is not a reliable
  * signal across banks; an honorific is, which is why it is the only thing that
  * licenses a non-all-caps line here. A bare title-case line without one stays
  * ignored on purpose: in this very statement the address (`Phule Nagar
- * Panchvati`) is also title case, and masking that as the holder would both
+ * Green Park`) is also title case, and masking that as the holder would both
  * miss the real name and corrupt the line.
  *
  * Only the *first* bare line of each kind is taken — later all-caps headings
@@ -235,7 +235,7 @@ export function detectHolderNames(text: string): string[] {
 
   // Stop where the transaction table starts, not at a fixed line count. A
   // continuation line inside the table is bare and capitalised and looks just
-  // like a name — Standard Chartered wraps `PRESIDIO SOLUTIONS PRIVATE
+  // like a name — Standard Chartered wraps `ACME PAYROLL PRIVATE
   // LIMITED` under its salary credits, five lines inside the old fixed window.
   // Masking an employer as the holder would erase the counterparty on every
   // salary row, which is the one merchant on the statement worth naming.
@@ -254,7 +254,7 @@ export function detectHolderNames(text: string): string[] {
     // An honorific names a person wherever it appears, including the first
     // column of a row whose other columns are labelled fields — which is how
     // Standard Chartered lays its header out:
-    //   `MR AKSHAY LALUMAN TELANG | BRANCH | : | Anna Nagar`
+    //   `MR PRIYA RAMACHANDRAN NAIR | BRANCH | : | Central Branch`
     // There is no bare line to find there, so without this the holder is never
     // detected and never masked.
     const leading = cells[0];
@@ -388,7 +388,7 @@ export function redactForStorage(rawText: string): RedactionResult {
     }
 
     // 6. …and then whatever is still glued to the mask that leaves. A transfer
-    //    alias like `AKSHAYLT15012003` is one token, so masking the name half
+    //    alias like `PRIYARN01011990` is one token, so masking the name half
     //    strands a date of birth against a `SELF`.
     const collapsed = collapseMaskRemnants(joined);
     if (collapsed !== joined) bump('holderName');
@@ -409,7 +409,7 @@ const MAX_WRAP_FRAGMENT = 14;
  * Masks a holder name that only exists once two printed lines are put together.
  *
  * Redaction runs a line at a time, and `holderNamePattern` requires the first
- * name whole, so a bank that breaks `AKSHAY` across a line boundary defeats
+ * name whole, so a bank that breaks `PRIYA` across a line boundary defeats
  * both: `…/AKS` ends one line, `HAY <surname>` begins the next, and neither
  * half is a name by itself. Nothing looked wrong — until a parser joined the
  * description back together, as IDFC's layout forces it to, and the name was
@@ -476,7 +476,7 @@ export const MASK_AT_END = /(?:SELF|\[[a-z-]+\])$/;
  * Joins a wrapped continuation onto the line above it.
  *
  * slice hard-wraps mid-word, so the join takes no separator: `…TE` + `LAN` is
- * `…TELAN`. When the head ends in a mask, the continuation's leading word run
+ * `…NAI`. When the head ends in a mask, the continuation's leading word run
  * is the rest of the value that was masked, and goes with it.
  */
 export function joinWrappedDetail(head: string, tail: string): string {
@@ -497,8 +497,8 @@ const MAX_SPILL = 40;
  * line above.
  *
  * Everything up to the continuation's first structural delimiter — the whole
- * run, not just the first word, because a name wraps as `…AKSHAY LA` +
- * `LUMAN TELAN-XXXX9652-…` and stopping at the space leaves the surname behind.
+ * run, not just the first word, because a name wraps as `…PRIYA RA` +
+ * `MACHANDRAN NAI-XXXX9652-…` and stopping at the space leaves the surname behind.
  * A continuation that already begins with a mask spilled nothing.
  */
 export function maskSpillLength(tail: string): number {
@@ -530,8 +530,8 @@ export function redactFreeText(text: string): string {
  * A run of characters touching a `SELF`, with at most the space a wrap left.
  *
  * The digits matter as much as the letters. Standard Chartered prints a
- * transfer alias as `AKSHAYLT15012003` — the holder's name run together with
- * what is plainly a date of birth. Masking the name half leaves `SELF15012003`,
+ * transfer alias as `PRIYARN01011990` — the holder's name run together with
+ * what is plainly a date of birth. Masking the name half leaves `SELF01011990`,
  * which still carries it. A run glued straight onto a mask with no separator is
  * part of the same token, so it goes with it; a run with a space between is
  * only taken when it is letters, since `SELF 500` is two things rather than a
@@ -543,11 +543,11 @@ const SELF_REMNANT = /(?:SELF){2,}|\b[A-Za-z]{1,8} ?SELF\b|\bSELF[A-Za-z0-9]{1,1
  * Drops the letters left stranded either side of a `SELF`.
  *
  * A description assembled from wrapped lines can put a name back together that
- * no single line contained. IDFC breaks `AKSHAY` into `AKS` at the end of one
+ * no single line contained. IDFC breaks `PRIYA` into `AKS` at the end of one
  * printed line and `HAY <surname>` in the middle of the next; per-line
  * redaction masks the surname and leaves both fragments, because neither is a
  * name on its own. Rejoin them — which is precisely what a parser must do to
- * read the description at all — and `…/AKSHAY SELF/…` is back.
+ * read the description at all — and `…/PRIYA SELF/…` is back.
  *
  * The line-level passes cannot prevent this. They do not know which cells a
  * parser will keep, and here it keeps the two fragments while dropping the
@@ -566,7 +566,7 @@ const SELF_REMNANT = /(?:SELF){2,}|\b[A-Za-z]{1,8} ?SELF\b|\bSELF[A-Za-z0-9]{1,1
  */
 function collapseMaskRemnants(text: string): string {
   // Deliberately one pass. Scanning resumes after each match, so a replacement
-  // cannot be re-examined — which is what stops `SELF15012003 IDFC FIRST BANK`
+  // cannot be re-examined — which is what stops `SELF01011990 IDFC FIRST BANK`
   // from collapsing to `SELF` one word at a time, each round eating the next
   // word of a counterparty that was never part of the name. Runs of masks are
   // handled inside the pattern instead, which is why they come first in it.
@@ -576,8 +576,8 @@ function collapseMaskRemnants(text: string): string {
 /**
  * Redaction runs a line at a time, but a statement that hard-wraps a field
  * mid-word leaves the truncated head on one line and its tail on the next,
- * where the per-line pass cannot see what it belongs to. `…TO AKSHAY LA`
- * becomes `…TO SELF` and the next line still begins `LUMAN TELAN-…`.
+ * where the per-line pass cannot see what it belongs to. `…TO PRIYA RA`
+ * becomes `…TO SELF` and the next line still begins `MACHANDRAN NAI-…`.
  *
  * So: a single-cell line following a multi-cell row that masked one of its
  * cells at the end is a wrapped continuation, and its leading run is the rest

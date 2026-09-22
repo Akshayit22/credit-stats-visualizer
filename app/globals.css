@@ -126,17 +126,32 @@ body {
   width: var(--sidebar-w-collapsed);
 }
 
+/* Brand and toggle share one row that never scrolls, so the control that
+   expands a collapsed sidebar is reachable however many accounts there are. */
+.sidebar-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: calc(var(--space-6) * 1.02) var(--space-4) var(--space-2) var(--space-6);
+}
+.sidebar[data-collapsed='true'] .sidebar-head {
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-inline: 0;
+}
 .sidebar-brand {
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: var(--space-4);
-  padding: calc(var(--space-6) * 1.02) var(--space-6) var(--space-2);
   text-decoration: none;
   color: inherit;
 }
 .sidebar[data-collapsed='true'] .sidebar-brand {
+  flex: none;
   justify-content: center;
-  padding-inline: 0;
 }
 .sidebar-mark {
   width: 20px;
@@ -164,15 +179,20 @@ body {
   overflow: hidden;
 }
 
+/* The nav is the only part that scrolls; `min-height: 0` is what lets a flex
+   child shrink below its content instead of overflowing the clipped column. */
 .sidebar-nav {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: var(--space-4) 0;
+  padding: var(--space-4) 0 var(--space-6);
 }
 
-.sidebar-link,
-.sidebar-toggle {
+.sidebar-link {
   display: flex;
   align-items: center;
   gap: var(--space-4);
@@ -189,28 +209,38 @@ body {
   background: transparent;
   color: color-mix(in srgb, var(--color-text) 72%, transparent);
 }
-.sidebar[data-collapsed='true'] .sidebar-link,
-.sidebar[data-collapsed='true'] .sidebar-toggle {
+.sidebar[data-collapsed='true'] .sidebar-link {
   width: 38px;
   margin-inline: 9px;
   padding: 9px 0;
   justify-content: center;
 }
-.sidebar-link:hover,
-.sidebar-toggle:hover {
+.sidebar-link:hover {
   background: color-mix(in srgb, var(--color-text) 7%, transparent);
 }
 .sidebar-link[aria-current='page'] {
   background: color-mix(in srgb, var(--color-accent) 15%, transparent);
   color: var(--color-accent-200);
 }
+
 .sidebar-toggle {
-  margin-bottom: var(--space-6);
-  font-size: 12.5px;
-  color: color-mix(in srgb, var(--color-text) 46%, transparent);
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  background: transparent;
+  color: color-mix(in srgb, var(--color-text) 52%, transparent);
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
 }
-.sidebar-spacer {
-  flex: 1;
+.sidebar-toggle:hover {
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
+  color: var(--color-text);
 }
 
 /* ── header ───────────────────────────────────────────────────────────────── */
@@ -806,8 +836,10 @@ body {
     margin-inline: 2px;
     white-space: nowrap;
   }
-  .sidebar-toggle,
-  .sidebar-spacer {
+  .sidebar-head {
+    padding: var(--space-3) var(--space-4);
+  }
+  .sidebar-toggle {
     display: none;
   }
   .app-main,

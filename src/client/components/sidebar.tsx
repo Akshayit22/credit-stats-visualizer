@@ -5,28 +5,36 @@ import { usePathname } from 'next/navigation';
 import { useSyncExternalStore } from 'react';
 import type { Account } from '@/shared/types';
 import { Icon } from './icon';
-import { accountShortName } from '@/client/lib/format';
+import { accountProductLine } from '@/client/lib/format';
 import * as nav from '@/client/lib/sidebar-store';
 
 /**
  * The sidebar is account-first, because that is the question a person actually
  * asks: *which* account, and *then* which view of it.
  *
- *   Overview                     ← everything together
+ *   ⌐ Statements                 ‹      ← brand, and the collapse control
+ *
+ *   Overview                            ← everything together
  *
  *   ACCOUNTS
- *   ⌐ Axis Bank ··9581           ← the account
- *       Statement                ← its views, nested
+ *   ⌐ Axis Bank                         ← the bank, so it can be told apart
+ *       Magnus ··9581                   ← the card on it
+ *       Statement                       ← its views, nested
  *       Cashback
- *   ⌐ slice savings ··6993
+ *   ⌐ slice
+ *       Savings ··6993
  *       Statement
  *
- *   Statements                   ← the library, all uploads
+ *   Statements                          ← the library, all uploads
  *   Settings
  *
- * The previous flat list mixed the two — "Credit card", "Cashback" and
- * "Savings" sat at the same level, so with two cards you could not tell whose
- * cashback you were looking at, and Cashback had nowhere to belong.
+ * The toggle sits in the header rather than at the foot of the column. At the
+ * foot it was the last item after a list that grows with the number of
+ * accounts, and the column is a fixed `100vh` with `overflow: hidden` — so
+ * past three or four accounts the only control that expands the sidebar was
+ * pushed off the bottom and clipped, leaving a collapsed sidebar with no way
+ * back. The scrolling now belongs to the nav alone; the header and the toggle
+ * never move.
  */
 
 export interface NavLink {
@@ -46,19 +54,31 @@ export interface SidebarProps {
 export function Sidebar({ top, accounts, bottom, period }: SidebarProps) {
   const pathname = usePathname();
   const open = useSyncExternalStore(nav.subscribe, nav.getSnapshot, nav.getServerSnapshot);
-  const ToggleIcon = open ? Icon.ArrowLineLeft : Icon.ArrowLineRight;
+  const ToggleIcon = open ? Icon.CaretLeft : Icon.CaretRight;
   const query = period ? `?period=${period}` : '';
 
   return (
     <aside className="sidebar" data-collapsed={!open}>
-      <Link href="/overview" className="sidebar-brand">
-        <span className="sidebar-mark" aria-hidden="true" />
-        {open ? (
-          <span className="sidebar-brand-name">Statements</span>
-        ) : (
-          <span className="visually-hidden">cred-stats</span>
-        )}
-      </Link>
+      <div className="sidebar-head">
+        <Link href="/overview" className="sidebar-brand">
+          <span className="sidebar-mark" aria-hidden="true" />
+          {open ? (
+            <span className="sidebar-brand-name">Statements</span>
+          ) : (
+            <span className="visually-hidden">cred-stats</span>
+          )}
+        </Link>
+        <button
+          type="button"
+          className="sidebar-toggle"
+          onClick={() => nav.setOpen(!open)}
+          aria-expanded={open}
+          aria-label={open ? 'Collapse sidebar' : 'Expand sidebar'}
+          title={open ? 'Collapse sidebar' : 'Expand sidebar'}
+        >
+          <ToggleIcon size={14} weight="bold" aria-hidden="true" />
+        </button>
+      </div>
 
       <nav className="sidebar-nav" aria-label="Sections">
         {top.map((item) => (
@@ -87,17 +107,6 @@ export function Sidebar({ top, accounts, bottom, period }: SidebarProps) {
           <SidebarLink key={item.href} item={item} active={pathname === item.href} open={open} />
         ))}
       </nav>
-
-      <div className="sidebar-spacer" />
-      <button
-        type="button"
-        className="sidebar-toggle"
-        onClick={() => nav.setOpen(!open)}
-        aria-expanded={open}
-      >
-        <ToggleIcon size={15} aria-hidden="true" />
-        {open ? <span>Collapse</span> : <span className="visually-hidden">Expand sidebar</span>}
-      </button>
     </aside>
   );
 }
@@ -129,6 +138,10 @@ function SidebarLink({
  * One account and the views that belong to it. A savings account has no
  * cashback screen — it earns interest, which the statement view already shows —
  * so it simply has one child rather than a disabled second one.
+ *
+ * The bank is the heading and the product the second line, not the other way
+ * round: two cards from the same issuer are told apart by the product, but a
+ * product name alone ("Magnus", "Millennia") does not say whose it is.
  */
 function AccountGroup({
   account,
@@ -168,11 +181,15 @@ function AccountGroup({
         )}
         {open ? (
           <span className="sidebar-account-text">
-            <span className="sidebar-account-name">{accountShortName(account)}</span>
-            <span className="sidebar-account-sub">{account.maskedNumber}</span>
+            <span className="sidebar-account-name">{account.issuer}</span>
+            <span className="sidebar-account-sub">
+              {accountProductLine(account)} {account.maskedNumber}
+            </span>
           </span>
         ) : (
-          <span className="visually-hidden">{account.displayName}</span>
+          <span className="visually-hidden">
+            {account.issuer} {accountProductLine(account)}
+          </span>
         )}
       </Link>
 

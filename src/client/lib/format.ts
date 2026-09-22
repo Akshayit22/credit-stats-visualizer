@@ -68,6 +68,21 @@ export function lastMonths(end: Period, count: number): Period[] {
  * show. `displayName` is the full "Axis Bank · Supermoney RuPay Credit Card",
  * which is right on a page heading and too long anywhere narrow.
  */
+/**
+ * The product on its own, for use beneath the issuer — "Magnus", "Savings".
+ * The issuer is the line above it, so repeating the bank here would read
+ * "Axis Bank / Axis Bank Magnus".
+ */
+export function accountProductLine(account: {
+  type: 'credit_card' | 'savings';
+  issuer: string;
+  productName: string;
+}): string {
+  if (account.type === 'savings') return 'Savings';
+  const product = account.productName.replace(/credit card/i, '').trim();
+  return product.length > 0 ? product : 'Credit card';
+}
+
 export function accountShortName(account: {
   type: 'credit_card' | 'savings';
   issuer: string;

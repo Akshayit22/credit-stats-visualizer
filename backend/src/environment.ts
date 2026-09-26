@@ -21,6 +21,13 @@ export const environmentSchema = z.object({
   PORT: z.coerce.number().int().min(1).max(65_535).default(4000),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
 
+  /**
+   * The built frontend (`frontend/dist`). When set, the API also serves the web
+   * app, so one service answers both on one origin — the Docker image sets it.
+   * Left unset locally, where Vite serves the frontend and proxies /api here.
+   */
+  CRED_STATS_WEB_DIR: optional,
+
   /** `mongodb://localhost:27017` locally, the Atlas SRV string in production. */
   MONGODB_URI: z.string().min(1),
   MONGODB_DB: z.string().min(1).default('cred-stats'),

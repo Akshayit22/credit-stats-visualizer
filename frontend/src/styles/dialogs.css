@@ -58,14 +58,3 @@
 .input.is-compact {
   font-size: 12px;
 }
-
-/* Column widths for the small tables in dialogs and screens. */
-.col-date {
-  width: calc(var(--space-8) * 3.85);
-}
-.col-amount {
-  width: calc(var(--space-8) * 4.65);
-}
-.col-category {
-  width: calc(var(--space-8) * 7.5);
-}

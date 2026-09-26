@@ -1,4 +1,5 @@
 import {
+  keepPreviousData,
   useMutation,
   useQuery,
   useQueryClient,
@@ -47,6 +48,9 @@ export function useOverview(query: ViewQuery) {
   return useQuery({
     queryKey: queryKeys.overview(query),
     queryFn: () => endpoints.views.overview(query),
+    // Switching month keeps the last screen up until the next one arrives,
+    // rather than flashing a skeleton between two nearly identical pages.
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -54,6 +58,8 @@ export function useAccountView(screen: AccountScreen, accountId: string, query: 
   return useQuery({
     queryKey: queryKeys.account(screen, accountId, query),
     queryFn: () => endpoints.views.account(screen, accountId, query),
+    placeholderData: (previous) =>
+      previous?.account.accountId === accountId ? previous : undefined,
   });
 }
 

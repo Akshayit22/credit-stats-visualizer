@@ -6,3 +6,11 @@ afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
 });
+
+// recharts measures its container with ResizeObserver, which jsdom lacks.
+class ResizeObserverStub {
+  observe(): void {}
+  unobserve(): void {}
+  disconnect(): void {}
+}
+globalThis.ResizeObserver ??= ResizeObserverStub;

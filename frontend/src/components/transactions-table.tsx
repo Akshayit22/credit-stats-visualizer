@@ -1,11 +1,6 @@
-'use client';
-
 import { useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { CATEGORIES, type Category } from '@/shared/categories';
-import { formatMinor } from '@/shared/money';
-import type { Transaction } from '@/shared/types';
-import { formatDayShort } from '@/client/lib/format';
+import { CATEGORIES, type Category, formatMinor, type Transaction, formatDayShort } from '@cred-stats/shared';
+import { useRecategorise } from '../hooks/queries';
 import { Icon } from './icon';
 
 export type TxnFilter = 'all' | 'purchases' | 'charges' | 'money' | 'in' | 'out' | 'interest';
@@ -34,7 +29,7 @@ export function TransactionsTable({
   categoryFilter?: string | null;
   onClearCategory?: () => void;
 }) {
-  const router = useRouter();
+  const recategoriseRow = useRecategorise();
   const [filter, setFilter] = useState<TxnFilter>(filters[0] ?? 'all');
   const [sort, setSort] = useState<SortKey>('date');
   const [showInterest, setShowInterest] = useState(false);
@@ -64,20 +59,13 @@ export function TransactionsTable({
   const interestFolded =
     variant === 'savings' && !showInterest && filter !== 'interest' && interestRows.length > 0;
 
-  const recategorise = async (txn: Transaction, category: Category) => {
+  const recategorise = (txn: Transaction, category: Category) => {
     setEditing(null);
-    await fetch('/api/transactions', {
-      method: 'PATCH',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        txnId: txn.txnId,
-        date: txn.date,
-        accountId: txn.accountId,
-        category,
-        applyToMerchant: true,
-      }),
+    recategoriseRow.mutate({
+      statementId: txn.statementId,
+      txnId: txn.txnId,
+      change: { category, applyToMerchant: true },
     });
-    router.refresh();
   };
 
   return (
@@ -125,21 +113,19 @@ export function TransactionsTable({
       </div>
 
       <div className="table-scroll">
-        <table className="table" style={{ minWidth: variant === 'savings' ? 700 : 680 }}>
+        <table className="table is-transactions" data-variant={variant}>
           <caption className="visually-hidden">
             Every transaction in this period, with its category and amount.
           </caption>
           <thead>
             <tr>
-              <th style={{ width: 80 }}>Date</th>
+              <th className="col-date">Date</th>
               <th>Details</th>
-              <th style={{ width: variant === 'savings' ? 96 : 150 }}>
+              <th className={variant === 'savings' ? 'col-mode' : 'col-category'}>
                 {variant === 'savings' ? 'Mode' : 'Category'}
               </th>
-              <th className="num" style={{ width: 120 }}>
-                Amount
-              </th>
-              <th className="num" style={{ width: 118 }}>
+              <th className="num col-amount">Amount</th>
+              <th className="num col-balance">
                 {variant === 'savings' ? 'Balance' : 'Cashback'}
               </th>
             </tr>
@@ -147,7 +133,7 @@ export function TransactionsTable({
           <tbody>
             {shown.length === 0 && (
               <tr>
-                <td colSpan={5} className="cell-dim" style={{ padding: 'var(--space-6) 2px' }}>
+                <td colSpan={5} className="cell-dim cell-empty">
                   Nothing matches that filter.
                 </td>
               </tr>
@@ -155,8 +141,8 @@ export function TransactionsTable({
             {shown.map((txn) => (
               <tr key={`${txn.date}-${txn.accountId}-${txn.txnId}`}>
                 <td className="cell-dim">{formatDayShort(txn.date)}</td>
-                <td style={{ fontSize: 13 }}>{txn.merchant || txn.descriptionRaw}</td>
-                <td style={{ fontSize: 11.5 }} className="is-muted">
+                <td className="cell-merchant">{txn.merchant || txn.descriptionRaw}</td>
+                <td className="cell-meta is-muted">
                   {variant === 'savings' ? (
                     MODE_LABEL[txn.mode]
                   ) : editing === txn.txnId ? (
@@ -166,13 +152,12 @@ export function TransactionsTable({
                       </label>
                       <select
                         id={`recat-${txn.txnId}`}
-                        className="input"
-                        style={{ fontSize: 11.5 }}
+                        className="input is-compact"
                         defaultValue={txn.category}
                         autoFocus
                         onBlur={() => setEditing(null)}
                         onChange={(event) =>
-                          void recategorise(txn, event.target.value as Category)
+                          recategorise(txn, event.target.value as Category)
                         }
                       >
                         {CATEGORIES.map((category) => (
@@ -198,7 +183,7 @@ export function TransactionsTable({
                   {formatMinor(txn.amountMinor)}
                   <span className="drcr"> {txn.direction === 'credit' ? 'Cr' : 'Dr'}</span>
                 </td>
-                <td className="num" style={{ fontSize: 12.5 }}>
+                <td className="num cell-small">
                   {variant === 'savings' ? (
                     <span className="is-muted">
                       {txn.balanceAfterMinor === null ? '—' : formatMinor(txn.balanceAfterMinor)}
@@ -216,7 +201,7 @@ export function TransactionsTable({
       </div>
 
       {interestFolded && (
-        <p className="block-sub" style={{ margin: 0 }}>
+        <p className="block-sub is-flush">
           {interestRows.length} daily interest credits are folded away —{' '}
           {formatMinor(interestTotal)} in total.{' '}
           <button type="button" className="btn btn-ghost" onClick={() => setShowInterest(true)}>
@@ -225,7 +210,7 @@ export function TransactionsTable({
         </p>
       )}
       {variant === 'savings' && showInterest && (
-        <p className="block-sub" style={{ margin: 0 }}>
+        <p className="block-sub is-flush">
           <button type="button" className="btn btn-ghost" onClick={() => setShowInterest(false)}>
             Fold the daily interest away again
           </button>

@@ -1,18 +1,5 @@
-'use client';
-
-import {
-  Area,
-  Bar,
-  CartesianGrid,
-  ComposedChart,
-  Legend,
-  Line,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
-import { formatMinor, formatMinorCompact } from '@/shared/money';
+import { Area, Bar, CartesianGrid, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { formatMinor, formatMinorCompact } from '@cred-stats/shared';
 import { chartTheme, seriesColor, type SeriesRole } from './theme';
 import { TooltipEmpty, TooltipRow, TooltipShell } from './tooltip';
 

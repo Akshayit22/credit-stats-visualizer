@@ -1,19 +1,15 @@
-'use client';
-
-import Link from 'next/link';
+import { Link } from 'react-router';
 import { useState } from 'react';
-import { formatMinor, formatPct } from '@/shared/money';
-import type { Account, Period, Statement } from '@/shared/types';
-import type { OverviewMonth } from '@/server/db/workspace';
-import { TrendChart } from '@/client/charts/trend-chart';
-import { ChartBlock } from '@/client/charts/chart-frame';
-import { chartTheme, seriesColor } from '@/client/charts/theme';
-import { useMounted } from '@/client/charts/chart-frame';
-import { AppHeader, type PeriodMode } from '@/client/components/app-header';
-import { Icon } from '@/client/components/icon';
-import { StatTile, TileRow, deltaBetween } from '@/client/components/stat-tile';
-import { UploadDialog } from '@/client/components/upload-dialog';
-import { formatPeriodLabel, formatPeriodShort } from '@/client/lib/format';
+import { formatMinor, formatPct, type Account, type Period, type Statement, type OverviewMonth, formatPeriodLabel, formatPeriodShort } from '@cred-stats/shared';
+import { TrendChart } from '../charts/trend-chart';
+import { ChartBlock } from '../charts/chart-frame';
+import { chartTheme, seriesColor } from '../charts/theme';
+import { useMounted } from '../hooks/use-mounted';
+import { AppHeader, type PeriodMode } from '../components/app-header';
+import { Icon } from '../components/icon';
+import { StatTile, TileRow } from '../components/stat-tile';
+import { deltaBetween } from '../utils/delta';
+import { UploadDialog } from '../components/upload-dialog';
 
 export interface OverviewScreenProps {
   accounts: Account[];
@@ -104,7 +100,7 @@ export function OverviewScreen(props: OverviewScreenProps) {
                 {props.needsReview.length} statement
                 {props.needsReview.length === 1 ? '' : 's'} did not reconcile.{' '}
                 {props.needsReview[0]?.reconciliation.message}{' '}
-                <Link href="/library">Open the library</Link> to look at{' '}
+                <Link to="/library">Open the library</Link> to look at{' '}
                 {props.needsReview.length === 1 ? 'it' : 'them'}.
               </span>
             </div>
@@ -114,7 +110,7 @@ export function OverviewScreen(props: OverviewScreenProps) {
             <EmptyWorkspace onUpload={() => setUploadOpen(true)} />
           ) : inScope.length === 0 ? (
             <div className="empty-state">
-              <Icon.CalendarX size={26} style={{ color: 'var(--color-accent)', opacity: 0.75 }} />
+              <Icon.CalendarX size={26} className="is-accent empty-icon" aria-hidden="true" />
               <p className="empty-title">Nothing uploaded for {periodLabel}</p>
               <p className="empty-body">
                 Upload a statement for this {scoped ? 'year' : 'month'} and the charts fill in.
@@ -122,7 +118,6 @@ export function OverviewScreen(props: OverviewScreenProps) {
               <button
                 type="button"
                 className="btn btn-primary"
-                style={{ marginTop: 4 }}
                 onClick={() => setUploadOpen(true)}
               >
                 Upload statement
@@ -270,7 +265,7 @@ function OverviewCharts({ months }: { months: OverviewMonth[] }) {
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--space-8) * 1.35)' }}>
+    <div className="stack-lg">
       {blocks.map((block) => {
         const total = block.rows.reduce((sum, row) => sum + row.value, 0);
         return (
@@ -341,11 +336,11 @@ function AccountsList({
               : `/accounts/${account.accountId}?period=${statement?.period ?? period}`;
 
           return (
-            <Link key={account.accountId} href={href} className="row-link">
+            <Link key={account.accountId} to={href} className="row-link">
               {account.type === 'savings' ? (
-                <Icon.Bank size={17} style={{ color: 'var(--color-accent)', opacity: 0.8 }} />
+                <Icon.Bank size={17} className="is-accent row-icon" aria-hidden="true" />
               ) : (
-                <Icon.CreditCard size={17} style={{ color: 'var(--color-accent)', opacity: 0.8 }} />
+                <Icon.CreditCard size={17} className="is-accent row-icon" aria-hidden="true" />
               )}
               <span className="row-main">
                 <span className="row-name">{account.displayName}</span>
@@ -355,7 +350,7 @@ function AccountsList({
                 </span>
               </span>
               {statement && <AccountStats statement={statement} />}
-              <Icon.ArrowRight size={14} style={{ opacity: 0.4, flex: 'none' }} />
+              <Icon.ArrowRight size={14} className="row-arrow" aria-hidden="true" />
             </Link>
           );
         })}
@@ -403,13 +398,13 @@ function Stat({ label, value, tone }: { label: string; value: string; tone?: str
 function EmptyWorkspace({ onUpload }: { onUpload: () => void }) {
   return (
     <div className="empty-state">
-      <Icon.FilePdf size={26} style={{ color: 'var(--color-accent)', opacity: 0.75 }} />
+      <Icon.FilePdf size={26} className="is-accent empty-icon" aria-hidden="true" />
       <p className="empty-title">Nothing here yet</p>
       <p className="empty-body">
         Upload a credit card or savings statement PDF. It is unlocked and read in your browser —
         only the figures are kept.
       </p>
-      <button type="button" className="btn btn-primary" style={{ marginTop: 4 }} onClick={onUpload}>
+      <button type="button" className="btn btn-primary" onClick={onUpload}>
         Upload your first statement
       </button>
     </div>

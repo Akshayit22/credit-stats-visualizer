@@ -1,20 +1,4 @@
-'use client';
-
-import { useSyncExternalStore } from 'react';
-
-/**
- * Charts mount client-side only. recharts needs to measure its container, and
- * the palette is read from the live CSS custom properties, so there is nothing
- * useful to render on the server — a placeholder of the right height keeps the
- * layout from jumping and keeps hydration honest.
- */
-const noop = () => () => {};
-const onClient = () => true;
-const onServer = () => false;
-
-export function useMounted(): boolean {
-  return useSyncExternalStore(noop, onClient, onServer);
-}
+import { useMounted } from '../hooks/use-mounted';
 
 export interface ChartBlockProps {
   title: string;

@@ -1,17 +1,14 @@
-'use client';
-
 import { useMemo, useState } from 'react';
-import { formatMinor } from '@/shared/money';
-import type { Account, Period, SavingsStatement, Statement, Summary, Transaction } from '@/shared/types';
-import { ChartBlock, useMounted } from '@/client/charts/chart-frame';
-import { chartTheme, seriesColor } from '@/client/charts/theme';
-import { TrendChart } from '@/client/charts/trend-chart';
-import { AppHeader, type PeriodMode } from '@/client/components/app-header';
-import { Icon } from '@/client/components/icon';
-import { StatTile, TileRow } from '@/client/components/stat-tile';
-import { TransactionsTable } from '@/client/components/transactions-table';
-import { UploadDialog } from '@/client/components/upload-dialog';
-import { accountShortName, formatDayLabel, formatPeriodLabel, formatPeriodRange, formatPeriodShort } from '@/client/lib/format';
+import { formatMinor, type Account, type Period, type SavingsStatement, type Statement, type Summary, type Transaction, accountShortName, formatDayLabel, formatPeriodLabel, formatPeriodRange, formatPeriodShort } from '@cred-stats/shared';
+import { ChartBlock } from '../charts/chart-frame';
+import { useMounted } from '../hooks/use-mounted';
+import { chartTheme, seriesColor } from '../charts/theme';
+import { TrendChart } from '../charts/trend-chart';
+import { AppHeader, type PeriodMode } from '../components/app-header';
+import { Icon } from '../components/icon';
+import { StatTile, TileRow } from '../components/stat-tile';
+import { TransactionsTable } from '../components/transactions-table';
+import { UploadDialog } from '../components/upload-dialog';
 
 export interface SavingsScreenProps {
   account: Account;
@@ -78,7 +75,7 @@ export function SavingsScreen(props: SavingsScreenProps) {
             <SavingsMonth statement={props.statement} transactions={props.transactions} />
           ) : (
             <div className="empty-state">
-              <Icon.CalendarX size={26} style={{ color: 'var(--color-accent)', opacity: 0.75 }} />
+              <Icon.CalendarX size={26} className="is-accent empty-icon" aria-hidden="true" />
               <p className="empty-title">Nothing uploaded for {title}</p>
               <p className="empty-body">
                 {props.account.openedAt
@@ -88,7 +85,6 @@ export function SavingsScreen(props: SavingsScreenProps) {
               <button
                 type="button"
                 className="btn btn-primary"
-                style={{ marginTop: 4 }}
                 onClick={() => setUploadOpen(true)}
               >
                 Upload statement
@@ -335,7 +331,7 @@ function YearFlow({
   if (shown.length === 0) {
     return (
       <div className="empty-state">
-        <Icon.CalendarX size={26} style={{ color: 'var(--color-accent)', opacity: 0.75 }} />
+        <Icon.CalendarX size={26} className="is-accent empty-icon" aria-hidden="true" />
         <p className="empty-title">No statements for this year yet</p>
         <p className="empty-body">Upload a month&rsquo;s statement and the year fills in.</p>
       </div>
@@ -388,10 +384,10 @@ function YearFlow({
           <h3 className="block-title">Month by month</h3>
         </div>
         <div className="table-scroll">
-          <table className="table" style={{ minWidth: 620 }}>
+          <table className="table is-year-table" data-screen="savings">
             <thead>
               <tr>
-                <th style={{ width: 120 }}>Month</th>
+                <th className="col-month">Month</th>
                 <th className="num">Money in</th>
                 <th className="num">Money out</th>
                 <th className="num">Interest</th>
@@ -403,7 +399,7 @@ function YearFlow({
                 const summary = byPeriod.get(period);
                 return (
                   <tr key={period}>
-                    <td style={{ fontSize: 12.5 }}>{formatPeriodLabel(period)}</td>
+                    <td className="cell-small">{formatPeriodLabel(period)}</td>
                     <td className="num">{formatMinor(summary?.incomeMinor ?? 0, 0)}</td>
                     <td className="num">{formatMinor(summary?.spendMinor ?? 0, 0)}</td>
                     <td className="num is-positive">{formatMinor(summary?.interestMinor ?? 0)}</td>
@@ -412,7 +408,7 @@ function YearFlow({
                 );
               })}
               <tr className="total-row">
-                <td style={{ fontSize: 12.5 }}>Total</td>
+                <td className="cell-small">Total</td>
                 <td className="num">{formatMinor(total('moneyIn'), 0)}</td>
                 <td className="num">{formatMinor(total('moneyOut'), 0)}</td>
                 <td className="num is-positive">{formatMinor(total('interest'))}</td>
@@ -427,7 +423,7 @@ function YearFlow({
           </table>
         </div>
         {shown.length < periods.length && (
-          <p className="block-sub" style={{ margin: 0 }}>
+          <p className="block-sub is-flush">
             Built from the {shown.length} month{shown.length === 1 ? '' : 's'} you have uploaded, of{' '}
             {periods.length} in view. Months with no statement are left out rather than shown as
             zero.

@@ -1,0 +1,313 @@
+/* ── app frame ────────────────────────────────────────────────────────────── */
+
+.app-frame {
+  display: flex;
+  align-items: stretch;
+  min-height: 100vh;
+  background: var(--color-bg);
+}
+
+.app-main-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-main {
+  min-width: 0;
+  padding: calc(var(--space-8) * 1.2) calc(var(--space-8) * 1.35) calc(var(--space-8) * 3);
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--space-8) * 1.35);
+  max-width: var(--content-max);
+  width: 100%;
+}
+
+/* ── sidebar ──────────────────────────────────────────────────────────────── */
+
+.sidebar {
+  flex: none;
+  width: var(--sidebar-w);
+  border-right: 1px solid var(--color-divider);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  transition: width 0.16s ease;
+}
+.sidebar[data-collapsed='true'] {
+  width: var(--sidebar-w-collapsed);
+}
+
+/* Brand and toggle share one row that never scrolls, so the control that
+   expands a collapsed sidebar is reachable however many accounts there are. */
+.sidebar-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: calc(var(--space-6) * 1.02) var(--space-4) var(--space-2) var(--space-6);
+}
+.sidebar[data-collapsed='true'] .sidebar-head {
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-inline: 0;
+}
+.sidebar-brand {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  text-decoration: none;
+  color: inherit;
+}
+.sidebar[data-collapsed='true'] .sidebar-brand {
+  flex: none;
+  justify-content: center;
+}
+.sidebar-mark {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  border-radius: calc(var(--radius-md) * 0.75);
+  border: 1px solid var(--color-accent);
+  display: grid;
+  place-items: center;
+}
+.sidebar-mark::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  background: var(--color-accent);
+  border-radius: var(--radius-sm);
+}
+.sidebar-brand-name {
+  flex: 1;
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: 13.5px;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* The nav is the only part that scrolls; `min-height: 0` is what lets a flex
+   child shrink below its content instead of overflowing the clipped column. */
+.sidebar-nav {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-4) 0 var(--space-6);
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  width: calc(100% - var(--space-6));
+  margin-inline: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  text-decoration: none;
+  background: transparent;
+  color: color-mix(in srgb, var(--color-text) 72%, transparent);
+}
+.sidebar[data-collapsed='true'] .sidebar-link {
+  width: 38px;
+  margin-inline: 9px;
+  padding: 9px 0;
+  justify-content: center;
+}
+.sidebar-link:hover {
+  background: color-mix(in srgb, var(--color-text) 7%, transparent);
+}
+.sidebar-link[aria-current='page'] {
+  background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+  color: var(--color-accent-200);
+}
+
+.sidebar-toggle {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  background: transparent;
+  color: color-mix(in srgb, var(--color-text) 52%, transparent);
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
+}
+.sidebar-toggle:hover {
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
+  color: var(--color-text);
+}
+
+/* ── header ───────────────────────────────────────────────────────────────── */
+
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  flex-wrap: wrap;
+  padding: var(--space-4) calc(var(--space-8) * 1.35);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: color-mix(in srgb, var(--color-bg) 93%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--color-divider);
+}
+.header-spacer {
+  margin-left: auto;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+}
+.header-title {
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: 14px;
+  margin: 0;
+  flex: none;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+/* A label beside its control rather than above it: the header is one row. */
+.field-inline {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.field-inline > label {
+  margin: 0;
+  white-space: nowrap;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text) 46%, transparent);
+}
+.field-inline .input {
+  width: auto;
+  min-width: 150px;
+  font-size: 12.5px;
+}
+.header-rule {
+  width: 1px;
+  height: 20px;
+  background: var(--color-divider);
+  flex: none;
+}
+
+.pill {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: var(--space-2) var(--space-4);
+  border-radius: 999px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12.5px;
+  text-decoration: none;
+  border: 1px solid var(--color-divider);
+  background: transparent;
+  color: color-mix(in srgb, var(--color-text) 66%, transparent);
+}
+.pill:hover {
+  background: color-mix(in srgb, var(--color-text) 7%, transparent);
+}
+.pill[aria-pressed='true'],
+.pill[aria-current='page'] {
+  border-color: var(--color-accent);
+  color: var(--color-accent-200);
+}
+
+/* The segmented control from the design system, as buttons rather than radios. */
+/* A row of segmented controls. It wraps rather than pushing the page wide —
+   two of these side by side do not fit a phone. */
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.seg {
+  max-width: 100%;
+}
+
+.seg-btn {
+  padding: 7px 13px;
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+  border: 0;
+  background: transparent;
+  color: color-mix(in srgb, var(--color-text) 66%, transparent);
+}
+.seg-btn + .seg-btn {
+  border-left: 1px solid var(--color-divider);
+}
+.seg-btn:hover {
+  background: color-mix(in srgb, var(--color-text) 7%, transparent);
+}
+.seg-btn[aria-pressed='true'] {
+  color: var(--color-accent);
+  box-shadow: inset 0 0 0 1px var(--color-accent);
+}
+
+
+
+
+
+
+.coverage {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11.5px;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 0;
+  cursor: help;
+  font-family: inherit;
+}
+.coverage-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--color-positive);
+}
+.coverage-dot[data-partial='true'] {
+  background: var(--color-warning);
+}
+.coverage-label {
+  border-bottom: 1px dotted color-mix(in srgb, var(--color-text) 32%, transparent);
+  white-space: nowrap;
+}
+

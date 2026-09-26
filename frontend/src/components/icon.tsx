@@ -1,5 +1,3 @@
-'use client';
-
 import {
   ArrowLineLeft,
   ArrowLineRight,
@@ -24,7 +22,7 @@ import {
   UploadSimple,
   Warning,
   X,
-} from '@phosphor-icons/react/dist/ssr';
+} from '@phosphor-icons/react';
 
 /**
  * The Phosphor icons this app uses, named once so screens never reach into the

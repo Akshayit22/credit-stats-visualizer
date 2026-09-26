@@ -9,7 +9,8 @@
   },
   "workspaces": [
     "shared",
-    "backend"
+    "backend",
+    "frontend"
   ],
   "scripts": {
     "build:shared": "npm run build -w @cred-stats/shared",
@@ -25,7 +26,8 @@
     "db:down": "docker compose down",
     "build:backend": "npm run build:shared && npm run build -w @cred-stats/backend",
     "db:seed": "npm run build:backend && npm run seed -w @cred-stats/backend",
-    "fixtures:build": "npm run build:backend && npm run fixtures:build -w @cred-stats/backend"
+    "fixtures:build": "npm run build:backend && npm run fixtures:build -w @cred-stats/backend",
+    "dev:web": "npm run build:shared && npm run dev -w @cred-stats/frontend"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

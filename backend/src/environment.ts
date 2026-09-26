@@ -26,6 +26,28 @@ export const environmentSchema = z.object({
   MONGODB_DB: z.string().min(1).default('cred-stats'),
 
   /**
+   * Signs the session cookie. `openssl rand -base64 32`. Required in
+   * production; left blank in development a random one is made per process,
+   * which signs everyone out on restart and nothing worse.
+   */
+  CRED_STATS_SESSION_SECRET: z.preprocess(
+    (value) => (typeof value === 'string' && value.trim() === '' ? undefined : value),
+    z.string().min(32, 'must be at least 32 characters').optional(),
+  ),
+
+  /** The OAuth client id the Sign in with Google button uses. */
+  GOOGLE_CLIENT_ID: optional,
+
+  /**
+   * Offers a "Demo user" sign-in that needs no Google account. Refused in
+   * production whatever this says.
+   */
+  CRED_STATS_DEV_LOGIN: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
+
+  /**
    * Which AI provider reads statements no built-in parser covers. `mock` calls
    * no model at all: the built-in parsers still work, anything else is
    * reported as unparsed rather than guessed.
@@ -47,3 +69,12 @@ export const environmentSchema = z.object({
 });
 
 export type Env = z.infer<typeof environmentSchema>;
+
+/** Rules that span more than one variable. */
+export function environmentProblems(env: Env): string[] {
+  const problems: string[] = [];
+  if (env.NODE_ENV === 'production' && !env.CRED_STATS_SESSION_SECRET) {
+    problems.push('CRED_STATS_SESSION_SECRET: required in production');
+  }
+  return problems;
+}

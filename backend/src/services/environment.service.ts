@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { type Env, environmentSchema } from '../environment.js';
+import { type Env, environmentProblems, environmentSchema } from '../environment.js';
 
 /**
  * The validated environment. Inject this instead of reading `process.env`.
@@ -23,7 +23,16 @@ export class Environment {
         .join('; ');
       throw new Error(`Environment validation failed — ${problems}`);
     }
+    const problems = environmentProblems(result.data);
+    if (problems.length > 0) {
+      throw new Error(`Environment validation failed — ${problems.join('; ')}`);
+    }
     return result.data;
+  }
+
+  /** The demo sign-in: on only when asked for, and never in production. */
+  get devLoginEnabled(): boolean {
+    return this.env.CRED_STATS_DEV_LOGIN && !this.isProduction;
   }
 
   get isProduction(): boolean {

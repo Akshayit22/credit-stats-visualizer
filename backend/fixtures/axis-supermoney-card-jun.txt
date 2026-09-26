@@ -102,26 +102,26 @@ behaviour. Please note that making only minimum payment due every month would
 2% of payment amount subject to
 result in the repayment stretching over years with consequent Interest payment.For	Cheque return or Dishonour Fee
 minimum Rs. 500
-more details, refer the Terms and Condition on the website.(www.axis.bank.in/tncs)
+more details, refer the Terms and Condition on the website. (www.axis.bank.in/tncs)
 Surcharge on Purchase or
 As prescribed by IRCTC/ Indian Railways
 cancellation of railway tickets
 Minimum Amount Due Calculation
 Joining Fee & Annual fees As
-Assume	that	you	have	paid	all	previous	dues	in	full,	and	do	not	have	any	amount	Joining Fee & Annual fees	communicated at the time of onboarding
-outstandinginyourCreditCardAccount,andyourmonthlystatementisgeneratedon	or through subsequent communications
+Assume that you have paid all previous dues in full, and do not have any amount	Joining Fee & Annual fees	communicated at the time of onboarding
+outstanding in your Credit Card Account, and your monthly statement is generated on	or through subsequent communications
 the 15th of every month.
 Add On card - Joining & Annual Fees	Waived
-Fees/charge's	structure	is	subject	to	change	from	time	to	time	at	the	sole
-discretionofAxisBank.Penalinterest,latepaymentchargesandotherrelated
+Fees/charge's structure is subject to change from time to time at the sole
+discretion of Axis Bank. Penal interest, late payment charges and other related
 Txn Date	Type	Cr/Db	MAD Contribution	Amount
-chargesshallbeleviedonlyontheoutstandingamountaftertheduedateand
+charges shall be levied only on the outstanding amount after the due date and
 25th Sep	Purchase	Db	2%	5000
 not on the total amount.
 1st Oct	Joining Fees	Db	100%	1000
-AsperMinistryoffinancesguidelines,GSTasperexistingGovernmentnormsis
+As per Ministry of finances guidelines, GST as per existing Government norms is
 1st Oct	GST on Joining Fees	Db	100%	180
-beingleviedonallfees,interestandotherchargesonallcreditcards.Norefund
+being levied on all fees, interest and other charges on all credit cards. No refund
 1st Oct	Cash Withdrawal	Db	2%	2000
 shall be provided for GST charged on fuel surcharge.
 1st Oct	Cash Withdrawal Fee	Db	100%	500
@@ -130,33 +130,33 @@ For type and details of insurance on your card please visit
 https://www.axis.bank.in/ccins
 15th Oct	Interest on Cash withdrawal	Db	100%	36.99
 Third-party Insurance provider-The New India Insurance Company Ltd.
-15th Oct	GST on Interest	Db	100%	6.66	at 022 - 22020714 or Email on-	[email]
+15th Oct	GST on Interest	Db	100%	6.66	at 022 - 22020714 or Email on- [email]
 Total Amount Due	8813.65	For any Insurance related queries please contact Axis Bank at 1800 103 5577
 Minimum Amount Due	1953.65
 Billing Dispute Resolution
-"In	case	of	any	billing	dispute	notified	to	Axis	bank,	Axis	bank	will	suspend
+"In case of any billing dispute notified to Axis bank, Axis bank will suspend
 reporting to credit bureau till the dispute is resolved".
-All	contents	of	this	statement	shall	be	deemed	to	be	correct	and	accepted	by
-Revised MAD computation logic (effective 10th Nov 2023):	you,unlessyouinformusofanydiscrepancieswithin21daysofthedateofthis
-statement,andthesearefoundbyyou,unlessyouinformus.Onreceiptofsuch
-MAD=2%ofPurchaseandCashWithdrawal+100%ofJoiningFees,CashWithdrawal
+All contents of this statement shall be deemed to be correct and accepted by
+Revised MAD computation logic (effective 10th Nov 2023):	you, unless you inform us of any discrepancies within 21 days of the date of this
+statement, and these are found by you, unless you inform us. On receipt of such
+MAD = 2% of Purchase and Cash Withdrawal + 100% of Joining Fees, Cash Withdrawal
 information,	we	may	reverse	the	charges	on	a	temporary	basis.	If	on
 Fee, Interest on cash withdrawal, GST & GST on Interest
-completion	of	subsequent	investigation,	we	are	satisfied	that	the	liability	of
-suchchargeistoyouraccount,wewillreinstatethechargeinthesubsequent
+completion of subsequent investigation, we are satisfied that the liability of
+such charge is to your account, we will reinstate the charge in the subsequent
 MAD = 2%*(5000+2000) + 100%*(1000+180+500+18+36.99+6.66) = 1953.65
 statement.
 Grievance Redressal Mechanism	Report Loss, Theft or Unauthorised use of Card or
 Level 1 - Call Centre numbers: 1800 419 0068	Pin
-Toreportloss,theftorunauthoriseduseofcardorPin,customerhastoblockthe
-card.	Customer	can	use	any	of	the	below	three	mediums	to	block	their	credit
-Axis Support:www.axis.bank.in/support/
+To report loss, theft or unauthorised use of card or Pin, customer has to block the
+card. Customer can use any of the below three mediums to block their credit
+Axis Support: www.axis.bank.in/support/
 Send an SMS-BLOCK <space> last 4 digits of card number and send it to
-Branches/LoanCentres(pleasevisitwww.axis.bank.intolocatethenearest
+Branches /Loan Centres (please visit www.axis.bank.in to locate the nearest
 5616160
 branch /loan centre)
-Call	the	Phone	[phone]	number	(IVR)	1860	419	5555,1860	500	5555	and
-2
+Call the Phone banking number (IVR) 1860 419 5555,1860 500 5555	and
+Level 2
 select 0 to block the card
 Write	Email	[email]
 on the Mobile App and block the credit card
@@ -173,23 +173,23 @@ Knowledge Park, Airoli Navi	1st Floor, "Gigaplex", Plot No I.T.5, MIDC, Airoli K
 Holidays)
 Mumbai-400708	Navi Mumbai-400708
 Disclosure :
-Level 3	"AxisbankmaytieupwithcreditbureauauthorizedbyRBIandwillsharecredit
-informationincludingbutnotlimitedtoyourcurrentbalance,paymenthistory,
+Level 3	"Axis bank may tie up with credit bureau authorized by RBI and will share credit
+information including but not limited to your current balance, payment history,
 Write	Email	[email]	demographic	details,	etc.	the	credit	bureau	do	not	provide	any	opinion,
-indication	or	comment	pertaining	to	whatever	credit	should	or	should	not	be
-granted.Itisyourbestinteresttomaintainagoodcredithistorybypayingthe
-necessary	dues	in	a	timely	manner.	With	credit	bureau	in	place,	responsible
-Mrs. Deepti Radkar Principal	customerscanexpectfasterandmorecompetitiveservicesatbettertermsfrom
+or comment pertaining to whatever credit should or should not be
+granted. It is your best interest to maintain a good credit history by paying the
+necessary dues in a timely manner. With credit bureau in place, responsible
+Mrs. Deepti Radkar Principal	customers can expect faster and more competitive services at better terms from
 Ph. 080-61865098 Timings: 9.30
-Nodal Officer Address: Axis	credit	grantors.	Default	by	customer	would	be	available	with	credit	bureau,
+Nodal Officer Address: Axis	credit grantors. Default by customer would be available with credit bureau,
 am to 5.30 pm Monday to
-Bank Ltd, NPC1, 5th Floor,	which	in	turn	would	impact	your	credit	worthiness	for	the	future.Charges
+Bank Ltd, NPC1, 5th Floor,	which in turn would impact your credit worthiness for the future.Charges
 [email]	Saturday (except second and
 "Gigaplex", Plot No. I.T.5,	structure is subject to change form time at the sole discretion of Axis Bank.
 fourth Saturdays and Bank
-MIDC, Airoli Knowledge Park,	Pleasemakeyourpaymentbyduedate.	Latepaymentwillresultinreporting
+MIDC, Airoli Knowledge Park,	Please make your payment by due date.	Late payment will result in reporting
 Holidays)
-Airoli, Navi Mumbai-400708	to	Credit	Bureau.	Credit	Bureau	include	Credit	reference	Agencies,	Credit
-InformationcompaniesoranyotherentityformedandauthorizedbyRBIforthe
-purpose	of	collecting,	collating	and	disseminating	credit	information	pertaining
+Airoli, Navi Mumbai-400708	to Credit Bureau. Credit Bureau include Credit reference Agencies, Credit
+Information companies or any other entity formed and authorized by RBI for the
+purpose of collecting, collating and disseminating credit information pertaining
 to borrowers."

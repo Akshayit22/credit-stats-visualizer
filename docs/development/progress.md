@@ -1,62 +1,68 @@
-# Rebuild progress — Next.js + DynamoDB → NestJS + React + MongoDB
+# Progress
 
-The working checklist for the rebuild. Each line is one branch, merged into
-`main` with `--no-ff` after `npm run check` (lint, typecheck, test, build)
-passes on the branch. **Resume from the first unchecked line.**
+## The rebuild — complete (26 September 2026)
 
-Until the last branch lands, the old Next.js app still sits in `app/`, `src/`,
-`tests/`, `scripts/` and `design/` as the reference being ported. It is not
-built, linted or tested; each branch moves the pieces it ports out of it.
-
-## Branches
+cred-stats was rebuilt from one Next.js app on DynamoDB into three workspaces —
+`shared/`, a NestJS API on MongoDB, and a React app — so that it runs on free
+tiers (Render + MongoDB Atlas). Each line below was one branch, merged into
+`main` with `--no-ff` after the gates passed on it.
 
 - [x] `refactor/shared-package` — npm workspaces; `shared/` with zod entities,
       API contracts, money, periods, formatting, sections, redaction
-- [x] `feat/backend-foundation` — NestJS 12 app: environment, logging, Mongo
-      connection, error envelope, health endpoint
-- [x] `feat/backend-parsing` — parsers, reconciliation, categorisation,
-      summaries; fixtures and their tests
-- [x] `feat/backend-llm` — AI providers (groq, azure-foundry,
-      openai-compatible, mock)
-- [x] `feat/backend-persistence` — repositories for the six collections, indexes
-- [x] `feat/backend-auth` — Google ID-token sign-in, session cookie, dev login
-- [x] `feat/backend-statements-api` — ingest, statements, transactions,
-      summaries, views, settings, profile export/delete
-- [x] `feat/backend-seed` — demo seed and fixture builder scripts
-- [x] `feat/frontend-shell` — Vite + React app, router, auth, layout, sidebar
-- [x] `feat/frontend-upload` — PDF extraction in the browser, upload dialog,
-      review step
-- [x] `feat/frontend-dashboards` — overview, card, cashback, savings screens and
-      charts
-- [x] `feat/frontend-library-settings` — statement library, settings
-- [x] `feat/deploy-render` — backend Dockerfile, `render.yaml`, docker-compose
-- [x] `feat/admin-overview` — (asked for 2026-09-26) an admin page, no separate
-      login: the hard-coded admin emails `akshayit22@gmail.com` and
-      `akshaytelang395@gmail.com` see every user, when they last signed in, and
-      how many statements each uploaded per bank. Counts and metadata only —
-      never another user's transactions.
-- [x] `chore/remove-nextjs-app` — delete the ported Next.js app and AWS infra
-- [ ] `docs/rebuild-docs` — `docs/` folder, README, conventions
+- [x] `feat/backend-foundation` — NestJS 12: environment, logging, MongoDB,
+      error envelope, health
+- [x] `feat/backend-parsing` — the four bank parsers, reconciliation,
+      categorisation, summaries; fixtures and their tests
+- [x] `feat/backend-llm` — AI providers by API key (groq, azure-foundry,
+      openai-compatible, mock); Bedrock dropped
+- [x] `feat/backend-persistence` — repositories for six collections, indexes
+- [x] `feat/backend-auth` — Google ID-token sign-in, session cookie, CSRF,
+      rate limits, demo user
+- [x] `fix/test-app-listens-once` — an intermittent ECONNRESET in the API tests
+- [x] `feat/backend-statements-api` — ingest, statements, views, settings,
+      export, delete
+- [x] `feat/backend-seed` — demo seed and fixture builder; pdf.js 6
+- [x] `feat/frontend-shell` — router, session, sign-in, sidebar, layout
+- [x] `feat/frontend-upload` — PDF extraction in the browser, upload, review
+- [x] `feat/frontend-dashboards` — overview, card, cashback, savings, charts
+- [x] `feat/frontend-library-settings` — library, settings
+- [x] `fix/idempotent-redaction` — a second redaction pass ate a word; found by
+      uploading the real Axis PDF in Chrome
+- [x] `feat/deploy-render` — one Docker image serving API and web app,
+      `render.yaml`, compose `app` profile, GitHub Actions
+- [x] `fix/session-first-requests` — no workspace request before the session
+- [x] `feat/admin-overview` — admin page for the two hard-coded emails
+- [x] `chore/remove-nextjs-app` — the old app and the AWS infrastructure
+- [x] `docs/rebuild-docs` — `docs/`, README, conventions, decisions
 
-## Requests from the owner, beyond the port
+### How it was verified
 
-- **AI providers are configured by API key only** (asked 2026-09-26): nothing
-  tied to AWS or Bedrock. `LLM_PROVIDER` picks Groq, Azure AI Foundry or any
-  OpenAI-compatible endpoint; the key and model come from `backend/.env`.
-  Done in `feat/backend-llm`.
-- **Admin overview** — see `feat/admin-overview` above.
+- ~330 tests across the three workspaces, under a minute, including every
+  parser against the real (redacted) statements with their pinned figures.
+- In Chrome, against the real stack: the three real PDFs uploaded through the
+  dialog, each reconciled (Axis ₹19,392.38 over 15 rows; slice July
+  ₹2,75,910.82 over 41; August ₹3,17,691.27 over 49); each upload request
+  carried only `{ text, contentHash, meta }` with no PDF bytes; every screen
+  drew its charts with no horizontal overflow, at 1440px and at 390px.
+- The production Docker image built and ran healthy against MongoDB in Docker,
+  and loaded in Chrome with no Content-Security-Policy violations.
 
-## Decisions (and why)
+### Not verified yet
 
-- **NestJS 12 is ESM-only**, so the backend is an ES module with `nodenext`
-  resolution; relative imports carry `.js` extensions. The shared package
-  follows the same rule so the backend can load its compiled output directly.
-- **TypeScript 6.0**, not 7: typescript-eslint supports `<6.1`, and the Nest
-  CLI ships 6.0.
-- **Vitest everywhere.** The backend uses `unplugin-swc` so Nest's decorator
-  metadata is emitted under test.
-- **Zod entity schemas in `shared/`** (the VTOC pattern): every type the API
-  returns is inferred from a schema, and every document read from MongoDB is
-  validated against the same schema.
-- **Period maths and display formatting live once**, in `shared/`. The old app
-  had two copies (server `dates.ts`, client `format.ts`).
+- **A real deploy.** Render and Atlas need your accounts; follow
+  [deployment.md](../deployment.md).
+- **Real Google sign-in and the admin page in a browser** — they need a Google
+  OAuth client with this app's origins. Both are covered by API and component
+  tests with Google's token check faked.
+- **A real model.** Every test uses the mock provider. Upload a statement from
+  a bank without a parser with `LLM_PROVIDER=groq` to exercise it.
+
+## Worth doing next
+
+1. **Deploy** — Atlas, then the Render Blueprint ([deployment.md](../deployment.md)).
+2. **Try a real provider end to end** with a statement from an unsupported
+   bank; the extraction prompt is the one part no test can vouch for.
+3. **A fifth bank parser** — the registry has taken four; the recipe is in
+   [runbook.md](../runbook.md#adding-a-bank).
+4. **Admin: more than counts, carefully** — e.g. uploads per week, or which
+   banks fail to parse most (still no figures).

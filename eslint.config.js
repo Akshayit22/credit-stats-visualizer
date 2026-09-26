@@ -55,6 +55,15 @@ export default tseslint.config(
     languageOptions: { globals: { ...globals.es2023 } },
   },
   {
+    files: ['backend/**/*.ts'],
+    languageOptions: {
+      globals: { ...globals.node },
+      // Nest injects by constructor type, which needs the import to stay a
+      // value import. These tell consistent-type-imports not to demote it.
+      parserOptions: { emitDecoratorMetadata: true, experimentalDecorators: true },
+    },
+  },
+  {
     // Tests read fixtures from disk.
     files: ['**/test/**/*.ts', '**/*.config.ts'],
     languageOptions: { globals: { ...globals.node } },

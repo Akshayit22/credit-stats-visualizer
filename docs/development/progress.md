@@ -12,7 +12,7 @@ built, linted or tested; each branch moves the pieces it ports out of it.
 
 - [x] `refactor/shared-package` — npm workspaces; `shared/` with zod entities,
       API contracts, money, periods, formatting, sections, redaction
-- [ ] `feat/backend-foundation` — NestJS 12 app: environment, logging, Mongo
+- [x] `feat/backend-foundation` — NestJS 12 app: environment, logging, Mongo
       connection, error envelope, health endpoint
 - [ ] `feat/backend-parsing` — parsers, reconciliation, categorisation,
       summaries; fixtures and their tests

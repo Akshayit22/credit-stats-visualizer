@@ -14,7 +14,7 @@ built, linted or tested; each branch moves the pieces it ports out of it.
       API contracts, money, periods, formatting, sections, redaction
 - [x] `feat/backend-foundation` — NestJS 12 app: environment, logging, Mongo
       connection, error envelope, health endpoint
-- [ ] `feat/backend-parsing` — parsers, reconciliation, categorisation,
+- [x] `feat/backend-parsing` — parsers, reconciliation, categorisation,
       summaries; fixtures and their tests
 - [ ] `feat/backend-llm` — AI providers (groq, azure-foundry,
       openai-compatible, mock)

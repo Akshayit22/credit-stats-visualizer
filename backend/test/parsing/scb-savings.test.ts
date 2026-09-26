@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { parserInputFor, runDeterministicParser } from '@/server/parsing/registry';
-import { reconcile } from '@/server/domain/reconcile';
-import { parsedStatementSchema, type ParsedStatement } from '@/server/domain/schemas';
+import { parserInputFor, runDeterministicParser } from '../../src/parsing/registry.js';
+import { reconcile } from '../../src/domain/reconcile.js';
+import { parsedStatementSchema, type ParsedStatement } from '../../src/domain/schemas.js';
 
 /**
  * Invented, not redacted — see the note in the IDFC parser's tests. The parser

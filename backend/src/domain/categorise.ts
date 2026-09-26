@@ -1,8 +1,10 @@
-import { UNCATEGORISED, type Category } from '@/shared/categories';
-import type { CategorySource } from '@/shared/types';
-import { normaliseMerchant } from '@/server/db/repositories/users';
-import { categoryForIssuerCategory, categoryForMerchantRule } from './merchant-rules';
-import type { ParsedTransaction } from './schemas';
+import { UNCATEGORISED, type Category, type CategorySource } from '@cred-stats/shared';
+import {
+  categoryForIssuerCategory,
+  categoryForMerchantRule,
+  normaliseMerchant,
+} from './merchant-rules.js';
+import type { ParsedTransaction } from './schemas.js';
 
 /**
  * Categorisation, in the order the build spec lays down:

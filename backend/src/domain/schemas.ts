@@ -1,15 +1,18 @@
+import {
+  CATEGORIES,
+  accountTypeSchema,
+  categorySchema,
+  isoDateSchema,
+  txnDirectionSchema,
+  txnModeSchema,
+} from '@cred-stats/shared';
 import { z } from 'zod';
-import { CATEGORIES } from '@/shared/categories';
 
 /**
  * The shapes a parser — deterministic or LLM — must produce. The LLM's JSON is
  * validated against exactly these, so a model that invents a field or drops one
- * fails loudly instead of quietly writing nonsense into DynamoDB.
+ * fails loudly instead of quietly writing nonsense into the database.
  */
-
-const isoDate = z
-  .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, 'expected YYYY-MM-DD');
 
 /** Integer paise. Never a float, never negative for an amount. */
 const minor = z.number().int();
@@ -35,13 +38,8 @@ const optionalFlag = z
   .nullish()
   .transform((value) => value ?? false);
 
-export const txnDirectionSchema = z.enum(['debit', 'credit']);
-export const txnModeSchema = z.enum(['upi', 'card', 'interest', 'fee', 'payment', 'other']);
-export const accountTypeSchema = z.enum(['credit_card', 'savings']);
-export const categorySchema = z.enum(CATEGORIES);
-
 export const parsedTransactionSchema = z.object({
-  date: isoDate,
+  date: isoDateSchema,
   descriptionRaw: z.string().min(1).max(400),
   counterparty: optionalText(200),
   merchant: optionalText(200),
@@ -67,12 +65,12 @@ export const parsedAccountSchema = z.object({
   maskedNumber: optionalText(40),
   creditLimitMinor: positiveMinor.nullable().default(null),
   cashLimitMinor: positiveMinor.nullable().default(null),
-  openedAt: isoDate.nullable().default(null),
+  openedAt: isoDateSchema.nullable().default(null),
 });
 
 export type ParsedAccount = z.infer<typeof parsedAccountSchema>;
 
-export const creditCardBlockSchema = z.object({
+export const parsedCardBlockSchema = z.object({
   previousBalanceMinor: minor,
   paymentsMinor: minor,
   creditsMinor: minor,
@@ -88,20 +86,20 @@ export const creditCardBlockSchema = z.object({
   cashbackCreditedMinor: minor,
 });
 
-export const savingsBlockSchema = z.object({
+export const parsedSavingsBlockSchema = z.object({
   openingBalanceMinor: minor,
   totalCreditsMinor: minor,
   totalDebitsMinor: minor,
   interestEarnedMinor: minor,
   closingBalanceMinor: minor,
-  generatedAt: isoDate.nullable().default(null),
+  generatedAt: isoDateSchema.nullable().default(null),
 });
 
 const parsedCommon = {
-  periodStart: isoDate,
-  periodEnd: isoDate,
-  statementDate: isoDate.nullable().default(null),
-  dueDate: isoDate.nullable().default(null),
+  periodStart: isoDateSchema,
+  periodEnd: isoDateSchema,
+  statementDate: isoDateSchema.nullable().default(null),
+  dueDate: isoDateSchema.nullable().default(null),
   account: parsedAccountSchema,
   transactions: z.array(parsedTransactionSchema).max(2000),
 };
@@ -110,12 +108,12 @@ export const parsedStatementSchema = z.discriminatedUnion('accountType', [
   z.object({
     ...parsedCommon,
     accountType: z.literal('credit_card'),
-    card: creditCardBlockSchema,
+    card: parsedCardBlockSchema,
   }),
   z.object({
     ...parsedCommon,
     accountType: z.literal('savings'),
-    savings: savingsBlockSchema,
+    savings: parsedSavingsBlockSchema,
   }),
 ]);
 
@@ -240,24 +238,3 @@ export const MERCHANT_CATEGORIES_JSON_SCHEMA = {
     },
   },
 } as const;
-
-/* ── API request schemas ─────────────────────────────────────────────────── */
-
-export const statementUploadSchema = z.object({
-  text: z.string().min(40).max(1_500_000),
-  contentHash: z.string().regex(/^[0-9a-f]{64}$/),
-  meta: z.object({
-    pageCount: z.number().int().min(1).max(200),
-    fileName: z.string().max(200).default(''),
-    extractedAt: z.string().max(40),
-  }),
-});
-
-export const recategoriseSchema = z.object({
-  txnId: z.string().min(1).max(80),
-  date: isoDate,
-  accountId: z.string().min(1).max(80),
-  category: categorySchema,
-  /** Also write a user rule so the change sticks for future statements. */
-  applyToMerchant: z.boolean().default(true),
-});

@@ -1,10 +1,12 @@
-import { parseAmountToMinor } from '@/shared/money';
-import type { StatementLine } from '@/shared/statement-text';
-import type { ParseWarning } from '@/shared/types';
-import { redactFreeText } from '@/shared/redact';
-import { parseDashMonthDate, parseSpacedDate } from '@/server/domain/dates';
-import type { ParsedTransaction } from '@/server/domain/schemas';
-import { ParseError, type ParserInput, type ParserOutput, type StatementParser } from '../types';
+import {
+  parseAmountToMinor,
+  type StatementLine,
+  type ParseWarning,
+  redactFreeText,
+} from '@cred-stats/shared';
+import { parseDashMonthDate, parseSpacedDate } from '../../domain/statement-dates.js';
+import type { ParsedTransaction } from '../../domain/schemas.js';
+import { ParseError, type ParserInput, type ParserOutput, type StatementParser } from '../types.js';
 
 const ID = 'idfc-savings';
 

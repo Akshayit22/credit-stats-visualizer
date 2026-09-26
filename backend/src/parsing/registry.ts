@@ -1,10 +1,10 @@
-import { toLines } from '@/shared/statement-text';
-import { detectStatement } from './detect';
-import { axisSupermoneyCardParser } from './parsers/axis-supermoney-card';
-import { idfcSavingsParser } from './parsers/idfc-savings';
-import { scbSavingsParser } from './parsers/scb-savings';
-import { sliceSavingsParser } from './parsers/slice-savings';
-import type { ParserInput, ParserOutput, StatementParser } from './types';
+import { toLines } from '@cred-stats/shared';
+import { detectStatement } from './detect.js';
+import { axisSupermoneyCardParser } from './parsers/axis-supermoney-card.js';
+import { idfcSavingsParser } from './parsers/idfc-savings.js';
+import { scbSavingsParser } from './parsers/scb-savings.js';
+import { sliceSavingsParser } from './parsers/slice-savings.js';
+import type { ParserInput, ParserOutput, StatementParser } from './types.js';
 
 /**
  * Deterministic parsers, keyed by the fingerprint id they answer to. Adding a

@@ -1,7 +1,6 @@
-import type { StatementLine } from '@/shared/statement-text';
-import type { ParsedStatement } from '@/server/domain/schemas';
-import type { ParseWarning } from '@/shared/types';
-import type { Detection } from './detect';
+import type { StatementLine, ParseWarning } from '@cred-stats/shared';
+import type { ParsedStatement } from '../domain/schemas.js';
+import type { Detection } from './detect.js';
 
 export interface ParserInput {
   /** Redacted, normalised statement text. */

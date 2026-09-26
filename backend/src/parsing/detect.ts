@@ -1,5 +1,4 @@
-import { fingerprintHaystack } from '@/shared/statement-text';
-import type { AccountType } from '@/shared/types';
+import { fingerprintHaystack, type AccountType } from '@cred-stats/shared';
 
 /**
  * Which bank, and which kind of statement.

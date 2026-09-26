@@ -1,4 +1,11 @@
-import type { CategoryTotal, MerchantTotal, Period, Statement, Summary, Transaction } from '@/shared/types';
+import type {
+  CategoryTotal,
+  MerchantTotal,
+  Period,
+  Statement,
+  Summary,
+  Transaction,
+} from '@cred-stats/shared';
 
 /**
  * Summaries are **recomputed** from the rows of the affected month, never

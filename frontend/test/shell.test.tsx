@@ -108,3 +108,17 @@ describe('requests before a session exists', () => {
     expect(urls).not.toContain('/api/views/workspace');
   });
 });
+
+describe('the Google sign-in hint', () => {
+  it('names this origin, locally, for Google’s origin_mismatch error', async () => {
+    mockApi({
+      'GET /api/auth/config': {
+        googleClientId: 'id.apps.googleusercontent.com',
+        devLoginEnabled: true,
+      },
+      'GET /api/auth/me': UNAUTHORISED,
+    });
+    renderRoutes(routes, '/sign-in');
+    expect(await screen.findByText(window.location.origin)).toBeInTheDocument();
+  });
+});

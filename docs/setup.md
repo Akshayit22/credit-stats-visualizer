@@ -7,11 +7,11 @@ with demo data: no Google account, no cloud account, no API key.
 
 ## 0. Prerequisites
 
-| Need                                                           | Check         |
-| -------------------------------------------------------------- | ------------- |
-| Node 22.22+ (24 recommended — it is what the image and CI run) | `node -v`     |
-| npm 10+                                                        | `npm -v`      |
-| Docker Desktop, running — for the local MongoDB                | `docker info` |
+| Need                                                  | Check         |
+| ----------------------------------------------------- | ------------- |
+| Node 24.15+ — `nvm install` / `nvm use` read `.nvmrc` | `node -v`     |
+| npm 10+                                               | `npm -v`      |
+| Docker Desktop, running — for the local MongoDB       | `docker info` |
 
 The tests do **not** need Docker: they start an in-memory MongoDB of their own.
 

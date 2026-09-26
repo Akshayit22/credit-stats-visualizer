@@ -1,4 +1,4 @@
-import { stripInvisible } from './money';
+import { stripInvisible } from './money.js';
 
 /**
  * The canonical form a statement travels in.

@@ -1,4 +1,4 @@
-import { CELL, normaliseStatementText } from './statement-text';
+import { CELL, normaliseStatementText } from './statement-text.js';
 
 /**
  * Redaction, in two passes.

@@ -1,5 +1,5 @@
-import type { Period } from '@/shared/types';
-import { addMonths, periodRange } from './dates';
+import type { Period } from './entities/common.js';
+import { addMonths, currentPeriod, isPeriod, isYear, periodRange } from './periods.js';
 
 /**
  * Which months a screen shows, and which one is selected — resolved from the
@@ -51,22 +51,7 @@ export function resolvePeriodWindow(
   }
 
   const requested = isPeriod(params.period) ? params.period : null;
-  const selected =
-    requested && windowPeriods.includes(requested)
-      ? requested
-      : (latest ?? windowPeriods[windowPeriods.length - 1] ?? currentPeriod());
+  const selected = requested && windowPeriods.includes(requested) ? requested : latest;
 
   return { mode, periods: windowPeriods, selected, year: selected.slice(0, 4) };
-}
-
-function isPeriod(value: string | undefined): value is Period {
-  return typeof value === 'string' && /^\d{4}-\d{2}$/.test(value);
-}
-
-function isYear(value: string | undefined): value is string {
-  return typeof value === 'string' && /^\d{4}$/.test(value);
-}
-
-function currentPeriod(): Period {
-  return new Date().toISOString().slice(0, 7);
 }

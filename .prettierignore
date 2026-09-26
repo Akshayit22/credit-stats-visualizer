@@ -1,6 +1,16 @@
-.next
 node_modules
-coverage
-fixtures
-design
+**/dist
+**/coverage
 package-lock.json
+# Redacted text from real statements — byte-for-byte what the parsers read.
+**/fixtures
+# The design system stylesheet is a verbatim copy and must not be reformatted.
+**/nocturne.css
+# The Next.js application being ported. Removed once the port is done.
+app
+src
+tests
+scripts
+design
+public
+.next

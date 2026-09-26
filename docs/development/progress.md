@@ -20,7 +20,7 @@ built, linted or tested; each branch moves the pieces it ports out of it.
       openai-compatible, mock)
 - [x] `feat/backend-persistence` — repositories for the six collections, indexes
 - [x] `feat/backend-auth` — Google ID-token sign-in, session cookie, dev login
-- [ ] `feat/backend-statements-api` — ingest, statements, transactions,
+- [x] `feat/backend-statements-api` — ingest, statements, transactions,
       summaries, views, settings, profile export/delete
 - [ ] `feat/backend-seed` — demo seed and fixture builder scripts
 - [ ] `feat/frontend-shell` — Vite + React app, router, auth, layout, sidebar

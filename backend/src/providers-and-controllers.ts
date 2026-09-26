@@ -1,6 +1,10 @@
 import type { Provider, Type } from '@nestjs/common';
 import { AuthController } from './controllers/auth.controller.js';
+import { DataController } from './controllers/data.controller.js';
 import { HealthController } from './controllers/health.controller.js';
+import { ProfileController } from './controllers/profile.controller.js';
+import { StatementsController } from './controllers/statements.controller.js';
+import { ViewsController } from './controllers/views.controller.js';
 import { GoogleAuthClientManager } from './managers/google-auth-client.manager.js';
 import { LlmClientManager } from './managers/llm-client.manager.js';
 import { MongoClientManager } from './managers/mongo-client.manager.js';
@@ -12,9 +16,14 @@ import { TransactionsRepository } from './repositories/transactions.repository.j
 import { UsersRepository } from './repositories/users.repository.js';
 import { AuthService } from './services/auth.service.js';
 import { Environment } from './services/environment.service.js';
+import { IngestService } from './services/ingest.service.js';
 import { LlmService } from './services/llm.service.js';
 import { LogService } from './services/log.service.js';
+import { ProfileService } from './services/profile.service.js';
 import { SessionService } from './services/session.service.js';
+import { StatementsService } from './services/statements.service.js';
+import { SummaryService } from './services/summary.service.js';
+import { ViewsService } from './services/views.service.js';
 
 /**
  * Every controller and provider in the app, grouped by layer, in one place.
@@ -28,7 +37,14 @@ import { SessionService } from './services/session.service.js';
  * by scanning, so what the app is made of is readable in one file.
  */
 
-export const Controllers: Type[] = [HealthController, AuthController];
+export const Controllers: Type[] = [
+  HealthController,
+  AuthController,
+  StatementsController,
+  ViewsController,
+  DataController,
+  ProfileController,
+];
 
 const Managers: Provider[] = [MongoClientManager, LlmClientManager, GoogleAuthClientManager];
 
@@ -41,6 +57,17 @@ export const Repositories: Provider[] = [
   SummariesRepository,
 ];
 
-const Services: Provider[] = [Environment, LogService, LlmService, SessionService, AuthService];
+const Services: Provider[] = [
+  Environment,
+  LogService,
+  LlmService,
+  SessionService,
+  AuthService,
+  SummaryService,
+  IngestService,
+  StatementsService,
+  ViewsService,
+  ProfileService,
+];
 
 export const Providers: Provider[] = [...Managers, ...Repositories, ...Services];

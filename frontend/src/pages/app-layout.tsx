@@ -21,7 +21,7 @@ const BOTTOM: NavLink[] = [
  */
 export function AppLayout() {
   const session = useSession();
-  const workspace = useWorkspace();
+  const workspace = useWorkspace({ enabled: session.isSuccess });
 
   if (session.isPending) return <PageLoading label="Checking your session" />;
   if (session.isError || !session.data) return <Navigate to="/sign-in" replace />;

@@ -13,17 +13,22 @@ import { Environment } from './services/environment.service.js';
  */
 const JSON_BODY_LIMIT = '2mb';
 
-/**
- * Builds the configured application without listening. `main.ts` listens; the
- * API tests call this and drive the app with supertest, so both run exactly
- * the same middleware, filters and interceptors.
- */
+/** Builds the application without listening. `main.ts` listens. */
 export async function createApp(): Promise<NestExpressApplication> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bodyParser: false,
     logger: process.env.NODE_ENV === 'test' ? false : ['error', 'warn'],
   });
+  return configureApp(app);
+}
 
+/**
+ * Everything applied on top of the module: the API prefix, the body parser,
+ * security headers, cookies. The API tests build the app from a testing
+ * module (to swap out Google) and call this too, so they run exactly the same
+ * middleware as production.
+ */
+export function configureApp(app: NestExpressApplication): NestExpressApplication {
   const environment = app.get(Environment);
 
   app.setGlobalPrefix('api');
@@ -32,7 +37,8 @@ export async function createApp(): Promise<NestExpressApplication> {
   app.use(cookieParser());
 
   // Render (and any load balancer) terminates TLS in front of us. Trusting the
-  // first proxy makes `req.secure` true, so the session cookie can be Secure.
+  // first proxy makes `req.secure` true, so the session cookie can be Secure,
+  // and makes `req.ip` the client's address, which the rate limit keys on.
   if (environment.isProduction) app.set('trust proxy', 1);
 
   app.enableShutdownHooks();

@@ -19,7 +19,7 @@ built, linted or tested; each branch moves the pieces it ports out of it.
 - [x] `feat/backend-llm` — AI providers (groq, azure-foundry,
       openai-compatible, mock)
 - [x] `feat/backend-persistence` — repositories for the six collections, indexes
-- [ ] `feat/backend-auth` — Google ID-token sign-in, session cookie, dev login
+- [x] `feat/backend-auth` — Google ID-token sign-in, session cookie, dev login
 - [ ] `feat/backend-statements-api` — ingest, statements, transactions,
       summaries, views, settings, profile export/delete
 - [ ] `feat/backend-seed` — demo seed and fixture builder scripts
@@ -30,8 +30,21 @@ built, linted or tested; each branch moves the pieces it ports out of it.
       charts
 - [ ] `feat/frontend-library-settings` — statement library, settings
 - [ ] `feat/deploy-render` — backend Dockerfile, `render.yaml`, docker-compose
+- [ ] `feat/admin-overview` — (asked for 2026-09-26) an admin page, no separate
+      login: the hard-coded admin emails `akshayit22@gmail.com` and
+      `akshaytelang395@gmail.com` see every user, when they last signed in, and
+      how many statements each uploaded per bank. Counts and metadata only —
+      never another user's transactions.
 - [ ] `chore/remove-nextjs-app` — delete the ported Next.js app and AWS infra
 - [ ] `docs/rebuild-docs` — `docs/` folder, README, conventions
+
+## Requests from the owner, beyond the port
+
+- **AI providers are configured by API key only** (asked 2026-09-26): nothing
+  tied to AWS or Bedrock. `LLM_PROVIDER` picks Groq, Azure AI Foundry or any
+  OpenAI-compatible endpoint; the key and model come from `backend/.env`.
+  Done in `feat/backend-llm`.
+- **Admin overview** — see `feat/admin-overview` above.
 
 ## Decisions (and why)
 

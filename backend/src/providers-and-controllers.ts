@@ -1,5 +1,7 @@
 import type { Provider, Type } from '@nestjs/common';
+import { AuthController } from './controllers/auth.controller.js';
 import { HealthController } from './controllers/health.controller.js';
+import { GoogleAuthClientManager } from './managers/google-auth-client.manager.js';
 import { LlmClientManager } from './managers/llm-client.manager.js';
 import { MongoClientManager } from './managers/mongo-client.manager.js';
 import { AccountsRepository } from './repositories/accounts.repository.js';
@@ -8,9 +10,11 @@ import { StatementsRepository } from './repositories/statements.repository.js';
 import { SummariesRepository } from './repositories/summaries.repository.js';
 import { TransactionsRepository } from './repositories/transactions.repository.js';
 import { UsersRepository } from './repositories/users.repository.js';
+import { AuthService } from './services/auth.service.js';
 import { Environment } from './services/environment.service.js';
 import { LlmService } from './services/llm.service.js';
 import { LogService } from './services/log.service.js';
+import { SessionService } from './services/session.service.js';
 
 /**
  * Every controller and provider in the app, grouped by layer, in one place.
@@ -24,9 +28,9 @@ import { LogService } from './services/log.service.js';
  * by scanning, so what the app is made of is readable in one file.
  */
 
-export const Controllers: Type[] = [HealthController];
+export const Controllers: Type[] = [HealthController, AuthController];
 
-const Managers: Provider[] = [MongoClientManager, LlmClientManager];
+const Managers: Provider[] = [MongoClientManager, LlmClientManager, GoogleAuthClientManager];
 
 export const Repositories: Provider[] = [
   UsersRepository,
@@ -37,6 +41,6 @@ export const Repositories: Provider[] = [
   SummariesRepository,
 ];
 
-const Services: Provider[] = [Environment, LogService, LlmService];
+const Services: Provider[] = [Environment, LogService, LlmService, SessionService, AuthService];
 
 export const Providers: Provider[] = [...Managers, ...Repositories, ...Services];

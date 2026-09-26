@@ -1,6 +1,7 @@
 import { Navigate, createBrowserRouter } from 'react-router';
 import { AppLayout } from './pages/app-layout';
 import { NotFoundPage } from './pages/not-found-page';
+import { SectionPage } from './pages/section-page';
 import { SignInPage } from './pages/sign-in-page';
 
 /**
@@ -14,6 +15,9 @@ export const router = createBrowserRouter([
     element: <AppLayout />,
     children: [
       { index: true, element: <Navigate to="/overview" replace /> },
+      { path: '/accounts', element: <SectionPage section="card" /> },
+      { path: '/cashback', element: <SectionPage section="cashback" /> },
+      { path: '/savings', element: <SectionPage section="savings" /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

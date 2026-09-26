@@ -19,3 +19,53 @@
   /* The scrollbar should not sit flush against the content. */
   scrollbar-gutter: stable;
 }
+
+/* ── the upload dialog and its review step ────────────────────────────────── */
+
+.dialog-backdrop.is-upload {
+  z-index: var(--z-dialog);
+}
+.dialog.is-upload {
+  width: min(var(--dialog-w), 100%);
+}
+.dialog-head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+.dialog-head-text {
+  flex: 1;
+  min-width: 0;
+}
+.dialog-subtitle {
+  margin: var(--space-1) 0 0;
+}
+.field-hint {
+  margin-top: var(--space-2);
+}
+
+.review-step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.review-step .block-head {
+  margin-bottom: var(--space-2);
+}
+.review-merchant {
+  font-size: 13px;
+}
+.input.is-compact {
+  font-size: 12px;
+}
+
+/* Column widths for the small tables in dialogs and screens. */
+.col-date {
+  width: calc(var(--space-8) * 3.85);
+}
+.col-amount {
+  width: calc(var(--space-8) * 4.65);
+}
+.col-category {
+  width: calc(var(--space-8) * 7.5);
+}

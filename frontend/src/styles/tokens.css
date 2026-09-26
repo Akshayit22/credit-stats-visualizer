@@ -57,6 +57,9 @@
   --sidebar-w: 188px;
   --sidebar-w-collapsed: 56px;
   --content-max: 1360px;
+  --dialog-w: 560px;
+  /* Above the sticky header (40) and the sidebar. */
+  --z-dialog: 90;
 }
 
 body {

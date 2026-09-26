@@ -1,9 +1,6 @@
-'use client';
-
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { formatPeriodLabel, type Period } from '@cred-stats/shared';
 import { useId, useState } from 'react';
-import type { Period } from '@/shared/types';
-import { formatPeriodLabel } from '@/client/lib/format';
+import { useSearchParams } from 'react-router';
 import { Icon } from './icon';
 import { UploadDialog } from './upload-dialog';
 
@@ -34,17 +31,15 @@ export interface HeaderProps {
  * button does what it should.
  */
 export function AppHeader(props: HeaderProps) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [uploadOpen, setUploadOpen] = useState(false);
   const periodId = useId();
   const yearId = useId();
 
   const setParams = (updates: Record<string, string>) => {
-    const next = new URLSearchParams(searchParams.toString());
+    const next = new URLSearchParams(searchParams);
     for (const [key, value] of Object.entries(updates)) next.set(key, value);
-    router.push(`${pathname}?${next.toString()}`);
+    setSearchParams(next);
   };
 
   const complete = props.coverage.have === props.coverage.total;
@@ -126,8 +121,7 @@ export function AppHeader(props: HeaderProps) {
           </span>
           <button
             type="button"
-            className="btn btn-primary"
-            style={{ flex: 'none' }}
+            className="btn btn-primary header-upload"
             onClick={() => setUploadOpen(true)}
           >
             <Icon.UploadSimple size={14} aria-hidden="true" />

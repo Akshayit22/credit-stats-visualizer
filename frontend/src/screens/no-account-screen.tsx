@@ -1,9 +1,7 @@
-'use client';
-
-import Link from 'next/link';
 import { useState } from 'react';
-import { Icon } from '@/client/components/icon';
-import { UploadDialog } from '@/client/components/upload-dialog';
+import { Link } from 'react-router';
+import { Icon } from '../components/icon';
+import { UploadDialog } from '../components/upload-dialog';
 
 /**
  * What a section shows when the user has no account of that type yet. It is a
@@ -36,14 +34,14 @@ export function NoAccountScreen({
         </div>
 
         <div className="empty-state">
-          <Icon.FilePdf size={26} style={{ color: 'var(--color-accent)', opacity: 0.75 }} />
+          <Icon.FilePdf size={26} className="is-accent empty-icon" aria-hidden="true" />
           <p className="empty-body">{body}</p>
-          <div style={{ display: 'flex', gap: 'var(--space-3)', marginTop: 4, flexWrap: 'wrap' }}>
+          <div className="empty-actions">
             <button type="button" className="btn btn-primary" onClick={() => setUploadOpen(true)}>
               Upload a statement
             </button>
             {otherHref && (
-              <Link className="btn btn-secondary" href={otherHref}>
+              <Link className="btn btn-secondary" to={otherHref}>
                 {otherLabel}
               </Link>
             )}

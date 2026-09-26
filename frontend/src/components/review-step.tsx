@@ -1,17 +1,20 @@
-'use client';
-
+import {
+  CATEGORIES,
+  formatDayShort,
+  formatMinor,
+  type Category,
+  type ParsedStatementResult,
+  type Transaction,
+} from '@cred-stats/shared';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { CATEGORIES } from '@/shared/categories';
-import { formatMinor } from '@/shared/money';
-import type { Category } from '@/shared/categories';
-import type { ParsedStatementResult, Transaction } from '@/shared/types';
+import { useRecategorise } from '../hooks/queries';
+import { ApiError } from '../services/api-client';
 import { Icon } from './icon';
 
 /**
- * The step between parsing and trusting the numbers. It shows what reconciled,
- * what was removed, and the rows whose category we are least sure of — those
- * are the ones worth a human glance, and fixing one here writes a rule so the
+ * The step between parsing and trusting the numbers. It shows what
+ * reconciled, what was removed, and the rows whose category is least certain —
+ * those are worth a human glance, and fixing one here writes a rule so the
  * same merchant is right next month.
  */
 export function ReviewStep({
@@ -23,66 +26,51 @@ export function ReviewStep({
   redacted: Record<string, number>;
   onDone: () => void;
 }) {
-  const router = useRouter();
+  const recategorise = useRecategorise();
   const { statement, account, transactions, warnings, duplicate } = result;
   const [edits, setEdits] = useState<Record<string, Category>>({});
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const removedCount = Object.values(redacted).reduce((total, n) => total + n, 0);
-  const reconciled = statement.reconciliation?.ok ?? false;
+  const editCount = Object.keys(edits).length;
 
   // Worth checking: anything Uncategorised, anything a model guessed, and the
   // largest few rows — a wrong big number matters more than a wrong small one.
-  const worthChecking = [...transactions]
-    .map((txn, index) => ({ txn, index }))
-    .filter(
-      ({ txn }) =>
-        txn.category === 'Uncategorised' || txn.categorySource === 'llm' || txn.amountMinor > 0,
-    )
-    .sort((a, b) => rank(b.txn) - rank(a.txn))
-    .slice(0, 8);
+  const worthChecking = [...transactions].sort((a, b) => rank(b) - rank(a)).slice(0, 8);
 
   const save = async () => {
     setSaving(true);
+    setError(null);
     try {
       for (const [txnId, category] of Object.entries(edits)) {
-        const txn = transactions.find((candidate) => candidate.txnId === txnId);
-        if (!txn) continue;
-        await fetch('/api/transactions', {
-          method: 'PATCH',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({
-            txnId: txn.txnId,
-            date: txn.date,
-            accountId: txn.accountId,
-            category,
-            applyToMerchant: true,
-          }),
+        await recategorise.mutateAsync({
+          statementId: statement.statementId,
+          txnId,
+          change: { category, applyToMerchant: true },
         });
       }
-      router.refresh();
       onDone();
-    } finally {
+    } catch (caught) {
+      setError(caught instanceof ApiError ? caught.message : 'The changes could not be saved.');
       setSaving(false);
     }
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+    <div className="review-step">
       {duplicate ? (
-        <div className="banner" role="status">
+        <div className="banner" data-tone="neutral" role="status">
           <Icon.Check size={16} aria-hidden="true" />
           <span className="banner-body">
             Already uploaded. This is the statement that was saved the first time — nothing was
             added.
           </span>
         </div>
-      ) : reconciled ? (
-        <div className="banner" data-tone="positive" role="status" style={bannerPositive}>
+      ) : statement.reconciliation.ok ? (
+        <div className="banner" data-tone="positive" role="status">
           <Icon.Check size={16} aria-hidden="true" />
-          <span className="banner-body">
-            Totals reconciled. {statement.reconciliation.message}
-          </span>
+          <span className="banner-body">Totals reconciled. {statement.reconciliation.message}</span>
         </div>
       ) : (
         <div className="banner" role="alert">
@@ -120,7 +108,7 @@ export function ReviewStep({
 
       {!duplicate && worthChecking.length > 0 && (
         <div>
-          <div className="block-head" style={{ marginBottom: 'var(--space-2)' }}>
+          <div className="block-head">
             <span className="block-title">Worth a glance</span>
             <span className="block-sub">a change here applies to this merchant from now on</span>
           </div>
@@ -128,19 +116,17 @@ export function ReviewStep({
             <table className="table">
               <thead>
                 <tr>
-                  <th style={{ width: 86 }}>Date</th>
+                  <th className="col-date">Date</th>
                   <th>Details</th>
-                  <th className="num" style={{ width: 104 }}>
-                    Amount
-                  </th>
-                  <th style={{ width: 168 }}>Category</th>
+                  <th className="num col-amount">Amount</th>
+                  <th className="col-category">Category</th>
                 </tr>
               </thead>
               <tbody>
-                {worthChecking.map(({ txn }) => (
+                {worthChecking.map((txn) => (
                   <tr key={txn.txnId}>
-                    <td className="cell-dim">{txn.date.slice(8)}/{txn.date.slice(5, 7)}</td>
-                    <td style={{ fontSize: 13 }}>{txn.merchant || txn.descriptionRaw}</td>
+                    <td className="cell-dim">{formatDayShort(txn.date)}</td>
+                    <td className="review-merchant">{txn.merchant || txn.descriptionRaw}</td>
                     <td className="num">
                       {formatMinor(txn.amountMinor)}
                       <span className="drcr"> {txn.direction === 'credit' ? 'Cr' : 'Dr'}</span>
@@ -151,8 +137,7 @@ export function ReviewStep({
                       </label>
                       <select
                         id={`cat-${txn.txnId}`}
-                        className="input"
-                        style={{ fontSize: 12 }}
+                        className="input is-compact"
                         value={edits[txn.txnId] ?? txn.category}
                         onChange={(event) =>
                           setEdits((previous) => ({
@@ -176,27 +161,33 @@ export function ReviewStep({
         </div>
       )}
 
+      {error && (
+        <div className="banner" data-tone="negative" role="alert">
+          <Icon.Warning size={16} aria-hidden="true" />
+          <span className="banner-body">{error}</span>
+        </div>
+      )}
+
       <div className="dialog-actions">
         <button type="button" className="btn btn-secondary" onClick={onDone} disabled={saving}>
           Close
         </button>
-        <button type="button" className="btn btn-primary" onClick={() => void save()} disabled={saving}>
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={() => void save()}
+          disabled={saving}
+        >
           {saving
             ? 'Saving…'
-            : Object.keys(edits).length > 0
-              ? `Keep with ${Object.keys(edits).length} change${Object.keys(edits).length === 1 ? '' : 's'}`
+            : editCount > 0
+              ? `Keep with ${editCount} change${editCount === 1 ? '' : 's'}`
               : 'Looks right'}
         </button>
       </div>
     </div>
   );
 }
-
-const bannerPositive: React.CSSProperties = {
-  color: 'var(--color-positive)',
-  background: 'color-mix(in srgb, var(--color-positive) 10%, transparent)',
-  boxShadow: 'inset 0 0 0 1px color-mix(in srgb, var(--color-positive) 30%, transparent)',
-};
 
 function rank(txn: Transaction): number {
   if (txn.category === 'Uncategorised') return 1_000_000_000 + txn.amountMinor;

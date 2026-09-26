@@ -24,7 +24,7 @@ built, linted or tested; each branch moves the pieces it ports out of it.
       summaries, views, settings, profile export/delete
 - [x] `feat/backend-seed` — demo seed and fixture builder scripts
 - [x] `feat/frontend-shell` — Vite + React app, router, auth, layout, sidebar
-- [ ] `feat/frontend-upload` — PDF extraction in the browser, upload dialog,
+- [x] `feat/frontend-upload` — PDF extraction in the browser, upload dialog,
       review step
 - [ ] `feat/frontend-dashboards` — overview, card, cashback, savings screens and
       charts

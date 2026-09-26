@@ -1,21 +1,22 @@
-'use client';
-
+import type { ParsedStatementResult } from '@cred-stats/shared';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { formatMinor } from '@/shared/money';
-import type { ParsedStatementResult } from '@/shared/types';
+import { refreshData } from '../hooks/queries';
+import { ApiError } from '../services/api-client';
+import { endpoints } from '../services/endpoints';
+import { EmptyPdfError, PdfPasswordRequiredError, prepareUpload } from '../utils/upload';
 import { Icon } from './icon';
 import { ReviewStep } from './review-step';
-import {
-  EmptyPdfError,
-  PdfPasswordRequiredError,
-  postStatement,
-  prepareUpload,
-  type PreparedUpload,
-} from '@/client/lib/upload';
 
 type Phase = 'pick' | 'parsing' | 'review' | 'error';
 
+/**
+ * Pick a PDF, unlock it if it needs a password, parse it — then review.
+ *
+ * The file is read, decrypted and redacted in this browser; only the text is
+ * posted. The statement is saved as soon as the API has parsed it, and the
+ * review step is where a wrong category gets fixed.
+ */
 export function UploadDialog({
   open,
   onClose,
@@ -23,13 +24,14 @@ export function UploadDialog({
 }: {
   open: boolean;
   onClose: () => void;
-  /** Pre-filled when the dialog is opened from an empty month. */
+  /** Named in the subtitle when the dialog is opened from a particular month. */
   periodHint?: string;
 }) {
-  const router = useRouter();
+  const client = useQueryClient();
   const dialogRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const passwordId = useId();
+  const titleId = useId();
 
   const [phase, setPhase] = useState<Phase>('pick');
   const [file, setFile] = useState<File | null>(null);
@@ -38,25 +40,21 @@ export function UploadDialog({
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ParsedStatementResult | null>(null);
-  const [prepared, setPrepared] = useState<PreparedUpload | null>(null);
+  const [redacted, setRedacted] = useState<Record<string, number>>({});
 
-  const reset = useCallback(() => {
+  const close = useCallback(() => {
+    // Refresh on the way out, once, so the screen behind picks up the upload
+    // without reflowing while the review step is still being read.
+    if (result !== null) void refreshData(client);
     setPhase('pick');
     setFile(null);
     setPassword('');
     setNeedsPassword(false);
     setError(null);
     setResult(null);
-    setPrepared(null);
-  }, []);
-
-  const close = useCallback(() => {
-    // Refresh on the way out, once, so whatever is behind picks up the upload
-    // without shifting while the dialog is still open.
-    if (result !== null) router.refresh();
-    reset();
+    setRedacted({});
     onClose();
-  }, [onClose, reset, result, router]);
+  }, [client, onClose, result]);
 
   useEffect(() => {
     if (!open) return;
@@ -75,15 +73,10 @@ export function UploadDialog({
     setPhase('parsing');
     setError(null);
     try {
-      const preparedUpload = await prepareUpload(file, password || undefined);
-      setPrepared(preparedUpload);
-      const parsedResult = await postStatement(preparedUpload);
-      setResult(parsedResult);
+      const prepared = await prepareUpload(file, password || undefined);
+      setRedacted(prepared.redacted);
+      setResult(await endpoints.statements.upload(prepared.payload));
       setPhase('review');
-      // Deliberately not refreshing here. The statement is already saved; the
-      // page behind the dialog does not need to know until the dialog closes,
-      // and refreshing now reflows the library underneath while you are still
-      // reading the review step.
     } catch (caught) {
       if (caught instanceof PdfPasswordRequiredError) {
         setNeedsPassword(true);
@@ -92,7 +85,7 @@ export function UploadDialog({
         return;
       }
       setError(
-        caught instanceof EmptyPdfError || caught instanceof Error
+        caught instanceof ApiError || caught instanceof EmptyPdfError
           ? caught.message
           : 'Something went wrong reading that file.',
       );
@@ -112,25 +105,24 @@ export function UploadDialog({
   };
 
   return (
-    <div className="dialog-backdrop" style={{ zIndex: 90 }} onMouseDown={close}>
+    <div className="dialog-backdrop is-upload" onMouseDown={close}>
       <div
-        className="dialog"
-        style={{ width: 'min(560px, 100%)' }}
+        className="dialog is-upload"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="upload-title"
+        aria-labelledby={titleId}
         tabIndex={-1}
         ref={dialogRef}
         onMouseDown={(event) => event.stopPropagation()}
       >
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-4)' }}>
-          <div style={{ flex: 1 }}>
-            <h2 className="dialog-title" id="upload-title">
+        <div className="dialog-head">
+          <div className="dialog-head-text">
+            <h2 className="dialog-title" id={titleId}>
               {phase === 'review' ? 'Check the figures' : 'Upload statement'}
             </h2>
-            <p className="dropzone-hint" style={{ margin: '3px 0 0' }}>
+            <p className="dropzone-hint dialog-subtitle">
               {phase === 'review'
-                ? 'Nothing is saved to your dashboards until you keep it.'
+                ? 'Saved. A category fixed here sticks for that merchant from now on.'
                 : periodHint
                   ? `Card and savings statements both work · ${periodHint}`
                   : 'Card and savings statements both work.'}
@@ -142,7 +134,7 @@ export function UploadDialog({
         </div>
 
         {phase === 'review' && result ? (
-          <ReviewStep result={result} redacted={prepared?.redacted ?? {}} onDone={close} />
+          <ReviewStep result={result} redacted={redacted} onDone={close} />
         ) : (
           <>
             <button
@@ -161,9 +153,9 @@ export function UploadDialog({
                 pick(event.dataTransfer.files[0] ?? null);
               }}
             >
-              <Icon.FilePdf size={24} style={{ color: 'var(--color-accent)' }} aria-hidden="true" />
+              <Icon.FilePdf size={24} className="is-accent" aria-hidden="true" />
               <span className="dropzone-title">
-                {file ? file.name : 'Drop statement PDFs, or browse'}
+                {file ? file.name : 'Drop a statement PDF, or browse'}
               </span>
               <span className="dropzone-hint">
                 Card and savings statements both work. Password-protected files supported.
@@ -174,15 +166,14 @@ export function UploadDialog({
               type="file"
               accept="application/pdf,.pdf"
               className="visually-hidden"
+              data-testid="statement-file"
               onChange={(event) => pick(event.target.files?.[0] ?? null)}
             />
 
             <div className="field">
               <label htmlFor={passwordId}>
                 PDF password, if set
-                {needsPassword && (
-                  <span className="is-warning"> — this file needs one</span>
-                )}
+                {needsPassword && <span className="is-warning"> — this file needs one</span>}
               </label>
               <input
                 id={passwordId}
@@ -196,7 +187,7 @@ export function UploadDialog({
                   if (event.key === 'Enter' && file) void parse();
                 }}
               />
-              <p className="dropzone-hint" style={{ marginTop: 'var(--space-2)' }}>
+              <p className="dropzone-hint field-hint">
                 The password unlocks the file in this browser and is never sent anywhere.
               </p>
             </div>
@@ -226,8 +217,4 @@ export function UploadDialog({
       </div>
     </div>
   );
-}
-
-export function formatDifference(amountMinor: number): string {
-  return formatMinor(Math.abs(amountMinor));
 }

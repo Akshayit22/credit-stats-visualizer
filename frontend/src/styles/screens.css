@@ -386,7 +386,6 @@ button.donut-legend-button:hover {
   margin: 0;
 }
 
-
 /* Google draws its own button inside this slot; reserve its height so the
    page does not jump when the script arrives. */
 .sign-in-google {

@@ -29,7 +29,12 @@ const securityHeaders = helmet({
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", `${GOOGLE_IDENTITY}client`],
-      styleSrc: ["'self'", "'unsafe-inline'", `${GOOGLE_IDENTITY}style`, 'https://fonts.googleapis.com'],
+      styleSrc: [
+        "'self'",
+        "'unsafe-inline'",
+        `${GOOGLE_IDENTITY}style`,
+        'https://fonts.googleapis.com',
+      ],
       fontSrc: ["'self'", 'https://fonts.gstatic.com'],
       frameSrc: [GOOGLE_IDENTITY],
       connectSrc: ["'self'", GOOGLE_IDENTITY],

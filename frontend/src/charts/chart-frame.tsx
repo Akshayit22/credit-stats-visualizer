@@ -56,7 +56,10 @@ export function ChartBlock({
         {mounted ? (
           children
         ) : (
-          <div className="skeleton" style={{ width: '100%', height: height === 'auto' ? 240 : height }} />
+          <div
+            className="skeleton"
+            style={{ width: '100%', height: height === 'auto' ? 240 : height }}
+          />
         )}
       </div>
     </section>

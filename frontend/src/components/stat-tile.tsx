@@ -18,9 +18,20 @@ export interface StatTileProps {
  * value only, and the label is always present, so the colour supplements a
  * written meaning rather than carrying it.
  */
-export function StatTile({ label, value, note, tone = 'plain', size = 'md', delta }: StatTileProps) {
+export function StatTile({
+  label,
+  value,
+  note,
+  tone = 'plain',
+  size = 'md',
+  delta,
+}: StatTileProps) {
   const DeltaIcon =
-    delta?.direction === 'up' ? Icon.TrendUp : delta?.direction === 'down' ? Icon.TrendDown : Icon.Minus;
+    delta?.direction === 'up'
+      ? Icon.TrendUp
+      : delta?.direction === 'down'
+        ? Icon.TrendDown
+        : Icon.Minus;
 
   return (
     <div>

@@ -6,38 +6,18 @@ samples/
 .env.*
 !.env.example
 
-# ── node / next ────────────────────────────────────────────────────────────
+# ── node and build output ─────────────────────────────────────────────────
 node_modules/
-.next/
-out/
-build/
 dist/
 *.tsbuildinfo
-next-env.d.ts
 
-# ── test / tooling output ──────────────────────────────────────────────────
+# ── test and tooling output ───────────────────────────────────────────────
 coverage/
-junit.xml
 .eslintcache
-.vitest/
 
-# ── docker volumes ─────────────────────────────────────────────────────────
-.docker/
-
-# ── os / editor ────────────────────────────────────────────────────────────
+# ── os and editors ────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
 .idea/
 .vscode/*
 !.vscode/extensions.json
-
-# built by the postinstall step, version-locked to pdfjs-dist
-public/pdf.worker.min.mjs
-
-# playwright
-test-results/
-playwright-report/
-junit-e2e.xml
-
-# SST generates this; it holds provider state and cached credentials.
-.sst/

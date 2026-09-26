@@ -6,11 +6,5 @@ package-lock.json
 **/fixtures
 # The design system stylesheet is a verbatim copy and must not be reformatted.
 **/nocturne.css
-# The Next.js application being ported. Removed once the port is done.
-app
-src
-tests
-scripts
-design
-public
-.next
+# The original design mockups, kept as a reference.
+docs/design

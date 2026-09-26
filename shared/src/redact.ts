@@ -108,8 +108,7 @@ const LABELLED: ReadonlyArray<{ label: RegExp; mask: string; keepLast4?: boolean
  * is never mistaken for a postal address.
  */
 const HEADER_ZONE_MAX_LINES = 28;
-const TABLE_HEADER =
-  /^\s*DATE\b.*\b(?:DETAILS|PARTICULARS|NARRATION|DESCRIPTION|TRANSACTION)\b/i;
+const TABLE_HEADER = /^\s*DATE\b.*\b(?:DETAILS|PARTICULARS|NARRATION|DESCRIPTION|TRANSACTION)\b/i;
 
 export function headerZoneEnd(lines: string[]): number {
   const limit = Math.min(lines.length, HEADER_ZONE_MAX_LINES);
@@ -366,8 +365,18 @@ export function redactForStorage(rawText: string): RedactionResult {
       (_match, label: string, digits: string) => `${label} : XXXX${digits.slice(-4)}`,
       () => bump('accountNumber'),
     );
-    joined = replaceCounting(joined, INLINE_MICR, () => `MICR: ${MASK.micr}`, () => bump('micr'));
-    joined = replaceCounting(joined, EMAIL, () => MASK.email, () => bump('email'));
+    joined = replaceCounting(
+      joined,
+      INLINE_MICR,
+      () => `MICR: ${MASK.micr}`,
+      () => bump('micr'),
+    );
+    joined = replaceCounting(
+      joined,
+      EMAIL,
+      () => MASK.email,
+      () => bump('email'),
+    );
     // Order matters here.
     //  - IFSC before VPA: a VPA's local part may contain hyphens
     //    (`gpay-12201811742@okbizaxis`), so without the IFSC already replaced
@@ -375,19 +384,44 @@ export function redactForStorage(rawText: string): RedactionResult {
     //    counterparty name's last letter along with it.
     //  - VPA before PHONE: many handles are `<mobile>@<bank>`, and masking the
     //    number first leaves the handle half-redacted.
-    joined = replaceCounting(joined, IFSC, () => MASK.ifsc, () => bump('ifsc'));
-    joined = replaceCounting(joined, VPA, () => MASK.vpa, () => bump('upiHandle'));
-    joined = replaceCounting(joined, PHONE, () => MASK.phone, () => bump('phone'));
+    joined = replaceCounting(
+      joined,
+      IFSC,
+      () => MASK.ifsc,
+      () => bump('ifsc'),
+    );
+    joined = replaceCounting(
+      joined,
+      VPA,
+      () => MASK.vpa,
+      () => bump('upiHandle'),
+    );
+    joined = replaceCounting(
+      joined,
+      PHONE,
+      () => MASK.phone,
+      () => bump('phone'),
+    );
 
     // 4. The holder's own name, wherever it appears, truncated or not.
     for (const pattern of holderPatterns) {
-      joined = replaceCounting(joined, pattern, () => MASK.self, () => bump('holderName'));
+      joined = replaceCounting(
+        joined,
+        pattern,
+        () => MASK.self,
+        () => bump('holderName'),
+      );
     }
 
     // 5. …then each of its words alone, for the pieces a wrap stranded where
     //    the whole-name pattern cannot reach them.
     for (const pattern of holderTokens) {
-      joined = replaceCounting(joined, pattern, () => MASK.self, () => bump('holderName'));
+      joined = replaceCounting(
+        joined,
+        pattern,
+        () => MASK.self,
+        () => bump('holderName'),
+      );
     }
 
     // 6. …and then whatever is still glued to the mask that leaves. A transfer

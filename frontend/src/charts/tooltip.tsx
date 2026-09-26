@@ -27,7 +27,9 @@ export function TooltipRow({
 }) {
   return (
     <div className="chart-tooltip-row">
-      {color && <span className="chart-tooltip-dot" style={{ background: color }} aria-hidden="true" />}
+      {color && (
+        <span className="chart-tooltip-dot" style={{ background: color }} aria-hidden="true" />
+      )}
       <span className="chart-tooltip-label">{label}</span>
       <b className={tone ? `is-${tone}` : undefined}>{value}</b>
     </div>

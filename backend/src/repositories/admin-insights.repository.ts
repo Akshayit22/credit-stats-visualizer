@@ -39,7 +39,10 @@ export class AdminInsightsRepository {
   async users(): Promise<UserRow[]> {
     const rows = await this.mongo.db
       .collection('users')
-      .find({}, { projection: { _id: 0, userId: 1, email: 1, name: 1, createdAt: 1, lastLoginAt: 1 } })
+      .find(
+        {},
+        { projection: { _id: 0, userId: 1, email: 1, name: 1, createdAt: 1, lastLoginAt: 1 } },
+      )
       .toArray();
     return rows.map((row) => ({
       userId: String(row.userId),

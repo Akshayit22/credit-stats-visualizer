@@ -36,7 +36,10 @@ export interface ExtractResult {
   pageCount: number;
 }
 
-export async function extractPdfPages(data: ArrayBuffer, password?: string): Promise<ExtractResult> {
+export async function extractPdfPages(
+  data: ArrayBuffer,
+  password?: string,
+): Promise<ExtractResult> {
   const pdfjs = await loadPdfjs();
 
   const loadingTask = pdfjs.getDocument({

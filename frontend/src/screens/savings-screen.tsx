@@ -1,5 +1,18 @@
 import { useMemo, useState } from 'react';
-import { formatMinor, type Account, type Period, type SavingsStatement, type Statement, type Summary, type Transaction, accountShortName, formatDayLabel, formatPeriodLabel, formatPeriodRange, formatPeriodShort } from '@cred-stats/shared';
+import {
+  formatMinor,
+  type Account,
+  type Period,
+  type SavingsStatement,
+  type Statement,
+  type Summary,
+  type Transaction,
+  accountShortName,
+  formatDayLabel,
+  formatPeriodLabel,
+  formatPeriodRange,
+  formatPeriodShort,
+} from '@cred-stats/shared';
 import { ChartBlock } from '../charts/chart-frame';
 import { useMounted } from '../hooks/use-mounted';
 import { chartTheme, seriesColor } from '../charts/theme';
@@ -82,11 +95,7 @@ export function SavingsScreen(props: SavingsScreenProps) {
                   ? `slice statements start from the account opening on ${formatDayLabel(props.account.openedAt)} ${props.account.openedAt.slice(0, 4)}.`
                   : 'Upload the statement PDF for this month and the charts fill in.'}
               </p>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={() => setUploadOpen(true)}
-              >
+              <button type="button" className="btn btn-primary" onClick={() => setUploadOpen(true)}>
                 Upload statement
               </button>
             </div>
@@ -281,8 +290,7 @@ function SavingsMonth({
             tooltipExtras={(point) => [
               {
                 label: 'Credited that day',
-                value:
-                  Number(point.onTheDay) > 0 ? formatMinor(Number(point.onTheDay)) : 'nothing',
+                value: Number(point.onTheDay) > 0 ? formatMinor(Number(point.onTheDay)) : 'nothing',
               },
             ]}
           />

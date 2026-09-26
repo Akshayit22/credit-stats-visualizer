@@ -37,8 +37,7 @@ export const endpoints = {
   auth: {
     config: () => api.get<AuthConfig>('/auth/config'),
     me: () => api.get<SessionUser>('/auth/me'),
-    signInWithGoogle: (credential: string) =>
-      api.post<SessionUser>('/auth/google', { credential }),
+    signInWithGoogle: (credential: string) => api.post<SessionUser>('/auth/google', { credential }),
     signInAsDemoUser: () => api.post<SessionUser>('/auth/dev-login'),
     signOut: () => api.post<{ signedOut: true }>('/auth/sign-out'),
   },

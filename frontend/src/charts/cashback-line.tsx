@@ -1,4 +1,12 @@
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import { formatMinor, formatMinorCompact, formatPct } from '@cred-stats/shared';
 import { chartTheme, seriesColor } from './theme';
 import { TooltipRow, TooltipShell } from './tooltip';

@@ -1,6 +1,19 @@
 import { Link } from 'react-router';
 import { useMemo } from 'react';
-import { formatMinor, formatPct, type Account, type CreditCardStatement, type Period, type Summary, type Transaction, accountShortName, formatDayShort, formatPeriodLabel, formatPeriodRange, formatPeriodShort } from '@cred-stats/shared';
+import {
+  formatMinor,
+  formatPct,
+  type Account,
+  type CreditCardStatement,
+  type Period,
+  type Summary,
+  type Transaction,
+  accountShortName,
+  formatDayShort,
+  formatPeriodLabel,
+  formatPeriodRange,
+  formatPeriodShort,
+} from '@cred-stats/shared';
 import { CashbackLine } from '../charts/cashback-line';
 import { ChartBlock } from '../charts/chart-frame';
 import { useMounted } from '../hooks/use-mounted';
@@ -28,9 +41,7 @@ export function CashbackScreen(props: CashbackScreenProps) {
 
   const purchases = useMemo(
     () =>
-      props.transactions.filter(
-        (txn) => txn.direction === 'debit' && !txn.isPayment && !txn.isFee,
-      ),
+      props.transactions.filter((txn) => txn.direction === 'debit' && !txn.isPayment && !txn.isFee),
     [props.transactions],
   );
   const earning = purchases.filter((txn) => (txn.cashbackMinor ?? 0) > 0);
@@ -63,9 +74,7 @@ export function CashbackScreen(props: CashbackScreenProps) {
     cashback: props.summaries.find((item) => item.period === period)?.cashbackEarnedMinor ?? 0,
   }));
 
-  const best = [...earning].sort(
-    (a, b) => (b.cashbackMinor ?? 0) - (a.cashbackMinor ?? 0),
-  )[0];
+  const best = [...earning].sort((a, b) => (b.cashbackMinor ?? 0) - (a.cashbackMinor ?? 0))[0];
 
   const header = (
     <AppHeader
@@ -209,7 +218,10 @@ export function CashbackScreen(props: CashbackScreenProps) {
                         <div className="bar-row-line">
                           <span className="bar-row-name">{entry.name}</span>
                           <span className="bar-row-share is-muted">
-                            {formatPct(entry.spend > 0 ? (entry.cashback / entry.spend) * 100 : 0, 2)}
+                            {formatPct(
+                              entry.spend > 0 ? (entry.cashback / entry.spend) * 100 : 0,
+                              2,
+                            )}
                           </span>
                           <span
                             className={`bar-row-amount ${entry.cashback > 0 ? '' : 'is-muted'}`}
@@ -251,9 +263,7 @@ export function CashbackScreen(props: CashbackScreenProps) {
                           <th className="col-date">Date</th>
                           <th>Details</th>
                           <th className="col-category">Category</th>
-                          <th className="num col-amount">
-                            Spend
-                          </th>
+                          <th className="num col-amount">Spend</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -261,9 +271,7 @@ export function CashbackScreen(props: CashbackScreenProps) {
                           <tr key={txn.txnId}>
                             <td className="cell-dim">{formatDayShort(txn.date)}</td>
                             <td className="cell-merchant">{txn.merchant || txn.descriptionRaw}</td>
-                            <td className="is-muted cell-meta">
-                              {txn.category}
-                            </td>
+                            <td className="is-muted cell-meta">{txn.category}</td>
                             <td className="num">{formatMinor(txn.amountMinor)}</td>
                           </tr>
                         ))}
@@ -310,9 +318,7 @@ function CashbackYear({
       <div className="empty-state">
         <Icon.Percent size={24} className="is-faded" aria-hidden="true" />
         <p className="empty-title">No statements for this year yet</p>
-        <p className="empty-body">
-          Upload a cycle&rsquo;s statement and the year fills in.
-        </p>
+        <p className="empty-body">Upload a cycle&rsquo;s statement and the year fills in.</p>
       </div>
     );
   }

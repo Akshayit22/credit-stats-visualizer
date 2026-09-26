@@ -14,8 +14,7 @@ import type { Statement } from './entities/statement.js';
 export type SectionView = 'account' | 'cashback';
 
 export type SectionTarget =
-  | { kind: 'redirect'; href: string }
-  | { kind: 'empty'; otherHref: string | null };
+  { kind: 'redirect'; href: string } | { kind: 'empty'; otherHref: string | null };
 
 export function accountHref(account: Pick<Account, 'accountId' | 'type'>): string {
   return account.type === 'savings'

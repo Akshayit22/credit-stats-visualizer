@@ -1,10 +1,13 @@
-import { parseAmountToMinor } from '@/shared/money';
-import type { StatementLine } from '@/shared/statement-text';
-import type { ParseWarning } from '@/shared/types';
-import { joinWrappedDetail, redactFreeText } from '@/shared/redact';
-import { parseDashMonthDate, parseSpacedDate } from '@/server/domain/dates';
-import type { ParsedTransaction } from '@/server/domain/schemas';
-import { ParseError, type ParserInput, type ParserOutput, type StatementParser } from '../types';
+import {
+  parseAmountToMinor,
+  type StatementLine,
+  type ParseWarning,
+  joinWrappedDetail,
+  redactFreeText,
+} from '@cred-stats/shared';
+import { parseDashMonthDate, parseSpacedDate } from '../../domain/statement-dates.js';
+import type { ParsedTransaction } from '../../domain/schemas.js';
+import { ParseError, type ParserInput, type ParserOutput, type StatementParser } from '../types.js';
 
 const ID = 'slice-savings';
 
@@ -74,7 +77,8 @@ export const sliceSavingsParser: StatementParser = {
 /* ── header ──────────────────────────────────────────────────────────────── */
 
 /** `01 Aug '26 - 31 Aug '26`, printed at the top of every page. */
-const PERIOD_LINE = /^(\d{1,2}\s+[A-Za-z]{3,9}\s*'?\s*\d{2,4})\s*-\s*(\d{1,2}\s+[A-Za-z]{3,9}\s*'?\s*\d{2,4})$/;
+const PERIOD_LINE =
+  /^(\d{1,2}\s+[A-Za-z]{3,9}\s*'?\s*\d{2,4})\s*-\s*(\d{1,2}\s+[A-Za-z]{3,9}\s*'?\s*\d{2,4})$/;
 
 function readPeriod(lines: StatementLine[]): { start: string; end: string } {
   for (const line of lines.slice(0, 6)) {

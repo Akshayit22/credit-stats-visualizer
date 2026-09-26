@@ -1,10 +1,12 @@
-import { parseAmountToMinor } from '@/shared/money';
-import type { StatementLine } from '@/shared/statement-text';
-import type { ParseWarning } from '@/shared/types';
-import { redactFreeText } from '@/shared/redact';
-import { parseSpacedDate } from '@/server/domain/dates';
-import type { ParsedTransaction } from '@/server/domain/schemas';
-import { ParseError, type ParserInput, type ParserOutput, type StatementParser } from '../types';
+import {
+  parseAmountToMinor,
+  type StatementLine,
+  type ParseWarning,
+  redactFreeText,
+} from '@cred-stats/shared';
+import { parseSpacedDate } from '../../domain/statement-dates.js';
+import type { ParsedTransaction } from '../../domain/schemas.js';
+import { ParseError, type ParserInput, type ParserOutput, type StatementParser } from '../types.js';
 
 const ID = 'scb-savings';
 
@@ -195,7 +197,9 @@ function readTransactions(
   warnings: ParseWarning[],
 ): ParsedTransaction[] {
   const start = lines.findIndex((line) => /^balance forward$/i.test(line.cells[2] ?? ''));
-  const endOffset = lines.slice(start + 1).findIndex((line) => /^total$/i.test(line.cells[0] ?? ''));
+  const endOffset = lines
+    .slice(start + 1)
+    .findIndex((line) => /^total$/i.test(line.cells[0] ?? ''));
   const end = endOffset === -1 ? lines.length : start + 1 + endOffset;
 
   const rows = lines.slice(start + 1, end).filter((line) => !isNoise(line));

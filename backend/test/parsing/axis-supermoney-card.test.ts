@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { FIXTURE_NAMES, fixtureInput, fixtureText } from '../fixtures';
-import { runDeterministicParser } from '@/server/parsing/registry';
-import { checkCashback, reconcile } from '@/server/domain/reconcile';
-import type { ParsedStatement } from '@/server/domain/schemas';
-import { parsedStatementSchema } from '@/server/domain/schemas';
+import { FIXTURE_NAMES, fixtureInput, fixtureText } from '../helpers/fixtures.js';
+import { runDeterministicParser } from '../../src/parsing/registry.js';
+import { checkCashback, reconcile } from '../../src/domain/reconcile.js';
+import type { ParsedStatement } from '../../src/domain/schemas.js';
+import { parsedStatementSchema } from '../../src/domain/schemas.js';
 
 function parseCard(): ParsedStatement & { accountType: 'credit_card' } {
   const attempt = runDeterministicParser(fixtureInput(FIXTURE_NAMES.card));
@@ -72,9 +72,7 @@ describe('axis-supermoney-card parser', () => {
   it('takes direction from the Dr/Cr suffix, not a minus sign', () => {
     const statement = parseCard();
     const credits = statement.transactions.filter((txn) => txn.direction === 'credit');
-    expect(credits.map((txn) => txn.amountMinor).sort((a, b) => a - b)).toEqual([
-      9_600, 580_840,
-    ]);
+    expect(credits.map((txn) => txn.amountMinor).sort((a, b) => a - b)).toEqual([9_600, 580_840]);
     expect(statement.transactions.every((txn) => txn.amountMinor > 0)).toBe(true);
   });
 

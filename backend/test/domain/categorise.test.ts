@@ -1,10 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { FIXTURE_NAMES, fixtureInput } from './fixtures';
-import { runDeterministicParser } from '@/server/parsing/registry';
-import { applyLlmCategories, categoriseLocally, merchantLabel } from '@/server/domain/categorise';
-import { categoryForIssuerCategory, categoryForMerchantRule } from '@/server/domain/merchant-rules';
-import type { Category } from '@/shared/categories';
-import type { ParsedTransaction } from '@/server/domain/schemas';
+import { FIXTURE_NAMES, fixtureInput } from '../helpers/fixtures.js';
+import { runDeterministicParser } from '../../src/parsing/registry.js';
+import {
+  applyLlmCategories,
+  categoriseLocally,
+  merchantLabel,
+} from '../../src/domain/categorise.js';
+import {
+  categoryForIssuerCategory,
+  categoryForMerchantRule,
+} from '../../src/domain/merchant-rules.js';
+import type { Category } from '@cred-stats/shared';
+import type { ParsedTransaction } from '../../src/domain/schemas.js';
 
 const NO_RULES = { userRules: new Map<string, Category>() };
 

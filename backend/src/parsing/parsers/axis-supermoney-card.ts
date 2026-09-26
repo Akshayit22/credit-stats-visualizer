@@ -1,9 +1,7 @@
-import { parseAmountToMinor } from '@/shared/money';
-import type { StatementLine } from '@/shared/statement-text';
-import type { ParseWarning } from '@/shared/types';
-import { parseSlashDate } from '@/server/domain/dates';
-import type { ParsedTransaction } from '@/server/domain/schemas';
-import { ParseError, type ParserInput, type ParserOutput, type StatementParser } from '../types';
+import { parseAmountToMinor, type StatementLine, type ParseWarning } from '@cred-stats/shared';
+import { parseSlashDate } from '../../domain/statement-dates.js';
+import type { ParsedTransaction } from '../../domain/schemas.js';
+import { ParseError, type ParserInput, type ParserOutput, type StatementParser } from '../types.js';
 
 const ID = 'axis-supermoney-card';
 
@@ -37,7 +35,10 @@ export const axisSupermoneyCardParser: StatementParser = {
     const { transactions, skippedPages } = readTransactions(input, warnings);
 
     if (transactions.length === 0) {
-      throw new ParseError(ID, 'No transaction rows were found between the table header and the end marker.');
+      throw new ParseError(
+        ID,
+        'No transaction rows were found between the table header and the end marker.',
+      );
     }
     if (skippedPages.length > 0) {
       warnings.push({
@@ -270,11 +271,7 @@ function readTransactions(
   // Any page other than the first with no dated rows is the schedule of
   // charges. It is reported, never parsed.
   const skippedPages = [
-    ...new Set(
-      input.lines
-        .filter((line) => line.pageNumber !== 1)
-        .map((line) => line.pageNumber),
-    ),
+    ...new Set(input.lines.filter((line) => line.pageNumber !== 1).map((line) => line.pageNumber)),
   ];
 
   return { transactions, skippedPages };
@@ -328,7 +325,8 @@ function readRow(date: string, cells: string[]): ParsedTransaction | null {
   };
 }
 
-const FEE_ROW = /^(?:DCC MARKUP|GST|.*\bMARKUP FEE\b|.*\bSURCHARGE\b|.*\bLATE PAYMENT\b|.*\bANNUAL FEE\b|.*\bOVER ?LIMIT\b)/i;
+const FEE_ROW =
+  /^(?:DCC MARKUP|GST|.*\bMARKUP FEE\b|.*\bSURCHARGE\b|.*\bLATE PAYMENT\b|.*\bANNUAL FEE\b|.*\bOVER ?LIMIT\b)/i;
 const INTEREST_ROW = /\b(?:FINANCE CHARGE|INTEREST CHARGED?)\b/i;
 const PAYMENT_ROW = /\b(?:BBPS PAYMENT RECEIVED|PAYMENT RECEIVED|AUTO ?DEBIT|NEFT CR)\b/i;
 const CASHBACK_ROW = /\bCASHBACK CREDIT\b/i;
@@ -438,7 +436,18 @@ function classify(
  * `SRI CHAKRA TEX` → `Sri Chakra Tex`. Shouting merchants read badly in a table.
  * Acronyms stay as they are: "Gst" and "Dcc Markup" look like mistakes.
  */
-const ACRONYMS = new Set(['GST', 'DCC', 'UPI', 'IMPS', 'NEFT', 'RTGS', 'ATM', 'EMI', 'POS', 'BBPS']);
+const ACRONYMS = new Set([
+  'GST',
+  'DCC',
+  'UPI',
+  'IMPS',
+  'NEFT',
+  'RTGS',
+  'ATM',
+  'EMI',
+  'POS',
+  'BBPS',
+]);
 
 export function titleise(value: string): string {
   return value

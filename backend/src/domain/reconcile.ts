@@ -1,6 +1,9 @@
-import { RECONCILIATION_TOLERANCE_MINOR, formatMinor } from '@/shared/money';
-import type { Reconciliation } from '@/shared/types';
-import type { ParsedStatement, ParsedTransaction } from './schemas';
+import {
+  RECONCILIATION_TOLERANCE_MINOR,
+  formatMinor,
+  type Reconciliation,
+} from '@cred-stats/shared';
+import type { ParsedStatement, ParsedTransaction } from './schemas.js';
 
 /**
  * Reconciliation is the only thing standing between a plausible-looking parse
@@ -36,8 +39,7 @@ function reconcileSavings(
 ): Reconciliation {
   const { openingBalanceMinor, totalCreditsMinor, totalDebitsMinor, interestEarnedMinor } =
     statement.savings;
-  const expected =
-    openingBalanceMinor + totalCreditsMinor + interestEarnedMinor - totalDebitsMinor;
+  const expected = openingBalanceMinor + totalCreditsMinor + interestEarnedMinor - totalDebitsMinor;
   const actual = statement.savings.closingBalanceMinor;
   const difference = actual - expected;
 

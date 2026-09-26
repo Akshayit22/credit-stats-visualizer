@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { FIXTURE_NAMES, fixtureInput, fixtureText } from '../fixtures';
-import { runDeterministicParser } from '@/server/parsing/registry';
-import { reconcile } from '@/server/domain/reconcile';
-import { parsedStatementSchema, type ParsedStatement } from '@/server/domain/schemas';
+import { FIXTURE_NAMES, fixtureInput, fixtureText } from '../helpers/fixtures.js';
+import { runDeterministicParser } from '../../src/parsing/registry.js';
+import { reconcile } from '../../src/domain/reconcile.js';
+import { parsedStatementSchema, type ParsedStatement } from '../../src/domain/schemas.js';
 
 function parseSavings(name: string): ParsedStatement & { accountType: 'savings' } {
   const attempt = runDeterministicParser(fixtureInput(name));
@@ -126,9 +126,7 @@ describe('slice-savings parser — August 2026', () => {
 
   it('reads IMPS rows, including the reversal', () => {
     const statement = parseSavings(FIXTURE_NAMES.sliceAug);
-    const imps = statement.transactions.filter((txn) =>
-      txn.descriptionRaw.startsWith('IMPS-'),
-    );
+    const imps = statement.transactions.filter((txn) => txn.descriptionRaw.startsWith('IMPS-'));
     expect(imps).toHaveLength(3);
 
     const reversal = imps.find((txn) => txn.descriptionRaw.startsWith('IMPS-Reversal'));

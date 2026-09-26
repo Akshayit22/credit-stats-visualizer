@@ -1,0 +1,35 @@
+# The four gates, on every push and pull request. Nothing reaches main that
+# has not passed them on its branch; this is the same check, run by GitHub.
+name: ci
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      # The API tests run against an in-memory MongoDB; its binary is cached
+      # between runs rather than downloaded every time.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/mongodb-binaries
+          key: mongodb-binaries-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - run: npm ci --no-audit --no-fund
+
+      - name: lint, typecheck, test, build
+        run: npm run check

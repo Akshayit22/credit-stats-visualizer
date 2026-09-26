@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { AppModule } from './app.module.js';
 import { Environment } from './services/environment.service.js';
+import { serveWebApp } from './web/serve-web-app.js';
 
 /**
  * Upload bodies are extracted statement text, capped at 1.5 MB by the upload
@@ -12,6 +13,36 @@ import { Environment } from './services/environment.service.js';
  * is what rejects an oversized statement — with a message that says why.
  */
 const JSON_BODY_LIMIT = '2mb';
+
+/**
+ * Security headers for the API and, when it is served from here, the web app.
+ * helmet's defaults, with the few exceptions Sign in with Google needs: its
+ * script, frame, stylesheet and endpoint; a popup it can talk back to; and
+ * the page's origin in the Referer, which Google checks against the client's
+ * authorised origins. The Inter font comes from Google Fonts; avatars from
+ * googleusercontent. pdf.js runs its worker from our own origin.
+ */
+const GOOGLE_IDENTITY = 'https://accounts.google.com/gsi/';
+
+const securityHeaders = helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", `${GOOGLE_IDENTITY}client`],
+      styleSrc: ["'self'", "'unsafe-inline'", `${GOOGLE_IDENTITY}style`, 'https://fonts.googleapis.com'],
+      fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+      frameSrc: [GOOGLE_IDENTITY],
+      connectSrc: ["'self'", GOOGLE_IDENTITY],
+      imgSrc: ["'self'", 'data:', 'https://*.googleusercontent.com'],
+      workerSrc: ["'self'", 'blob:'],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      frameAncestors: ["'none'"],
+    },
+  },
+  crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+});
 
 /** Builds the application without listening. `main.ts` listens. */
 export async function createApp(): Promise<NestExpressApplication> {
@@ -33,13 +64,16 @@ export function configureApp(app: NestExpressApplication): NestExpressApplicatio
 
   app.setGlobalPrefix('api');
   app.useBodyParser('json', { limit: JSON_BODY_LIMIT });
-  app.use(helmet());
+  app.use(securityHeaders);
   app.use(cookieParser());
 
   // Render (and any load balancer) terminates TLS in front of us. Trusting the
   // first proxy makes `req.secure` true, so the session cookie can be Secure,
   // and makes `req.ip` the client's address, which the rate limit keys on.
   if (environment.isProduction) app.set('trust proxy', 1);
+
+  const webDir = environment.env.CRED_STATS_WEB_DIR;
+  if (webDir) serveWebApp(app, webDir);
 
   app.enableShutdownHooks();
   return app;

@@ -29,7 +29,7 @@ built, linted or tested; each branch moves the pieces it ports out of it.
 - [x] `feat/frontend-dashboards` — overview, card, cashback, savings screens and
       charts
 - [x] `feat/frontend-library-settings` — statement library, settings
-- [ ] `feat/deploy-render` — backend Dockerfile, `render.yaml`, docker-compose
+- [x] `feat/deploy-render` — backend Dockerfile, `render.yaml`, docker-compose
 - [ ] `feat/admin-overview` — (asked for 2026-09-26) an admin page, no separate
       login: the hard-coded admin emails `akshayit22@gmail.com` and
       `akshaytelang395@gmail.com` see every user, when they last signed in, and

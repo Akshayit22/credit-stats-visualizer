@@ -1,7 +1,11 @@
-# Local MongoDB for development.
+# Local MongoDB for development — and, optionally, the production image.
 #
 #   npm run db:up      start MongoDB (:27017) and mongo-express (:8081)
 #   npm run db:down    stop them; the data survives in the named volume
+#
+#   docker compose --profile app up --build
+#                      also build and run the production image on :4000,
+#                      API and web app together, exactly as Render runs it
 #
 # Production uses MongoDB Atlas. The API reaches both through MONGODB_URI and
 # nothing else differs.
@@ -29,6 +33,27 @@ services:
     environment:
       ME_CONFIG_MONGODB_URL: mongodb://mongo:27017
       ME_CONFIG_BASICAUTH: 'false'
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  # The production image: NODE_ENV=production, so there is no demo sign-in and
+  # a session secret is required. Set CRED_STATS_SESSION_SECRET (and
+  # GOOGLE_CLIENT_ID to sign in) in your shell or backend/.env first.
+  app:
+    profiles: ['app']
+    build: .
+    container_name: cred-stats-app
+    ports:
+      - '4000:4000'
+    env_file:
+      - path: backend/.env
+        required: false
+    environment:
+      NODE_ENV: production
+      MONGODB_URI: mongodb://mongo:27017
+      # Unset, the API refuses to start and says so; compose need not.
+      CRED_STATS_SESSION_SECRET: ${CRED_STATS_SESSION_SECRET:-}
     depends_on:
       mongo:
         condition: service_healthy

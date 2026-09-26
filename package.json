@@ -1,7 +1,7 @@
 {
   "name": "cred-stats",
   "version": "2.0.0",
-  "description": "Personal statement analytics for India \u2014 NestJS API, React app, MongoDB.",
+  "description": "Personal statement analytics for India — NestJS API, React app, MongoDB.",
   "private": true,
   "type": "module",
   "engines": {
@@ -13,25 +13,25 @@
     "frontend"
   ],
   "scripts": {
+    "dev": "npm run build:shared && concurrently --kill-others-on-fail --names shared,api,web --prefix-colors gray,green,blue \"npm run dev -w @cred-stats/shared\" \"npm run dev -w @cred-stats/backend\" \"npm run dev -w @cred-stats/frontend\"",
+    "build": "npm run build --workspaces --if-present",
     "build:shared": "npm run build -w @cred-stats/shared",
+    "build:backend": "npm run build:shared && npm run build -w @cred-stats/backend",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "npm run build:shared && npm run typecheck --workspaces --if-present",
     "test": "npm run build:shared && npm run test --workspaces --if-present",
-    "build": "npm run build --workspaces --if-present",
     "check": "npm run lint && npm run typecheck && npm run test && npm run build",
-    "dev:api": "npm run dev -w @cred-stats/backend",
     "db:up": "docker compose up -d --wait mongo mongo-express",
     "db:down": "docker compose down",
-    "build:backend": "npm run build:shared && npm run build -w @cred-stats/backend",
     "db:seed": "npm run build:backend && npm run seed -w @cred-stats/backend",
-    "fixtures:build": "npm run build:backend && npm run fixtures:build -w @cred-stats/backend",
-    "dev:web": "npm run build:shared && npm run dev -w @cred-stats/frontend"
+    "fixtures:build": "npm run build:backend && npm run fixtures:build -w @cred-stats/backend"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.0.0",
+    "concurrently": "^10.0.5",
     "eslint": "^10.11.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.12.0",

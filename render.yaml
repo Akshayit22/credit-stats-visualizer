@@ -1,0 +1,49 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+#
+# One free web service built from the root Dockerfile: the NestJS API, which
+# also serves the React app on the same origin. MongoDB is Atlas (free M0).
+# docs/deployment.md walks through it step by step.
+#
+# Values marked `sync: false` are secrets: Render asks for them when the
+# Blueprint is first applied, and they never live in this file.
+
+services:
+  - type: web
+    name: cred-stats
+    runtime: docker
+    plan: free
+    # The closest region to India.
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: LOG_LEVEL
+        value: info
+
+      # MongoDB Atlas: mongodb+srv://<user>:<password>@<cluster>.mongodb.net
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DB
+        value: cred-stats
+
+      # Signs the session cookie. Render generates a random value once.
+      - key: CRED_STATS_SESSION_SECRET
+        generateValue: true
+
+      # Sign in with Google. Add https://<your-service>.onrender.com as an
+      # authorised JavaScript origin on this OAuth client.
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+
+      # The AI provider, for banks no built-in parser covers. `mock` calls no
+      # model. For Groq set LLM_PROVIDER=groq and GROQ_API_KEY.
+      - key: LLM_PROVIDER
+        value: mock
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: openai/gpt-oss-120b

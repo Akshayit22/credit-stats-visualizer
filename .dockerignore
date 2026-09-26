@@ -3,33 +3,27 @@
 # hand them to someone.
 samples/
 
-# Secrets. .env.example is the only one that travels.
-.env
-.env.*
-!.env.example
+# Secrets. .env.example files are the only ones that travel.
+**/.env
+**/.env.*
+!**/.env.example
 
 # ── not needed to build or run ──────────────────────────────────────────────
-node_modules/
-.next/
-out/
-build/
-dist/
-coverage/
-junit.xml
-.docker/
+**/node_modules/
+**/dist/
+**/coverage/
 .git/
 .github/
 .vscode/
 .idea/
+docs/
+**/*.md
 
-# The design package is a reference for humans, not an input to the build.
-design/
-
-# Docs and local-only scripts
-*.md
-!SETUP.md
-!RUNBOOK.md
-!SECURITY.md
+# Tests and their fixtures stay out of the image.
+backend/test/
+backend/fixtures/
+frontend/test/
+shared/test/
 
 # OS noise
 .DS_Store

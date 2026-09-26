@@ -91,9 +91,10 @@ export function SignInPage() {
 
         {config.data && !googleClientId && !devLogin && (
           <p className="sign-in-note">
-            No sign-in method is configured. Set <code>GOOGLE_CLIENT_ID</code>, or{' '}
-            <code>CRED_STATS_DEV_LOGIN=true</code> for the demo user, in <code>backend/.env</code>.
-            docs/setup.md walks through both.
+            No sign-in method is configured. Set <code>GOOGLE_CLIENT_ID</code> in the server&rsquo;s
+            environment — docs/setup.md says where to get one. For local development,{' '}
+            <code>CRED_STATS_DEV_LOGIN=true</code> in <code>backend/.env</code> adds a demo user
+            instead.
           </p>
         )}
 

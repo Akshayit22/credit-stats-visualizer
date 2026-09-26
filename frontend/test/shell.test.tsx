@@ -94,3 +94,17 @@ describe('the signed-in frame', () => {
     expect(screen.getByRole('link', { name: 'Cashback' })).toBeInTheDocument();
   });
 });
+
+describe('requests before a session exists', () => {
+  it('does not ask for the workspace until the session is known', async () => {
+    const fetchSpy = mockApi({
+      'GET /api/auth/me': UNAUTHORISED,
+      'GET /api/auth/config': { googleClientId: null, devLoginEnabled: true },
+    });
+    renderRoutes(routes, '/overview');
+    await screen.findByRole('heading', { name: 'cred-stats' });
+
+    const urls = fetchSpy.mock.calls.map(([url]) => String(url));
+    expect(urls).not.toContain('/api/views/workspace');
+  });
+});

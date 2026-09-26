@@ -40,8 +40,12 @@ export function useSession() {
   return useQuery({ queryKey: queryKeys.session, queryFn: endpoints.auth.me, retry: false });
 }
 
-export function useWorkspace() {
-  return useQuery({ queryKey: queryKeys.workspace, queryFn: endpoints.views.workspace });
+/**
+ * The sidebar's data. Waits for the session check, so a signed-out visitor
+ * costs one 401 (the session) rather than two.
+ */
+export function useWorkspace({ enabled = true }: { enabled?: boolean } = {}) {
+  return useQuery({ queryKey: queryKeys.workspace, queryFn: endpoints.views.workspace, enabled });
 }
 
 export function useOverview(query: ViewQuery) {

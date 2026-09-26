@@ -1,14 +1,15 @@
 {
   "name": "cred-stats",
   "version": "2.0.0",
-  "description": "Personal statement analytics for India — NestJS API, React app, MongoDB.",
+  "description": "Personal statement analytics for India \u2014 NestJS API, React app, MongoDB.",
   "private": true,
   "type": "module",
   "engines": {
     "node": ">=22.22.0"
   },
   "workspaces": [
-    "shared"
+    "shared",
+    "backend"
   ],
   "scripts": {
     "build:shared": "npm run build -w @cred-stats/shared",
@@ -16,9 +17,12 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "npm run build:shared && npm run typecheck --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present",
+    "test": "npm run build:shared && npm run test --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
-    "check": "npm run lint && npm run typecheck && npm run test && npm run build"
+    "check": "npm run lint && npm run typecheck && npm run test && npm run build",
+    "dev:api": "npm run dev -w @cred-stats/backend",
+    "db:up": "docker compose up -d --wait mongo mongo-express",
+    "db:down": "docker compose down"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

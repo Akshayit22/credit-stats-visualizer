@@ -1,55 +1,37 @@
+# Local MongoDB for development.
+#
+#   npm run db:up      start MongoDB (:27017) and mongo-express (:8081)
+#   npm run db:down    stop them; the data survives in the named volume
+#
+# Production uses MongoDB Atlas. The API reaches both through MONGODB_URI and
+# nothing else differs.
+
 services:
-  dynamodb-local:
-    image: amazon/dynamodb-local:latest
-    container_name: cred-stats-local-dynamodb
-    command: ['-jar', 'DynamoDBLocal.jar', '-sharedDb', '-dbPath', '/data']
-    working_dir: /home/dynamodblocal
+  mongo:
+    image: mongo:8.2
+    container_name: cred-stats-mongo
     ports:
-      - '8000:8000'
+      - '27017:27017'
     volumes:
-      - ./.docker/dynamodb:/data
-    user: root
+      - mongo-data:/data/db
     healthcheck:
-      test:
-        [
-          'CMD-SHELL',
-          'java -version >/dev/null 2>&1 || exit 1',
-        ]
-      interval: 10s
+      test: ['CMD', 'mongosh', '--quiet', '--eval', "db.adminCommand('ping').ok"]
+      interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
-  dynamodb-admin:
-    image: aaronshaf/dynamodb-admin:latest
-    container_name: cred-stats-local-dynamodb-admin
+  # Browse every document at http://localhost:8081 (local only — no auth).
+  mongo-express:
+    image: mongo-express:1.0
+    container_name: cred-stats-mongo-express
     ports:
-      - '8001:8001'
+      - '8081:8081'
     environment:
-      DYNAMO_ENDPOINT: http://dynamodb-local:8000
-      AWS_REGION: ap-south-1
-      AWS_ACCESS_KEY_ID: local
-      AWS_SECRET_ACCESS_KEY: local
+      ME_CONFIG_MONGODB_URL: mongodb://mongo:27017
+      ME_CONFIG_BASICAUTH: 'false'
     depends_on:
-      - dynamodb-local
+      mongo:
+        condition: service_healthy
 
-  # Optional: run the app itself in a container — `docker compose --profile app up`
-  app:
-    profiles: ['app']
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: cred-stats-local-app
-    ports:
-      - '3000:3000'
-    environment:
-      NODE_ENV: production
-      DDB_ENDPOINT: http://dynamodb-local:8000
-      DDB_TABLE_PREFIX: cred-stats-local
-      AWS_REGION: ap-south-1
-      AWS_ACCESS_KEY_ID: local
-      AWS_SECRET_ACCESS_KEY: local
-    env_file:
-      - path: .env.local
-        required: false
-    depends_on:
-      - dynamodb-local
+volumes:
+  mongo-data:

@@ -72,11 +72,9 @@ export const CATEGORISE_SYSTEM = [
 ].join('\n');
 
 export function categoriseUserPrompt(merchants: readonly string[]): string {
-  return [
-    'Categorise these merchants:',
-    '',
-    ...merchants.map((merchant) => `- ${merchant}`),
-  ].join('\n');
+  return ['Categorise these merchants:', '', ...merchants.map((merchant) => `- ${merchant}`)].join(
+    '\n',
+  );
 }
 
 /**

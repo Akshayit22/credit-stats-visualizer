@@ -18,7 +18,7 @@ built, linted or tested; each branch moves the pieces it ports out of it.
       summaries; fixtures and their tests
 - [x] `feat/backend-llm` — AI providers (groq, azure-foundry,
       openai-compatible, mock)
-- [ ] `feat/backend-persistence` — repositories for the six collections, indexes
+- [x] `feat/backend-persistence` — repositories for the six collections, indexes
 - [ ] `feat/backend-auth` — Google ID-token sign-in, session cookie, dev login
 - [ ] `feat/backend-statements-api` — ingest, statements, transactions,
       summaries, views, settings, profile export/delete

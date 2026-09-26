@@ -20,10 +20,15 @@ const LONG_DIGITS = /\d{7,}/g;
 const MAX_FIELD_LENGTH = 200;
 
 export function scrubLogValue(value: string): string {
-  return value.replace(EMAIL, '[email]').replace(LONG_DIGITS, '[digits]').slice(0, MAX_FIELD_LENGTH);
+  return value
+    .replace(EMAIL, '[email]')
+    .replace(LONG_DIGITS, '[digits]')
+    .slice(0, MAX_FIELD_LENGTH);
 }
 
-export function scrubLogFields(fields: LogFields): Record<string, string | number | boolean | null> {
+export function scrubLogFields(
+  fields: LogFields,
+): Record<string, string | number | boolean | null> {
   const safe: Record<string, string | number | boolean | null> = {};
   for (const [key, value] of Object.entries(fields)) {
     if (value === undefined) continue;

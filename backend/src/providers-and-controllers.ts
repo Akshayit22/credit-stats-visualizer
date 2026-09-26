@@ -2,6 +2,12 @@ import type { Provider, Type } from '@nestjs/common';
 import { HealthController } from './controllers/health.controller.js';
 import { LlmClientManager } from './managers/llm-client.manager.js';
 import { MongoClientManager } from './managers/mongo-client.manager.js';
+import { AccountsRepository } from './repositories/accounts.repository.js';
+import { CategoryRulesRepository } from './repositories/category-rules.repository.js';
+import { StatementsRepository } from './repositories/statements.repository.js';
+import { SummariesRepository } from './repositories/summaries.repository.js';
+import { TransactionsRepository } from './repositories/transactions.repository.js';
+import { UsersRepository } from './repositories/users.repository.js';
 import { Environment } from './services/environment.service.js';
 import { LlmService } from './services/llm.service.js';
 import { LogService } from './services/log.service.js';
@@ -22,6 +28,15 @@ export const Controllers: Type[] = [HealthController];
 
 const Managers: Provider[] = [MongoClientManager, LlmClientManager];
 
+export const Repositories: Provider[] = [
+  UsersRepository,
+  CategoryRulesRepository,
+  AccountsRepository,
+  StatementsRepository,
+  TransactionsRepository,
+  SummariesRepository,
+];
+
 const Services: Provider[] = [Environment, LogService, LlmService];
 
-export const Providers: Provider[] = [...Managers, ...Services];
+export const Providers: Provider[] = [...Managers, ...Repositories, ...Services];

@@ -75,7 +75,8 @@ export class ApiExceptionFilter implements ExceptionFilter {
     if (exception instanceof HttpException) {
       const status = exception.getStatus();
       const code = CODE_FOR_STATUS[status] ?? (status >= 500 ? 'server_error' : 'bad_request');
-      const message = status >= 500 ? DEFAULT_MESSAGE.server_error : this.messageOf(exception, code);
+      const message =
+        status >= 500 ? DEFAULT_MESSAGE.server_error : this.messageOf(exception, code);
       return { status, error: { code, message } };
     }
 

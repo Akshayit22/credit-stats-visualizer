@@ -12,26 +12,7 @@ import tseslint from 'typescript-eslint';
  */
 export default tseslint.config(
   {
-    ignores: [
-      '**/node_modules/**',
-      '**/dist/**',
-      '**/coverage/**',
-      // The Next.js application being ported. Removed once the port is done.
-      'app/**',
-      'src/**',
-      'tests/**',
-      'scripts/**',
-      'design/**',
-      'public/**',
-      '.next/**',
-      '.sst/**',
-      'sst.config.ts',
-      'next.config.ts',
-      'next-env.d.ts',
-      'eslint.config.mjs',
-      'vitest.config.ts',
-      'playwright.config.ts',
-    ],
+    ignores: ['**/node_modules/**', '**/dist/**', '**/coverage/**', 'docs/design/**'],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,

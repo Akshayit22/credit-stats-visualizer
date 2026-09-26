@@ -1,4 +1,15 @@
-import { Area, Bar, CartesianGrid, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import {
+  Area,
+  Bar,
+  CartesianGrid,
+  ComposedChart,
+  Legend,
+  Line,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import { formatMinor, formatMinorCompact } from '@cred-stats/shared';
 import { chartTheme, seriesColor, type SeriesRole } from './theme';
 import { TooltipEmpty, TooltipRow, TooltipShell } from './tooltip';
@@ -93,7 +104,9 @@ export function TrendChart({
           }
           content={({ active, payload, label }) => {
             if (!active || !payload || payload.length === 0) return null;
-            const rows = payload.filter((entry) => entry.value !== null && entry.value !== undefined);
+            const rows = payload.filter(
+              (entry) => entry.value !== null && entry.value !== undefined,
+            );
             if (rows.length === 0) {
               return <TooltipEmpty title={String(label)} message={emptyMessage} />;
             }

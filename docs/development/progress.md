@@ -35,7 +35,7 @@ built, linted or tested; each branch moves the pieces it ports out of it.
       `akshaytelang395@gmail.com` see every user, when they last signed in, and
       how many statements each uploaded per bank. Counts and metadata only —
       never another user's transactions.
-- [ ] `chore/remove-nextjs-app` — delete the ported Next.js app and AWS infra
+- [x] `chore/remove-nextjs-app` — delete the ported Next.js app and AWS infra
 - [ ] `docs/rebuild-docs` — `docs/` folder, README, conventions
 
 ## Requests from the owner, beyond the port

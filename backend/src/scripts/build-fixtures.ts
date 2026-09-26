@@ -86,4 +86,5 @@ for (const file of pdfs) {
 }
 
 if (refused) process.exitCode = 1;
-else if (pdfs.length > 0) console.log('\nEvery fixture is clean. Read the diff before committing it anyway.');
+else if (pdfs.length > 0)
+  console.log('\nEvery fixture is clean. Read the diff before committing it anyway.');

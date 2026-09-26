@@ -119,11 +119,21 @@
   margin-top: 5px;
 }
 
-.is-positive { color: var(--color-positive); }
-.is-warning { color: var(--color-warning); }
-.is-accent { color: var(--color-accent); }
-.is-negative { color: var(--color-negative); }
-.is-muted { color: var(--color-text-muted); }
+.is-positive {
+  color: var(--color-positive);
+}
+.is-warning {
+  color: var(--color-warning);
+}
+.is-accent {
+  color: var(--color-accent);
+}
+.is-negative {
+  color: var(--color-negative);
+}
+.is-muted {
+  color: var(--color-text-muted);
+}
 
 /* ── rows and lists ───────────────────────────────────────────────────────── */
 
@@ -439,7 +449,6 @@
   white-space: nowrap;
   border: 0;
 }
-
 
 /* ── column widths and the transactions table ───────────────────────────────────────────────── */
 

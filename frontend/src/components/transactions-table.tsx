@@ -1,5 +1,11 @@
 import { useMemo, useState } from 'react';
-import { CATEGORIES, type Category, formatMinor, type Transaction, formatDayShort } from '@cred-stats/shared';
+import {
+  CATEGORIES,
+  type Category,
+  formatMinor,
+  type Transaction,
+  formatDayShort,
+} from '@cred-stats/shared';
 import { useRecategorise } from '../hooks/queries';
 import { Icon } from './icon';
 
@@ -35,10 +41,7 @@ export function TransactionsTable({
   const [showInterest, setShowInterest] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
 
-  const interestRows = useMemo(
-    () => transactions.filter((txn) => txn.isInterest),
-    [transactions],
-  );
+  const interestRows = useMemo(() => transactions.filter((txn) => txn.isInterest), [transactions]);
 
   const shown = useMemo(() => {
     let rows = transactions.filter((txn) => matches(txn, filter));
@@ -125,9 +128,7 @@ export function TransactionsTable({
                 {variant === 'savings' ? 'Mode' : 'Category'}
               </th>
               <th className="num col-amount">Amount</th>
-              <th className="num col-balance">
-                {variant === 'savings' ? 'Balance' : 'Cashback'}
-              </th>
+              <th className="num col-balance">{variant === 'savings' ? 'Balance' : 'Cashback'}</th>
             </tr>
           </thead>
           <tbody>
@@ -156,9 +157,7 @@ export function TransactionsTable({
                         defaultValue={txn.category}
                         autoFocus
                         onBlur={() => setEditing(null)}
-                        onChange={(event) =>
-                          recategorise(txn, event.target.value as Category)
-                        }
+                        onChange={(event) => recategorise(txn, event.target.value as Category)}
                       >
                         {CATEGORIES.map((category) => (
                           <option key={category} value={category}>

@@ -1,6 +1,15 @@
 import { Link } from 'react-router';
 import { useState } from 'react';
-import { formatMinor, formatPct, type Account, type Period, type Statement, type OverviewMonth, formatPeriodLabel, formatPeriodShort } from '@cred-stats/shared';
+import {
+  formatMinor,
+  formatPct,
+  type Account,
+  type Period,
+  type Statement,
+  type OverviewMonth,
+  formatPeriodLabel,
+  formatPeriodShort,
+} from '@cred-stats/shared';
 import { TrendChart } from '../charts/trend-chart';
 import { ChartBlock } from '../charts/chart-frame';
 import { chartTheme, seriesColor } from '../charts/theme';
@@ -51,7 +60,9 @@ export function OverviewScreen(props: OverviewScreenProps) {
     inScope.reduce((total, month) => total + pick(month), 0);
 
   const covered = inScope.length;
-  const missing = window.filter((period) => !periodsWithData.includes(period)).map(formatPeriodLabel);
+  const missing = window
+    .filter((period) => !periodsWithData.includes(period))
+    .map(formatPeriodLabel);
 
   const periodLabel = scoped ? `Calendar ${year}` : formatPeriodLabel(props.selectedPeriod);
   const previousLabel = previousPeriod ? formatPeriodLabel(previousPeriod) : '';
@@ -88,8 +99,8 @@ export function OverviewScreen(props: OverviewScreenProps) {
               <h1 className="page-title">{periodLabel}</h1>
             </div>
             <div className="page-sub">
-              {props.accounts.length} account{props.accounts.length === 1 ? '' : 's'} ·{' '}
-              {covered} of {window.length} months uploaded
+              {props.accounts.length} account{props.accounts.length === 1 ? '' : 's'} · {covered} of{' '}
+              {window.length} months uploaded
             </div>
           </div>
 
@@ -115,11 +126,7 @@ export function OverviewScreen(props: OverviewScreenProps) {
               <p className="empty-body">
                 Upload a statement for this {scoped ? 'year' : 'month'} and the charts fill in.
               </p>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={() => setUploadOpen(true)}
-              >
+              <button type="button" className="btn btn-primary" onClick={() => setUploadOpen(true)}>
                 Upload statement
               </button>
             </div>
@@ -364,21 +371,28 @@ function AccountStats({ statement }: { statement: Statement }) {
     const net = statement.savings.totalCreditsMinor - statement.savings.totalDebitsMinor;
     return (
       <>
-        <Stat label="Interest" value={formatMinor(statement.savings.interestEarnedMinor)} tone="is-positive" />
         <Stat
-          label="Net flow"
-          value={`${net >= 0 ? '+' : '−'}${formatMinor(Math.abs(net), 0)}`}
+          label="Interest"
+          value={formatMinor(statement.savings.interestEarnedMinor)}
+          tone="is-positive"
         />
+        <Stat label="Net flow" value={`${net >= 0 ? '+' : '−'}${formatMinor(Math.abs(net), 0)}`} />
         <Stat label="Balance" value={formatMinor(statement.savings.closingBalanceMinor, 0)} />
       </>
     );
   }
   return (
     <>
-      <Stat label="Cashback" value={formatMinor(statement.card.cashbackEarnedMinor)} tone="is-positive" />
+      <Stat
+        label="Cashback"
+        value={formatMinor(statement.card.cashbackEarnedMinor)}
+        tone="is-positive"
+      />
       <Stat
         label="Fees"
-        value={statement.card.otherDebitsMinor > 0 ? formatMinor(statement.card.otherDebitsMinor) : '—'}
+        value={
+          statement.card.otherDebitsMinor > 0 ? formatMinor(statement.card.otherDebitsMinor) : '—'
+        }
         tone={statement.card.otherDebitsMinor > 0 ? 'is-warning' : 'is-muted'}
       />
       <Stat label="Bill" value={formatMinor(statement.card.totalDueMinor, 0)} />

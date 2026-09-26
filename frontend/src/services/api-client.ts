@@ -45,10 +45,7 @@ export async function apiRequest<T>(method: Method, path: string, body?: unknown
     throw new ApiError(0, 'network_error', 'Could not reach the server. Check your connection.');
   }
 
-  const payload = (await response.json().catch(() => null)) as
-    | ApiSuccess<T>
-    | ApiFailure
-    | null;
+  const payload = (await response.json().catch(() => null)) as ApiSuccess<T> | ApiFailure | null;
 
   if (!response.ok || payload === null || !('data' in payload)) {
     const error = payload !== null && 'error' in payload ? payload.error : null;

@@ -1,6 +1,20 @@
 import { Link } from 'react-router';
 import { useMemo, useState } from 'react';
-import { formatMinor, formatPct, type Account, type CreditCardStatement, type Period, type Statement, type Summary, type Transaction, accountShortName, formatDayLabel, formatPeriodLabel, formatPeriodRange, formatPeriodShort } from '@cred-stats/shared';
+import {
+  formatMinor,
+  formatPct,
+  type Account,
+  type CreditCardStatement,
+  type Period,
+  type Statement,
+  type Summary,
+  type Transaction,
+  accountShortName,
+  formatDayLabel,
+  formatPeriodLabel,
+  formatPeriodRange,
+  formatPeriodShort,
+} from '@cred-stats/shared';
 import { CategoryDonut } from '../charts/category-donut';
 import { ChartBlock } from '../charts/chart-frame';
 import { useMounted } from '../hooks/use-mounted';
@@ -88,11 +102,7 @@ export function CardScreen(props: CardScreenProps) {
               <p className="empty-body">
                 Upload the statement PDF for this cycle and the charts fill in.
               </p>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={() => setUploadOpen(true)}
-              >
+              <button type="button" className="btn btn-primary" onClick={() => setUploadOpen(true)}>
                 Upload statement
               </button>
             </div>
@@ -216,7 +226,11 @@ function CardMonth({
           tone={card.otherDebitsMinor > 0 ? 'warning' : 'positive'}
           note={card.otherDebitsMinor > 0 ? `${fees.length} charges` : 'nothing charged'}
         />
-        <StatTile label="Payments" value={formatMinor(card.paymentsMinor, 0)} note="received this cycle" />
+        <StatTile
+          label="Payments"
+          value={formatMinor(card.paymentsMinor, 0)}
+          note="received this cycle"
+        />
         <StatTile
           label="Total due"
           value={formatMinor(card.totalDueMinor)}
@@ -270,12 +284,8 @@ function CardMonth({
               {fees.map((fee) => (
                 <div key={fee.txnId} className="fee-row">
                   <span className="fee-name">{fee.merchant}</span>
-                  <span className="is-muted fee-meta">
-                    {formatDayLabel(fee.date)}
-                  </span>
-                  <span className="is-warning fee-amount">
-                    {formatMinor(fee.amountMinor)}
-                  </span>
+                  <span className="is-muted fee-meta">{formatDayLabel(fee.date)}</span>
+                  <span className="is-warning fee-amount">{formatMinor(fee.amountMinor)}</span>
                 </div>
               ))}
             </div>

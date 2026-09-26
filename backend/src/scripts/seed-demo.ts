@@ -66,7 +66,8 @@ try {
 
   const accounts = await app.get(AccountsRepository).list(DEMO_USER_ID);
   console.log(`\n  ${accounts.length} account(s):`);
-  for (const account of accounts) console.log(`    ${account.displayName}  ${account.maskedNumber}`);
+  for (const account of accounts)
+    console.log(`    ${account.displayName}  ${account.maskedNumber}`);
 
   const summaries = app.get(SummariesRepository);
   for (const year of [...years].sort()) {
@@ -83,7 +84,9 @@ try {
     }
   }
 
-  console.log('\nEvery figure above came from a real statement. Sign in as the demo user to see it.');
+  console.log(
+    '\nEvery figure above came from a real statement. Sign in as the demo user to see it.',
+  );
 } catch (error) {
   console.error(error instanceof Error ? error.message : error);
   process.exitCode = 1;

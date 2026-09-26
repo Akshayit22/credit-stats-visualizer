@@ -71,7 +71,10 @@ export interface TransactionContext {
   categorySource: CategorySource;
 }
 
-export function buildTransaction(parsed: ParsedTransaction, context: TransactionContext): Transaction {
+export function buildTransaction(
+  parsed: ParsedTransaction,
+  context: TransactionContext,
+): Transaction {
   return {
     // Deterministic, so re-parsing the same statement writes the same ids and a
     // stale row can never survive alongside its replacement.

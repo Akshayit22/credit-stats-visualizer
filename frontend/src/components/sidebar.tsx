@@ -107,15 +107,7 @@ export function Sidebar({ top, accounts, bottom, period }: SidebarProps) {
   );
 }
 
-function SidebarLink({
-  item,
-  active,
-  open,
-}: {
-  item: NavLink;
-  active: boolean;
-  open: boolean;
-}) {
+function SidebarLink({ item, active, open }: { item: NavLink; active: boolean; open: boolean }) {
   const IconComponent = Icon[item.icon];
   return (
     <Link

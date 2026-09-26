@@ -30,7 +30,7 @@ built, linted or tested; each branch moves the pieces it ports out of it.
       charts
 - [x] `feat/frontend-library-settings` — statement library, settings
 - [x] `feat/deploy-render` — backend Dockerfile, `render.yaml`, docker-compose
-- [ ] `feat/admin-overview` — (asked for 2026-09-26) an admin page, no separate
+- [x] `feat/admin-overview` — (asked for 2026-09-26) an admin page, no separate
       login: the hard-coded admin emails `akshayit22@gmail.com` and
       `akshaytelang395@gmail.com` see every user, when they last signed in, and
       how many statements each uploaded per bank. Counts and metadata only —

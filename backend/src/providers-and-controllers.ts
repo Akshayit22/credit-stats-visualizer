@@ -1,4 +1,6 @@
 import type { Provider, Type } from '@nestjs/common';
+import { AdminGuard } from './auth/admin.guard.js';
+import { AdminController } from './controllers/admin.controller.js';
 import { AuthController } from './controllers/auth.controller.js';
 import { DataController } from './controllers/data.controller.js';
 import { HealthController } from './controllers/health.controller.js';
@@ -9,11 +11,13 @@ import { GoogleAuthClientManager } from './managers/google-auth-client.manager.j
 import { LlmClientManager } from './managers/llm-client.manager.js';
 import { MongoClientManager } from './managers/mongo-client.manager.js';
 import { AccountsRepository } from './repositories/accounts.repository.js';
+import { AdminInsightsRepository } from './repositories/admin-insights.repository.js';
 import { CategoryRulesRepository } from './repositories/category-rules.repository.js';
 import { StatementsRepository } from './repositories/statements.repository.js';
 import { SummariesRepository } from './repositories/summaries.repository.js';
 import { TransactionsRepository } from './repositories/transactions.repository.js';
 import { UsersRepository } from './repositories/users.repository.js';
+import { AdminService } from './services/admin.service.js';
 import { AuthService } from './services/auth.service.js';
 import { Environment } from './services/environment.service.js';
 import { IngestService } from './services/ingest.service.js';
@@ -44,6 +48,7 @@ export const Controllers: Type[] = [
   ViewsController,
   DataController,
   ProfileController,
+  AdminController,
 ];
 
 const Managers: Provider[] = [MongoClientManager, LlmClientManager, GoogleAuthClientManager];
@@ -55,6 +60,8 @@ export const Repositories: Provider[] = [
   StatementsRepository,
   TransactionsRepository,
   SummariesRepository,
+  // Reads across users, for the admin overview only. See its file.
+  AdminInsightsRepository,
 ];
 
 const Services: Provider[] = [
@@ -68,6 +75,8 @@ const Services: Provider[] = [
   StatementsService,
   ViewsService,
   ProfileService,
+  AdminService,
+  AdminGuard,
 ];
 
 export const Providers: Provider[] = [...Managers, ...Repositories, ...Services];

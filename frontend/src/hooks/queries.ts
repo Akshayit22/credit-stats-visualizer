@@ -23,6 +23,7 @@ export const queryKeys = {
     ['data', 'account', screen, accountId, query] as const,
   library: ['data', 'library'] as const,
   settings: ['data', 'settings'] as const,
+  admin: ['admin', 'overview'] as const,
 };
 
 export function refreshData(client: QueryClient): Promise<void> {
@@ -73,6 +74,11 @@ export function useLibrary() {
 
 export function useSettings() {
   return useQuery({ queryKey: queryKeys.settings, queryFn: endpoints.profile.settings });
+}
+
+/** Admins only; the API answers 403 to anyone else. */
+export function useAdminOverview() {
+  return useQuery({ queryKey: queryKeys.admin, queryFn: endpoints.admin.overview });
 }
 
 /* ── writes ────────────────────────────────────────────────────────────── */

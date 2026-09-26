@@ -29,6 +29,8 @@ export interface SessionUser {
   email: string;
   name: string;
   avatarUrl: string;
+  /** True for the owner's accounts; shows the admin overview. */
+  isAdmin?: boolean;
 }
 
 /* ── statements ───────────────────────────────────────────────────────────── */
@@ -172,4 +174,34 @@ export interface HealthStatus {
   status: 'ok' | 'degraded';
   database: 'ok' | 'unreachable';
   llmProvider: string;
+}
+
+/* ── admin ────────────────────────────────────────────────────────────────── */
+
+/** One bank a user has uploaded statements for, and how many. */
+export interface AdminBankCount {
+  issuer: string;
+  accountType: 'credit_card' | 'savings';
+  statements: number;
+}
+
+/** One person, as the admin overview shows them. Counts only — no figures. */
+export interface AdminUserSummary {
+  userId: string;
+  email: string;
+  name: string;
+  createdAt: string;
+  lastLoginAt: string;
+  statements: number;
+  /** Newest upload, or null when they have not uploaded anything. */
+  lastUploadAt: string | null;
+  banks: AdminBankCount[];
+}
+
+/** `GET /api/admin/overview` — admins only. */
+export interface AdminOverview {
+  generatedAt: string;
+  totals: { users: number; statements: number; accounts: number };
+  /** Most recently signed in first. */
+  users: AdminUserSummary[];
 }

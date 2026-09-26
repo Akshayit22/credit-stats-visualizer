@@ -484,3 +484,26 @@ button.donut-legend-button:hover {
   flex-basis: 100%;
   margin: 0;
 }
+
+/* ── admin ────────────────────────────────────────────────────────────────── */
+
+.table.is-admin {
+  min-width: calc(var(--space-8) * 36);
+}
+.col-when {
+  width: calc(var(--space-8) * 7.2);
+}
+.bank-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.bank-chip {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-text) 6%, transparent);
+  font-size: 12px;
+}

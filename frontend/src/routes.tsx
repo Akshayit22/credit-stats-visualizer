@@ -1,5 +1,6 @@
 import { Navigate, createBrowserRouter, type RouteObject } from 'react-router';
 import { PageLoading } from './components/page-state';
+import { AdminPage } from './pages/admin-page';
 import { AppLayout } from './pages/app-layout';
 import { LibraryPage } from './pages/library-page';
 import { NotFoundPage } from './pages/not-found-page';
@@ -47,6 +48,7 @@ export const routes: RouteObject[] = [
       { path: '/savings/:accountId', lazy: dashboards.savings },
       { path: '/library', element: <LibraryPage /> },
       { path: '/settings', element: <SettingsPage /> },
+      { path: '/admin', element: <AdminPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

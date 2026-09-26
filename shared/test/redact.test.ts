@@ -347,3 +347,27 @@ describe('digits stuck to a mask', () => {
     expect(redactFreeText('SELF 500')).toBe('SELF 500');
   });
 });
+
+describe('running redaction twice', () => {
+  // The browser redacts, then the server redacts what it received. A second
+  // pass must change nothing and report nothing.
+  const raw = [
+    '@@PAGE 1',
+    'Card No:\tXXXX9581\tName\tPRIYA RAMACHANDRAN NAIR',
+    'DATE\tDETAILS\tAMOUNT',
+    'Write to us\tor call\tcards@examplebank.com',
+    'on the Mobile App and block the credit card',
+    'A/C number\t033325225226993',
+  ].join('\n');
+
+  it('does not eat the word after a mask it made on an earlier pass', () => {
+    const once = redactForStorage(raw).text;
+    expect(redactForStorage(once).text).toBe(once);
+    expect(once).toContain('the Mobile App');
+  });
+
+  it('counts nothing on a pass that changed nothing', () => {
+    const once = redactForStorage(raw).text;
+    expect(redactForStorage(once).counts).toEqual({});
+  });
+});

@@ -312,13 +312,16 @@ export function redactForStorage(rawText: string): RedactionResult {
       if (value.length === 0) continue;
       if (rule.keepLast4) {
         const digits = value.replace(/\D/g, '');
-        if (digits.length >= 4) {
-          cells[i + 1] = `XXXX${digits.slice(-4)}`;
+        const masked = `XXXX${digits.slice(-4)}`;
+        if (digits.length >= 4 && value !== masked) {
+          cells[i + 1] = masked;
           bump('accountNumber');
         }
       } else {
-        cells[i + 1] = rule.mask;
-        bump(labelKind(label));
+        if (value !== rule.mask) {
+          cells[i + 1] = rule.mask;
+          bump(labelKind(label));
+        }
         if (rule.mask === MASK.address) labelledAddressHere = true;
       }
     }
@@ -397,7 +400,7 @@ export function redactForStorage(rawText: string): RedactionResult {
     return joined;
   });
 
-  const spilled = dropMaskSpill(redacted);
+  const spilled = dropMaskSpill(redacted, lines);
   const rejoined = maskNamesSplitByWrap(spilled, holderPatterns, () => bump('holderName'));
   return { text: normaliseStatementText(rejoined.join('\n')), counts };
 }
@@ -580,10 +583,10 @@ function collapseMaskRemnants(text: string): string {
  * becomes `…TO SELF` and the next line still begins `MACHANDRAN NAI-…`.
  *
  * So: a single-cell line following a multi-cell row that masked one of its
- * cells at the end is a wrapped continuation, and its leading run is the rest
- * of the masked value. It goes.
+ * cells at the end — in this pass — is a wrapped continuation, and its leading
+ * run is the rest of the masked value. It goes.
  */
-function dropMaskSpill(lines: string[]): string[] {
+function dropMaskSpill(lines: string[], before: string[]): string[] {
   const out = [...lines];
   for (let i = 1; i < out.length; i += 1) {
     const line = out[i];
@@ -593,7 +596,17 @@ function dropMaskSpill(lines: string[]): string[] {
 
     const previousCells = previous.split(CELL);
     if (previousCells.length < 3) continue;
-    if (!previousCells.some((cell) => MASK_AT_END.test(cell.trim()))) continue;
+
+    // Only a mask made by *this* pass can have left a tail behind. A mask that
+    // was already there — text redacted once in the browser, arriving at the
+    // server — spilled on the first pass and was cleaned up then; treating it
+    // as new would eat the next line's first word again on every pass.
+    const originalCells = (before[i - 1] ?? '').split(CELL);
+    const maskedHere = previousCells.some(
+      (cell, index) =>
+        MASK_AT_END.test(cell.trim()) && !MASK_AT_END.test((originalCells[index] ?? '').trim()),
+    );
+    if (!maskedHere) continue;
 
     out[i] = line.slice(maskSpillLength(line));
   }
@@ -678,9 +691,12 @@ function replaceCounting(
 ): string {
   pattern.lastIndex = 0;
   return text.replace(pattern, (match, ...args) => {
-    onMatch();
     const groups = args.filter((arg): arg is string => typeof arg === 'string');
-    return replacer(match, ...groups);
+    const replacement = replacer(match, ...groups);
+    // Re-masking what is already masked is not a removal, and must not be
+    // counted as one — the server's second pass reports what *it* removed.
+    if (replacement !== match) onMatch();
+    return replacement;
   });
 }
 

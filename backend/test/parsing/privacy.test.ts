@@ -76,11 +76,15 @@ describe('the parsed output', () => {
 });
 
 describe('redaction over a whole real statement', () => {
-  it('is idempotent — the server pass over the client pass changes nothing', () => {
-    const once = redactForStorage(fixtureText(FIXTURE_NAMES.sliceAug)).text;
-    const twice = redactForStorage(once).text;
-    expect(twice).toBe(once);
-  });
+  it.each(Object.values(FIXTURE_NAMES))(
+    '%s: the server pass over the client pass changes nothing and removes nothing',
+    (name) => {
+      const once = redactForStorage(fixtureText(name)).text;
+      const twice = redactForStorage(once);
+      expect(twice.text).toBe(once);
+      expect(twice.counts).toEqual({});
+    },
+  );
 
   it('leaves a prompt with nothing identifying in it', () => {
     const prompt = redactForLlm(fixtureText(FIXTURE_NAMES.sliceJul));

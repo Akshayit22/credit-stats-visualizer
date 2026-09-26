@@ -3,19 +3,17 @@
  *
  * Every provider answers the same question — "here is a system prompt, a user
  * prompt and a JSON schema; give me JSON that fits" — and nothing above this
- * line knows which one is answering. Swapping providers is an env var.
+ * line knows which one is answering. Swapping providers is one env var,
+ * `LLM_PROVIDER`.
  *
  * What a provider must never do: log a prompt, a response, or anything derived
  * from statement text. Providers report their id, their model id, token counts
  * and a duration, and that is the whole of what reaches a log line.
  */
 
-export type ProviderId =
-  | 'mock'
-  | 'azure-foundry'
-  | 'bedrock'
-  | 'groq'
-  | 'openai-compatible';
+export const PROVIDER_IDS = ['mock', 'groq', 'azure-foundry', 'openai-compatible'] as const;
+
+export type ProviderId = (typeof PROVIDER_IDS)[number];
 
 export interface LlmUsage {
   inputTokens: number;
@@ -46,7 +44,7 @@ export class ProviderConfigError extends Error {
   constructor(providerId: string, missing: string[]) {
     super(
       `LLM_PROVIDER=${providerId} needs ${missing.join(', ')}. ` +
-        `Set ${missing.length === 1 ? 'it' : 'them'} in .env.local — SETUP.md §3 says where each value comes from. ` +
+        `Set ${missing.length === 1 ? 'it' : 'them'} in backend/.env — docs/setup.md says where each value comes from. ` +
         `Or set LLM_PROVIDER=mock to run without a model.`,
     );
     this.name = 'ProviderConfigError';
@@ -139,23 +137,4 @@ export function estimateOutputTokens(text: string): number {
   const rows = text.split('\n').filter((line) => AMOUNT_LINE.test(line)).length;
   const needed = 1_200 + rows * 260;
   return Math.min(Math.max(2_000, needed), MAX_OUTPUT_TOKENS);
-}
-
-/**
- * Reads the environment and reports what is missing rather than throwing, so
- * the settings screen can show the state without breaking the page.
- */
-export function missingEnv(names: readonly string[]): string[] {
-  return names.filter((name) => {
-    const value = process.env[name];
-    return value === undefined || value.trim().length === 0;
-  });
-}
-
-export function requireEnv(name: string): string {
-  const value = process.env[name];
-  if (value === undefined || value.trim().length === 0) {
-    throw new ProviderConfigError(process.env.LLM_PROVIDER ?? 'unknown', [name]);
-  }
-  return value.trim();
 }

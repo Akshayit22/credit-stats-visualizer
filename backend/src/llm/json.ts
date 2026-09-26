@@ -1,4 +1,4 @@
-import { LlmResponseError } from './provider';
+import { LlmResponseError } from './provider.js';
 
 /**
  * Getting JSON back out of a language model.

@@ -1,13 +1,11 @@
+import { findPiiLeaks } from '@cred-stats/shared';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { extractJsonBody, stripFences } from '@/server/llm/json';
-import {
-  configuredModelId,
-  configuredProviderId,
-  getLlmProvider,
-  providerMissingEnv,
-  resetLlmProvider,
-} from '@/server/llm/factory';
+import { parsedStatementSchema } from '../../src/domain/schemas.js';
+import { Environment } from '../../src/services/environment.service.js';
+import { extractValidated } from '../../src/llm/extract.js';
+import { extractJsonBody, stripFences } from '../../src/llm/json.js';
+import { CATEGORISE_SYSTEM, EXTRACT_SYSTEM, extractUserPrompt } from '../../src/llm/prompts.js';
 import {
   LlmRateLimitError,
   LlmRequestTooLargeError,
@@ -16,24 +14,27 @@ import {
   estimateOutputTokens,
   type ExtractJsonArgs,
   type LlmProvider,
-} from '@/server/llm/provider';
-import { clearMockResponses, setMockResponse } from '@/server/llm/providers/mock';
-import { extractValidated } from '@/server/llm';
-import { parsedStatementSchema } from '@/server/domain/schemas';
-import { CATEGORISE_SYSTEM, EXTRACT_SYSTEM, extractUserPrompt } from '@/server/llm/prompts';
-import { findPiiLeaks } from '@/shared/redact';
-import { FIXTURE_NAMES, fixtureText } from './fixtures';
+} from '../../src/llm/provider.js';
+import {
+  buildProvider,
+  configuredModelId,
+  missingSettings,
+} from '../../src/llm/provider-factory.js';
+import { clearMockResponses, setMockResponse } from '../../src/llm/providers/mock.js';
+import { FIXTURE_NAMES, fixtureText } from '../helpers/fixtures.js';
 
-const ORIGINAL_ENV = { ...process.env };
+/** A validated environment with just the given variables set. */
+function envWith(vars: Record<string, string>) {
+  return Environment.parse({ MONGODB_URI: 'mongodb://unused', ...vars });
+}
+
+const GROQ = { LLM_PROVIDER: 'groq', GROQ_API_KEY: 'gsk_test', GROQ_MODEL: 'openai/gpt-oss-120b' };
 
 beforeEach(() => {
-  resetLlmProvider();
   clearMockResponses();
 });
 
 afterEach(() => {
-  process.env = { ...ORIGINAL_ENV };
-  resetLlmProvider();
   clearMockResponses();
 });
 
@@ -65,60 +66,57 @@ describe('reading JSON out of a model', () => {
 
 describe('the provider factory', () => {
   it('defaults to the mock provider, which needs no configuration', () => {
-    delete process.env.LLM_PROVIDER;
-    expect(configuredProviderId()).toBe('mock');
-    expect(providerMissingEnv()).toEqual([]);
-    expect(getLlmProvider().id).toBe('mock');
+    const env = envWith({});
+    expect(env.LLM_PROVIDER).toBe('mock');
+    expect(missingSettings(env)).toEqual([]);
+    expect(buildProvider(env).id).toBe('mock');
   });
 
   it('names exactly what is missing rather than failing at the vendor', () => {
-    process.env.LLM_PROVIDER = 'azure-foundry';
-    process.env.AZURE_AI_ENDPOINT = 'https://example.openai.azure.com';
-    delete process.env.AZURE_AI_API_KEY;
-    delete process.env.AZURE_AI_DEPLOYMENT;
-    delete process.env.AZURE_AI_API_VERSION;
+    const env = envWith({
+      LLM_PROVIDER: 'azure-foundry',
+      AZURE_AI_ENDPOINT: 'https://example.openai.azure.com',
+    });
 
-    expect(providerMissingEnv()).toEqual([
-      'AZURE_AI_API_KEY',
-      'AZURE_AI_DEPLOYMENT',
-      'AZURE_AI_API_VERSION',
-    ]);
+    expect(missingSettings(env)).toEqual(['AZURE_AI_API_KEY', 'AZURE_AI_DEPLOYMENT']);
 
     try {
-      getLlmProvider();
+      buildProvider(env);
       throw new Error('expected a ProviderConfigError');
     } catch (error) {
       expect(error).toBeInstanceOf(ProviderConfigError);
       expect((error as ProviderConfigError).message).toContain('AZURE_AI_API_KEY');
-      expect((error as ProviderConfigError).message).toContain('SETUP.md');
+      expect((error as ProviderConfigError).message).toContain('docs/setup.md');
       // The message must never carry the value of a key that IS set.
       expect((error as ProviderConfigError).message).not.toContain('example.openai.azure.com');
     }
   });
 
-  it('builds each provider once its environment is complete', () => {
-    process.env.LLM_PROVIDER = 'groq';
-    process.env.GROQ_API_KEY = 'gsk_test';
-    process.env.GROQ_MODEL = 'openai/gpt-oss-120b';
-    expect(getLlmProvider().id).toBe('groq');
-    expect(configuredModelId()).toBe('openai/gpt-oss-120b');
-
-    resetLlmProvider();
-    process.env.LLM_PROVIDER = 'openai-compatible';
-    process.env.OPENAI_COMPATIBLE_BASE_URL = 'https://api.x.ai/v1';
-    process.env.OPENAI_COMPATIBLE_API_KEY = 'xai-test';
-    process.env.OPENAI_COMPATIBLE_MODEL = 'grok-4';
-    expect(getLlmProvider().id).toBe('openai-compatible');
-
-    resetLlmProvider();
-    process.env.LLM_PROVIDER = 'bedrock';
-    process.env.BEDROCK_MODEL_ID = 'anthropic.claude-sonnet-5';
-    expect(getLlmProvider().id).toBe('bedrock');
+  it('treats a blank value in .env as missing', () => {
+    expect(missingSettings(envWith({ LLM_PROVIDER: 'groq', GROQ_API_KEY: '   ' }))).toEqual([
+      'GROQ_API_KEY',
+    ]);
   });
 
-  it('falls back to mock rather than crashing on an unknown provider name', () => {
-    process.env.LLM_PROVIDER = 'some-provider-that-does-not-exist';
-    expect(configuredProviderId()).toBe('mock');
+  it('builds each provider once its environment is complete', () => {
+    const groq = envWith(GROQ);
+    expect(buildProvider(groq).id).toBe('groq');
+    expect(configuredModelId(groq)).toBe('openai/gpt-oss-120b');
+
+    const compatible = envWith({
+      LLM_PROVIDER: 'openai-compatible',
+      OPENAI_COMPATIBLE_BASE_URL: 'https://api.x.ai/v1',
+      OPENAI_COMPATIBLE_API_KEY: 'xai-test',
+      OPENAI_COMPATIBLE_MODEL: 'grok-4',
+    });
+    expect(buildProvider(compatible).id).toBe('openai-compatible');
+    expect(configuredModelId(compatible)).toBe('grok-4');
+  });
+
+  it('refuses an unknown provider name at boot rather than guessing', () => {
+    expect(() => envWith({ LLM_PROVIDER: 'some-provider-that-does-not-exist' })).toThrow(
+      /LLM_PROVIDER/,
+    );
   });
 });
 
@@ -159,7 +157,11 @@ describe('schema-validated extraction', () => {
     await extractValidated(provider, schema, {
       system: 's',
       user: 'extract this',
-      jsonSchema: { type: 'object', required: ['answer'], properties: { answer: { type: 'integer' } } },
+      jsonSchema: {
+        type: 'object',
+        required: ['answer'],
+        properties: { answer: { type: 'integer' } },
+      },
     });
     // Every provider takes a jsonSchema and, for a while, every provider
     // ignored it — the model was told the rules and never the field names.
@@ -258,7 +260,7 @@ describe('the mock provider', () => {
   it('answers per schema name', async () => {
     setMockResponse('parsed-statement', { kind: 'statement' });
     setMockResponse('merchant-categories', { kind: 'categories' });
-    const provider = getLlmProvider();
+    const provider = buildProvider(envWith({}));
 
     const statement = await provider.extractJson({
       system: '',
@@ -278,7 +280,7 @@ describe('the mock provider', () => {
   });
 
   it('refuses rather than inventing figures when no fixture is registered', async () => {
-    const provider = getLlmProvider();
+    const provider = buildProvider(envWith({}));
     await expect(
       provider.extractJson({ system: '', user: '', jsonSchema: {}, schemaName: 'unknown' }),
     ).rejects.toThrow(/no fixture/);
@@ -326,11 +328,7 @@ describe('being rate limited', () => {
   });
 
   function groq(): LlmProvider {
-    process.env.LLM_PROVIDER = 'groq';
-    process.env.GROQ_API_KEY = 'gsk_test';
-    process.env.GROQ_MODEL = 'openai/gpt-oss-120b';
-    resetLlmProvider();
-    return getLlmProvider();
+    return buildProvider(envWith(GROQ));
   }
 
   const answer = () =>
@@ -433,7 +431,9 @@ describe('being rate limited', () => {
 
 describe('sizing the answer', () => {
   const rows = (n: number) =>
-    Array.from({ length: n }, (_, i) => `05 Oct 25\tSOMETHING ${i}\t1,234.56\t9,999.00 CR`).join('\n');
+    Array.from({ length: n }, (_, i) => `05 Oct 25\tSOMETHING ${i}\t1,234.56\t9,999.00 CR`).join(
+      '\n',
+    );
 
   it('sizes from the rows, not the character count', () => {
     // The two are not interchangeable. IDFC spends 2,879 text tokens on 21
@@ -483,11 +483,12 @@ describe('an answer cut off mid-object', () => {
     );
 
   function groqWith(maxTokens: number) {
-    process.env.LLM_PROVIDER = 'groq';
-    process.env.GROQ_API_KEY = 'gsk_test';
-    process.env.GROQ_MODEL = 'openai/gpt-oss-120b';
-    resetLlmProvider();
-    return getLlmProvider().extractJson({ system: 's', user: 'u', jsonSchema: {}, maxTokens });
+    return buildProvider(envWith(GROQ)).extractJson({
+      system: 's',
+      user: 'u',
+      jsonSchema: {},
+      maxTokens,
+    });
   }
 
   it('asks again with room to finish rather than losing the upload', async () => {

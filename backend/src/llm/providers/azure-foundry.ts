@@ -1,5 +1,5 @@
-import { chatCompletionJson } from './openai-chat';
-import type { ExtractJsonArgs, LlmProvider, LlmUsage } from '../provider';
+import { chatCompletionJson } from './openai-chat.js';
+import type { ExtractJsonArgs, LlmProvider, LlmUsage } from '../provider.js';
 
 /**
  * Azure AI Foundry / Azure OpenAI. The same chat-completions body as everyone

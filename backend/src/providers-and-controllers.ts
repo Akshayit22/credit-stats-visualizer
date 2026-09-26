@@ -1,7 +1,9 @@
 import type { Provider, Type } from '@nestjs/common';
 import { HealthController } from './controllers/health.controller.js';
+import { LlmClientManager } from './managers/llm-client.manager.js';
 import { MongoClientManager } from './managers/mongo-client.manager.js';
 import { Environment } from './services/environment.service.js';
+import { LlmService } from './services/llm.service.js';
 import { LogService } from './services/log.service.js';
 
 /**
@@ -18,8 +20,8 @@ import { LogService } from './services/log.service.js';
 
 export const Controllers: Type[] = [HealthController];
 
-const Managers: Provider[] = [MongoClientManager];
+const Managers: Provider[] = [MongoClientManager, LlmClientManager];
 
-const Services: Provider[] = [Environment, LogService];
+const Services: Provider[] = [Environment, LogService, LlmService];
 
 export const Providers: Provider[] = [...Managers, ...Services];

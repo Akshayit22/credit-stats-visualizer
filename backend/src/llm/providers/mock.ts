@@ -1,4 +1,4 @@
-import type { ExtractJsonArgs, LlmProvider, LlmUsage } from '../provider';
+import type { ExtractJsonArgs, LlmProvider, LlmUsage } from '../provider.js';
 
 /**
  * The provider that needs no key.

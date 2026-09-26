@@ -1,8 +1,10 @@
 import { Navigate, createBrowserRouter, type RouteObject } from 'react-router';
 import { PageLoading } from './components/page-state';
 import { AppLayout } from './pages/app-layout';
+import { LibraryPage } from './pages/library-page';
 import { NotFoundPage } from './pages/not-found-page';
 import { SectionPage } from './pages/section-page';
+import { SettingsPage } from './pages/settings-page';
 import { SignInPage } from './pages/sign-in-page';
 
 /**
@@ -43,6 +45,8 @@ export const routes: RouteObject[] = [
       { path: '/cashback', element: <SectionPage section="cashback" /> },
       { path: '/savings', element: <SectionPage section="savings" /> },
       { path: '/savings/:accountId', lazy: dashboards.savings },
+      { path: '/library', element: <LibraryPage /> },
+      { path: '/settings', element: <SettingsPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

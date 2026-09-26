@@ -28,7 +28,7 @@ built, linted or tested; each branch moves the pieces it ports out of it.
       review step
 - [x] `feat/frontend-dashboards` — overview, card, cashback, savings screens and
       charts
-- [ ] `feat/frontend-library-settings` — statement library, settings
+- [x] `feat/frontend-library-settings` — statement library, settings
 - [ ] `feat/deploy-render` — backend Dockerfile, `render.yaml`, docker-compose
 - [ ] `feat/admin-overview` — (asked for 2026-09-26) an admin page, no separate
       login: the hard-coded admin emails `akshayit22@gmail.com` and

@@ -442,3 +442,45 @@ button.donut-legend-button:hover {
 .table.is-year-table[data-screen='cashback'] {
   min-width: calc(var(--space-8) * 23.2);
 }
+
+/* ── library and settings ─────────────────────────────────────────────────── */
+
+.section.is-compact {
+  gap: calc(var(--space-8) * 1.15);
+}
+.table.is-library {
+  min-width: calc(var(--space-8) * 34);
+}
+.col-period {
+  width: calc(var(--space-8) * 7.95);
+}
+.col-uploaded {
+  width: calc(var(--space-8) * 5.36);
+}
+.col-rows {
+  width: calc(var(--space-8) * 3.13);
+}
+.col-status {
+  width: calc(var(--space-8) * 6.25);
+}
+.col-actions {
+  width: calc(var(--space-8) * 5.8);
+}
+.btn.is-small {
+  font-size: 12px;
+}
+.btn.is-danger {
+  color: var(--color-negative);
+}
+.btn-secondary.is-danger {
+  border-color: var(--color-negative);
+}
+.action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+.banner.is-full-width {
+  flex-basis: 100%;
+  margin: 0;
+}

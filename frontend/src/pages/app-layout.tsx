@@ -13,6 +13,9 @@ const BOTTOM: NavLink[] = [
   { href: '/settings', label: 'Settings', icon: 'Gear' },
 ];
 
+/** Shown to the site's admins only; the API enforces it regardless. */
+const ADMIN: NavLink = { href: '/admin', label: 'Admin', icon: 'ShieldCheck' };
+
 /**
  * The frame around every signed-in screen: the sidebar, the page, the footer.
  *
@@ -32,7 +35,12 @@ export function AppLayout() {
 
   return (
     <div className="app-frame">
-      <Sidebar top={TOP} accounts={accounts} bottom={BOTTOM} period={latestPeriod} />
+      <Sidebar
+        top={TOP}
+        accounts={accounts}
+        bottom={user.isAdmin ? [...BOTTOM, ADMIN] : BOTTOM}
+        period={latestPeriod}
+      />
       <div className="app-main-col">
         {workspace.isError ? (
           <PageError error={workspace.error} onRetry={() => void workspace.refetch()} />

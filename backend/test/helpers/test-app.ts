@@ -29,6 +29,13 @@ export const FAKE_GOOGLE_TOKENS: Record<string, GoogleIdentity> = {
     name: 'Alice',
     avatarUrl: 'https://example.com/alice.png',
   },
+  // One of the hard-coded admin addresses, as Google would report it.
+  'google-token-admin-000000000': {
+    subject: 'google-sub-admin',
+    email: 'AkshayIT22@gmail.com',
+    name: 'Admin',
+    avatarUrl: '',
+  },
   'google-token-bob-00000000000': {
     subject: 'google-sub-bob',
     email: 'bob@example.com',

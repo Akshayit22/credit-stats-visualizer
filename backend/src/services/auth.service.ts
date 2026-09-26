@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { AuthConfig, SessionUser } from '@cred-stats/shared';
+import { isAdminEmail } from '../auth/admins.js';
 import { DEMO_USER, userIdFromSubject } from '../auth/user-id.js';
 import { ApiException } from '../filters/api-exception.js';
 import { GoogleAuthClientManager } from '../managers/google-auth-client.manager.js';
@@ -56,6 +57,7 @@ export class AuthService {
       email: profile.email,
       name: profile.name,
       avatarUrl: profile.avatarUrl,
+      isAdmin: isAdminEmail(profile.email),
     };
   }
 
@@ -74,6 +76,7 @@ export class AuthService {
       email: profile.email,
       name: profile.name,
       avatarUrl: profile.avatarUrl,
+      isAdmin: isAdminEmail(profile.email),
     };
   }
 }

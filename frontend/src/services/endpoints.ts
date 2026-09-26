@@ -1,5 +1,6 @@
 import type {
   AccountView,
+  AdminOverview,
   AuthConfig,
   DeleteProfileRequest,
   OverviewView,
@@ -62,6 +63,10 @@ export const endpoints = {
         `/statements/${encodeURIComponent(statementId)}/transactions/${encodeURIComponent(txnId)}`,
         change,
       ),
+  },
+
+  admin: {
+    overview: () => api.get<AdminOverview>('/admin/overview'),
   },
 
   profile: {

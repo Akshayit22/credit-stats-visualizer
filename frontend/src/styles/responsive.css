@@ -1,0 +1,49 @@
+/* ── responsive, down to 390px ────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .chart-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .app-frame {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: static;
+    flex-direction: row;
+    align-items: center;
+    border-right: 0;
+    border-bottom: 1px solid var(--color-divider);
+    overflow-x: auto;
+  }
+  .sidebar-nav {
+    flex-direction: row;
+    padding: var(--space-2);
+  }
+  .sidebar-link {
+    width: auto;
+    margin-inline: 2px;
+    white-space: nowrap;
+  }
+  .sidebar-head {
+    padding: var(--space-3) var(--space-4);
+  }
+  .sidebar-toggle {
+    display: none;
+  }
+  .app-main,
+  .app-header {
+    padding-inline: var(--space-6);
+  }
+  .row-link {
+    flex-wrap: wrap;
+  }
+  .row-stat {
+    min-width: 84px;
+  }
+}
+

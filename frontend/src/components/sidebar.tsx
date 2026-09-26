@@ -1,12 +1,8 @@
-'use client';
-
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { accountProductLine, type Account } from '@cred-stats/shared';
 import { useSyncExternalStore } from 'react';
-import type { Account } from '@/shared/types';
+import { Link, useLocation } from 'react-router';
+import * as nav from '../utils/sidebar-store';
 import { Icon } from './icon';
-import { accountProductLine } from '@/client/lib/format';
-import * as nav from '@/client/lib/sidebar-store';
 
 /**
  * The sidebar is account-first, because that is the question a person actually
@@ -52,7 +48,7 @@ export interface SidebarProps {
 }
 
 export function Sidebar({ top, accounts, bottom, period }: SidebarProps) {
-  const pathname = usePathname();
+  const { pathname } = useLocation();
   const open = useSyncExternalStore(nav.subscribe, nav.getSnapshot, nav.getServerSnapshot);
   const ToggleIcon = open ? Icon.CaretLeft : Icon.CaretRight;
   const query = period ? `?period=${period}` : '';
@@ -60,7 +56,7 @@ export function Sidebar({ top, accounts, bottom, period }: SidebarProps) {
   return (
     <aside className="sidebar" data-collapsed={!open}>
       <div className="sidebar-head">
-        <Link href="/overview" className="sidebar-brand">
+        <Link to="/overview" className="sidebar-brand">
           <span className="sidebar-mark" aria-hidden="true" />
           {open ? (
             <span className="sidebar-brand-name">Statements</span>
@@ -123,7 +119,7 @@ function SidebarLink({
   const IconComponent = Icon[item.icon];
   return (
     <Link
-      href={item.href}
+      to={item.href}
       className="sidebar-link"
       aria-current={active ? 'page' : undefined}
       title={item.label}
@@ -169,7 +165,7 @@ function AccountGroup({
   return (
     <div className="sidebar-group" data-open={inThisAccount}>
       <Link
-        href={`${base}${query}`}
+        to={`${base}${query}`}
         className="sidebar-account"
         aria-current={inThisAccount ? 'true' : undefined}
         title={`${account.displayName} ${account.maskedNumber}`}
@@ -200,7 +196,7 @@ function AccountGroup({
           {views.map((view) => (
             <Link
               key={view.href}
-              href={`${view.href}${query}`}
+              to={`${view.href}${query}`}
               className="sidebar-view"
               aria-current={view.active ? 'page' : undefined}
             >

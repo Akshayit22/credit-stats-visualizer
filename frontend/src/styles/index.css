@@ -1,0 +1,25 @@
+/*
+ * The stylesheets, in cascade order — later files override earlier ones, so
+ * keep this order when adding to them.
+ *
+ *   nocturne.css          the design system, verbatim. Never edit it; retune
+ *                         the app in tokens.css instead.
+ *   tokens.css            app-level tokens: status roles, chart series, layout
+ *   layout.css            the frame, the sidebar, the sticky header
+ *   components.css        sections, tiles, lists, tables, banners, forms
+ *   responsive.css        down to 390px
+ *   screens.css           sign-in, upload review, charts, card and settings
+ *   sidebar-accounts.css  the accounts in the sidebar, with their views
+ *   dialogs.css           dialogs taller than the window
+ *
+ * Every value comes from a token: no hex, font name, radius or spacing is
+ * written out anywhere but the token files.
+ */
+@import './nocturne.css';
+@import './tokens.css';
+@import './layout.css';
+@import './components.css';
+@import './responsive.css';
+@import './screens.css';
+@import './sidebar-accounts.css';
+@import './dialogs.css';

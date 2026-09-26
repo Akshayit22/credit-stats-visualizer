@@ -1,0 +1,21 @@
+/* ── dialogs that outgrow the window ──────────────────────────────────────── */
+
+/*
+ * The design system centres a dialog in a fixed backdrop, which is right until
+ * the dialog is taller than the window — then its actions sit below the fold
+ * with no way to reach them, because a fixed parent does not scroll. The review
+ * step after parsing a statement is exactly that tall on a laptop.
+ */
+.dialog-backdrop {
+  overflow-y: auto;
+  /* Start at the top rather than centring, so a tall dialog is scrolled from
+     its beginning instead of its middle. */
+  align-items: start;
+  padding-block: var(--space-6);
+}
+.dialog {
+  max-height: calc(100vh - var(--space-8) * 2);
+  overflow-y: auto;
+  /* The scrollbar should not sit flush against the content. */
+  scrollbar-gutter: stable;
+}

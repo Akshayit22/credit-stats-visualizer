@@ -1,0 +1,84 @@
+/*
+ * App-level styles. Every value here comes from a Nocturne token — no hex,
+ * no font name, no raw radius. The handful of chart role colours that the
+ * mockup uses (positive / warning / negative) are declared once, here, as
+ * tokens of their own so charts and tables can share them.
+ */
+
+:root {
+  /*
+   * Status roles. These are text-and-tile colours: they always ride a written
+   * label, never identity-by-colour-alone, and they are never used as a chart
+   * series palette — as a set they fail colour-vision separation badly
+   * (positive vs negative is ΔE 1.1 under deuteranopia).
+   */
+  --color-positive: #7fb08f;
+  --color-warning: #d0a46a;
+  --color-negative: #c98b8b;
+
+  /*
+   * Chart series palette. Three slots, assigned in fixed order and never
+   * cycled: no chart in this app plots more than three series. Validated
+   * against the #161826 ground for the dark lightness band, the chroma floor,
+   * colour-vision separation (worst adjacent ΔE 8.4 protan) and 3:1 contrast.
+   * Slot 1 sits in the accent's own hue so the set still reads as Nocturne.
+   */
+  --series-1: #9085e9;
+  --series-2: #199e70;
+  --series-3: #c98500;
+
+  /*
+   * Sequential ramp for the category breakdown — one hue, light to dark, in
+   * magnitude order. A ranked part-to-whole is a sequential job, not a
+   * categorical one, so identity comes from the labelled list beside it and
+   * from hover, never from telling two blurples apart.
+   */
+  --seq-1: #e7e5fe;
+  --seq-2: #d2cefd;
+  --seq-3: #b5abfc;
+  --seq-4: #a197ec;
+  --seq-5: #968ae0;
+  --seq-6: #796cbf;
+
+  /* Chart chrome. Recessive by construction. */
+  --chart-grid: color-mix(in srgb, var(--color-text) 6%, transparent);
+  --chart-axis: color-mix(in srgb, var(--color-text) 14%, transparent);
+  --chart-axis-text: color-mix(in srgb, var(--color-text) 48%, transparent);
+  --chart-crosshair: color-mix(in srgb, var(--color-text) 22%, transparent);
+
+  /* Muted text, used often enough to earn a token. */
+  --color-text-muted: color-mix(in srgb, var(--color-text) 55%, transparent);
+  --color-text-faint: color-mix(in srgb, var(--color-text) 42%, transparent);
+  --color-hairline: color-mix(in srgb, var(--color-text) 7%, transparent);
+
+  /* Layout rhythm, from the mockup. */
+  --pad: var(--space-8);
+  --gap: var(--space-6);
+  --sidebar-w: 188px;
+  --sidebar-w-collapsed: 56px;
+  --content-max: 1360px;
+}
+
+body {
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-neutral-800);
+  border-radius: var(--radius-md);
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@keyframes cs-skeleton {
+  0% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+  100% { opacity: 0.3; }
+}
+

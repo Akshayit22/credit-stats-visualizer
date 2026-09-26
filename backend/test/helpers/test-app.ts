@@ -12,6 +12,8 @@ import { MongoClientManager } from '../../src/managers/mongo-client.manager.js';
 
 export interface TestApp {
   app: NestExpressApplication;
+  /** Where the app is listening, for a bare request with no app headers. */
+  baseUrl: string;
   /** A supertest agent bound to the app. Keeps cookies between calls. */
   http: ReturnType<typeof supertest.agent>;
   /** A fresh agent — a second browser with its own cookie jar. */
@@ -55,13 +57,18 @@ export async function createTestApp(): Promise<TestApp> {
   const app = configureApp(
     module.createNestApplication<NestExpressApplication>({ bodyParser: false }),
   );
-  await app.init();
+  // Listen once, on an ephemeral port. Handed a server that is not listening,
+  // supertest starts and stops a listener for every single request, and under
+  // load a request can race a listener that is closing (ECONNRESET).
+  await app.listen(0, '127.0.0.1');
+  const address = app.getHttpServer().address();
+  const baseUrl = typeof address === 'object' && address ? `http://127.0.0.1:${address.port}` : '';
 
-  const newAgent = () =>
-    supertest.agent(app.getHttpServer()).set(CLIENT_HEADER, CLIENT_HEADER_VALUE);
+  const newAgent = () => supertest.agent(baseUrl).set(CLIENT_HEADER, CLIENT_HEADER_VALUE);
 
   return {
     app,
+    baseUrl,
     http: newAgent(),
     newAgent,
     close: async () => {

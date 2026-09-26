@@ -1,59 +1,34 @@
 {
   "name": "cred-stats",
-  "version": "0.1.0",
+  "version": "2.0.0",
+  "description": "Personal statement analytics for India — NestJS API, React app, MongoDB.",
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=20"
+    "node": ">=22.22.0"
   },
+  "workspaces": [
+    "shared"
+  ],
   "scripts": {
-    "dev": "next dev",
-    "dev:nollm": "LLM_PROVIDER=mock next dev",
-    "build": "next build",
-    "start": "next start",
-    "postinstall": "node scripts/copy-pdf-worker.mjs",
+    "build:shared": "npm run build -w @cred-stats/shared",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:e2e": "playwright test",
-    "db:up": "docker compose up -d dynamodb-local dynamodb-admin",
-    "db:down": "docker compose down",
-    "db:create": "tsx scripts/create-tables.ts",
-    "db:seed": "tsx scripts/seed-demo.ts",
-    "db:reset": "tsx scripts/create-tables.ts --drop && tsx scripts/seed-demo.ts",
-    "fixtures:build": "tsx scripts/build-fixtures.ts"
-  },
-  "dependencies": {
-    "@aws-sdk/client-bedrock-runtime": "^3.758.0",
-    "@aws-sdk/client-dynamodb": "^3.758.0",
-    "@aws-sdk/lib-dynamodb": "^3.758.0",
-    "@phosphor-icons/react": "^2.1.10",
-    "next": "^16.3.5",
-    "next-auth": "5.0.0-beta.32",
-    "pdfjs-dist": "^4.10.38",
-    "react": "^19.3.0",
-    "react-dom": "^19.3.0",
-    "recharts": "^3.10.1",
-    "zod": "^3.24.2"
+    "format:check": "prettier --check .",
+    "typecheck": "npm run build:shared && npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
+    "check": "npm run lint && npm run typecheck && npm run test && npm run build"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.5",
-    "@playwright/test": "^1.63.0",
-    "@types/node": "^22.13.5",
-    "@types/react": "^19.0.10",
-    "@types/react-dom": "^19.0.4",
-    "@vitest/coverage-v8": "^5.0.1",
-    "dotenv": "^16.4.7",
-    "eslint": "^9.21.0",
-    "eslint-config-next": "^16.3.5",
-    "eslint-config-prettier": "^10.0.2",
-    "prettier": "^3.5.2",
-    "sst": "^4.17.1",
-    "tsx": "^4.19.3",
-    "typescript": "^5.7.3",
-    "typescript-eslint": "^8.70.0",
-    "vitest": "^5.0.1"
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.0.0",
+    "eslint": "^10.11.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.12.0",
+    "prettier": "^3.9.9",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.70.1",
+    "vitest": "^5.0.2"
   }
 }

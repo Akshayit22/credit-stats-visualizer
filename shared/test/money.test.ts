@@ -4,7 +4,7 @@ import {
   formatMinorCompact,
   parseAmountToMinor,
   stripInvisible,
-} from '@/shared/money';
+} from '../src/money.js';
 
 describe('parseAmountToMinor', () => {
   it('reads Indian digit grouping with the rupee sign', () => {

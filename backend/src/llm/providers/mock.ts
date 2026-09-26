@@ -20,7 +20,10 @@ const handlers = new Map<string, MockHandler>();
  * categories schema differently.
  */
 export function setMockResponse(schemaName: string, handler: MockHandler | unknown): void {
-  handlers.set(schemaName, typeof handler === 'function' ? (handler as MockHandler) : () => handler);
+  handlers.set(
+    schemaName,
+    typeof handler === 'function' ? (handler as MockHandler) : () => handler,
+  );
 }
 
 export function clearMockResponses(): void {

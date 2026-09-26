@@ -1,19 +1,16 @@
-'use client';
-
-import Link from 'next/link';
+import { Link } from 'react-router';
 import { useMemo, useState } from 'react';
-import { formatMinor, formatPct } from '@/shared/money';
-import type { Account, CreditCardStatement, Period, Statement, Summary, Transaction } from '@/shared/types';
-import { CategoryDonut } from '@/client/charts/category-donut';
-import { ChartBlock, useMounted } from '@/client/charts/chart-frame';
-import { chartTheme, seriesColor } from '@/client/charts/theme';
-import { TrendChart } from '@/client/charts/trend-chart';
-import { AppHeader, type PeriodMode } from '@/client/components/app-header';
-import { Icon } from '@/client/components/icon';
-import { StatTile, TileRow } from '@/client/components/stat-tile';
-import { TransactionsTable } from '@/client/components/transactions-table';
-import { UploadDialog } from '@/client/components/upload-dialog';
-import { accountShortName, formatDayLabel, formatPeriodLabel, formatPeriodRange, formatPeriodShort } from '@/client/lib/format';
+import { formatMinor, formatPct, type Account, type CreditCardStatement, type Period, type Statement, type Summary, type Transaction, accountShortName, formatDayLabel, formatPeriodLabel, formatPeriodRange, formatPeriodShort } from '@cred-stats/shared';
+import { CategoryDonut } from '../charts/category-donut';
+import { ChartBlock } from '../charts/chart-frame';
+import { useMounted } from '../hooks/use-mounted';
+import { chartTheme, seriesColor } from '../charts/theme';
+import { TrendChart } from '../charts/trend-chart';
+import { AppHeader, type PeriodMode } from '../components/app-header';
+import { Icon } from '../components/icon';
+import { StatTile, TileRow } from '../components/stat-tile';
+import { TransactionsTable } from '../components/transactions-table';
+import { UploadDialog } from '../components/upload-dialog';
 
 export interface CardScreenProps {
   account: Account;
@@ -84,7 +81,7 @@ export function CardScreen(props: CardScreenProps) {
               sub={props.account.maskedNumber}
             />
             <div className="empty-state">
-              <Icon.CalendarX size={26} style={{ color: 'var(--color-accent)', opacity: 0.75 }} />
+              <Icon.CalendarX size={26} className="is-accent empty-icon" aria-hidden="true" />
               <p className="empty-title">
                 Nothing uploaded for {formatPeriodLabel(props.selectedPeriod)}
               </p>
@@ -94,7 +91,6 @@ export function CardScreen(props: CardScreenProps) {
               <button
                 type="button"
                 className="btn btn-primary"
-                style={{ marginTop: 4 }}
                 onClick={() => setUploadOpen(true)}
               >
                 Upload statement
@@ -273,11 +269,11 @@ function CardMonth({
             <div>
               {fees.map((fee) => (
                 <div key={fee.txnId} className="fee-row">
-                  <span style={{ flex: 1, fontSize: 12.5 }}>{fee.merchant}</span>
-                  <span className="is-muted" style={{ fontSize: 11 }}>
+                  <span className="fee-name">{fee.merchant}</span>
+                  <span className="is-muted fee-meta">
                     {formatDayLabel(fee.date)}
                   </span>
-                  <span className="is-warning" style={{ width: 88, textAlign: 'right', fontSize: 12.5 }}>
+                  <span className="is-warning fee-amount">
                     {formatMinor(fee.amountMinor)}
                   </span>
                 </div>
@@ -301,7 +297,7 @@ function CardMonth({
       />
 
       <p className="page-sub">
-        <Link href={`/accounts/${account.accountId}/cashback?period=${statement.period}`}>
+        <Link to={`/accounts/${account.accountId}/cashback?period=${statement.period}`}>
           See cashback in detail →
         </Link>
       </p>
@@ -345,7 +341,7 @@ function YearView({
   if (shown.length === 0) {
     return (
       <div className="empty-state">
-        <Icon.CalendarX size={26} style={{ color: 'var(--color-accent)', opacity: 0.75 }} />
+        <Icon.CalendarX size={26} className="is-accent empty-icon" aria-hidden="true" />
         <p className="empty-title">No statements for this year yet</p>
         <p className="empty-body">Upload a cycle&rsquo;s statement and the year fills in.</p>
       </div>
@@ -385,10 +381,10 @@ function YearView({
           <h3 className="block-title">Month by month</h3>
         </div>
         <div className="table-scroll">
-          <table className="table" style={{ minWidth: 680 }}>
+          <table className="table is-year-table" data-screen="card">
             <thead>
               <tr>
-                <th style={{ width: 120 }}>Month</th>
+                <th className="col-month">Month</th>
                 <th className="num">Spend</th>
                 <th className="num">Cashback</th>
                 <th className="num">Fees &amp; interest</th>
@@ -402,7 +398,7 @@ function YearView({
                 const fees = summary?.feesMinor ?? 0;
                 return (
                   <tr key={period}>
-                    <td style={{ fontSize: 12.5 }}>{formatPeriodLabel(period)}</td>
+                    <td className="cell-small">{formatPeriodLabel(period)}</td>
                     <td className="num">{formatMinor(summary?.spendMinor ?? 0)}</td>
                     <td className="num is-positive">
                       {formatMinor(summary?.cashbackEarnedMinor ?? 0)}
@@ -416,7 +412,7 @@ function YearView({
                 );
               })}
               <tr className="total-row">
-                <td style={{ fontSize: 12.5 }}>Total</td>
+                <td className="cell-small">Total</td>
                 <td className="num">{formatMinor(totals('spend'), 0)}</td>
                 <td className="num is-positive">{formatMinor(totals('cashback'), 0)}</td>
                 <td className="num is-warning">{formatMinor(totals('fees'), 0)}</td>
@@ -432,7 +428,7 @@ function YearView({
           </table>
         </div>
         {shown.length < periods.length && (
-          <p className="block-sub" style={{ margin: 0 }}>
+          <p className="block-sub is-flush">
             Built from the {shown.length} month{shown.length === 1 ? '' : 's'} you have uploaded, of{' '}
             {periods.length} in view. Months with no statement are left out rather than shown as
             zero.

@@ -1,17 +1,14 @@
-'use client';
-
-import Link from 'next/link';
+import { Link } from 'react-router';
 import { useMemo } from 'react';
-import { formatMinor, formatPct } from '@/shared/money';
-import type { Account, CreditCardStatement, Period, Summary, Transaction } from '@/shared/types';
-import { CashbackLine } from '@/client/charts/cashback-line';
-import { ChartBlock, useMounted } from '@/client/charts/chart-frame';
-import { chartTheme, seriesColor } from '@/client/charts/theme';
-import { TrendChart } from '@/client/charts/trend-chart';
-import { AppHeader, type PeriodMode } from '@/client/components/app-header';
-import { Icon } from '@/client/components/icon';
-import { StatTile, TileRow } from '@/client/components/stat-tile';
-import { accountShortName, formatDayShort, formatPeriodLabel, formatPeriodRange, formatPeriodShort } from '@/client/lib/format';
+import { formatMinor, formatPct, type Account, type CreditCardStatement, type Period, type Summary, type Transaction, accountShortName, formatDayShort, formatPeriodLabel, formatPeriodRange, formatPeriodShort } from '@cred-stats/shared';
+import { CashbackLine } from '../charts/cashback-line';
+import { ChartBlock } from '../charts/chart-frame';
+import { useMounted } from '../hooks/use-mounted';
+import { chartTheme, seriesColor } from '../charts/theme';
+import { TrendChart } from '../charts/trend-chart';
+import { AppHeader, type PeriodMode } from '../components/app-header';
+import { Icon } from '../components/icon';
+import { StatTile, TileRow } from '../components/stat-tile';
 
 export interface CashbackScreenProps {
   account: Account;
@@ -119,7 +116,7 @@ export function CashbackScreen(props: CashbackScreenProps) {
             />
           ) : !props.statement ? (
             <div className="empty-state">
-              <Icon.Percent size={24} style={{ opacity: 0.5 }} />
+              <Icon.Percent size={24} className="is-faded" aria-hidden="true" />
               <p className="empty-title">
                 Nothing uploaded for {formatPeriodLabel(props.selectedPeriod)}
               </p>
@@ -251,10 +248,10 @@ export function CashbackScreen(props: CashbackScreenProps) {
                     <table className="table">
                       <thead>
                         <tr>
-                          <th style={{ width: 80 }}>Date</th>
+                          <th className="col-date">Date</th>
                           <th>Details</th>
-                          <th style={{ width: 150 }}>Category</th>
-                          <th className="num" style={{ width: 120 }}>
+                          <th className="col-category">Category</th>
+                          <th className="num col-amount">
                             Spend
                           </th>
                         </tr>
@@ -263,8 +260,8 @@ export function CashbackScreen(props: CashbackScreenProps) {
                         {nothing.map((txn) => (
                           <tr key={txn.txnId}>
                             <td className="cell-dim">{formatDayShort(txn.date)}</td>
-                            <td style={{ fontSize: 13 }}>{txn.merchant || txn.descriptionRaw}</td>
-                            <td className="is-muted" style={{ fontSize: 11.5 }}>
+                            <td className="cell-merchant">{txn.merchant || txn.descriptionRaw}</td>
+                            <td className="is-muted cell-meta">
                               {txn.category}
                             </td>
                             <td className="num">{formatMinor(txn.amountMinor)}</td>
@@ -277,7 +274,7 @@ export function CashbackScreen(props: CashbackScreenProps) {
               </section>
 
               <p className="page-sub">
-                <Link href={`/accounts/${props.account.accountId}?period=${props.selectedPeriod}`}>
+                <Link to={`/accounts/${props.account.accountId}?period=${props.selectedPeriod}`}>
                   ← Back to the statement
                 </Link>
               </p>
@@ -311,7 +308,7 @@ function CashbackYear({
   if (inYear.length === 0) {
     return (
       <div className="empty-state">
-        <Icon.Percent size={24} style={{ opacity: 0.5 }} />
+        <Icon.Percent size={24} className="is-faded" aria-hidden="true" />
         <p className="empty-title">No statements for this year yet</p>
         <p className="empty-body">
           Upload a cycle&rsquo;s statement and the year fills in.
@@ -376,10 +373,10 @@ function CashbackYear({
           <h3 className="block-title">Cycle by cycle</h3>
         </div>
         <div className="table-scroll">
-          <table className="table" style={{ minWidth: 520 }}>
+          <table className="table is-year-table" data-screen="cashback">
             <thead>
               <tr>
-                <th style={{ width: 130 }}>Cycle</th>
+                <th className="col-cycle">Cycle</th>
                 <th className="num">Spend</th>
                 <th className="num">Earned</th>
                 <th className="num">Credited</th>
@@ -389,7 +386,7 @@ function CashbackYear({
             <tbody>
               {inYear.map((summary) => (
                 <tr key={summary.period}>
-                  <td style={{ fontSize: 12.5 }}>{formatPeriodLabel(summary.period)}</td>
+                  <td className="cell-small">{formatPeriodLabel(summary.period)}</td>
                   <td className="num">{formatMinor(summary.spendMinor, 0)}</td>
                   <td className="num is-positive">{formatMinor(summary.cashbackEarnedMinor)}</td>
                   <td className="num">{formatMinor(summary.cashbackCreditedMinor)}</td>
@@ -401,7 +398,7 @@ function CashbackYear({
                 </tr>
               ))}
               <tr className="total-row">
-                <td style={{ fontSize: 12.5 }}>Total</td>
+                <td className="cell-small">Total</td>
                 <td className="num">{formatMinor(spend, 0)}</td>
                 <td className="num is-positive">{formatMinor(earned)}</td>
                 <td className="num">{formatMinor(credited)}</td>

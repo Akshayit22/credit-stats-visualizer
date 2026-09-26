@@ -1,8 +1,6 @@
-'use client';
-
 import { useState } from 'react';
 import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts';
-import { formatMinor, formatPct } from '@/shared/money';
+import { formatMinor, formatPct } from '@cred-stats/shared';
 import { chartTheme } from './theme';
 
 export interface CategorySlice {
@@ -13,7 +11,7 @@ export interface CategorySlice {
 /** Past six slices a ring is unreadable; the rest fold into one "Other". */
 const MAX_SLICES = 6;
 
-export function foldToTopSlices(slices: CategorySlice[]): CategorySlice[] {
+function foldToTopSlices(slices: CategorySlice[]): CategorySlice[] {
   const ranked = [...slices].sort((a, b) => b.amountMinor - a.amountMinor);
   if (ranked.length <= MAX_SLICES) return ranked;
   const head = ranked.slice(0, MAX_SLICES - 1);

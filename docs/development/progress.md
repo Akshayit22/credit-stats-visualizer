@@ -26,7 +26,7 @@ built, linted or tested; each branch moves the pieces it ports out of it.
 - [x] `feat/frontend-shell` — Vite + React app, router, auth, layout, sidebar
 - [x] `feat/frontend-upload` — PDF extraction in the browser, upload dialog,
       review step
-- [ ] `feat/frontend-dashboards` — overview, card, cashback, savings screens and
+- [x] `feat/frontend-dashboards` — overview, card, cashback, savings screens and
       charts
 - [ ] `feat/frontend-library-settings` — statement library, settings
 - [ ] `feat/deploy-render` — backend Dockerfile, `render.yaml`, docker-compose

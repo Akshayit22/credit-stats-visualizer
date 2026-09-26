@@ -1,5 +1,3 @@
-'use client';
-
 /**
  * Charts are drawn with recharts, which needs real colour strings — a CSS
  * custom property does not resolve inside an SVG presentation attribute. So the

@@ -1,14 +1,5 @@
-import { parseJsonResponse } from '../json';
-import {
-  DEFAULT_MAX_TOKENS,
-  LlmRateLimitError,
-  LlmRequestTooLargeError,
-  LlmResponseError,
-  MAX_OUTPUT_TOKENS,
-  type ExtractJsonArgs,
-  type LlmUsage,
-  type ProviderId,
-} from '../provider';
+import { parseJsonResponse } from '../json.js';
+import { DEFAULT_MAX_TOKENS, LlmRateLimitError, LlmRequestTooLargeError, LlmResponseError, MAX_OUTPUT_TOKENS, type ExtractJsonArgs, type LlmUsage, type ProviderId } from '../provider.js';
 
 /**
  * The OpenAI chat-completions request shape, which Groq, xAI, OpenRouter,

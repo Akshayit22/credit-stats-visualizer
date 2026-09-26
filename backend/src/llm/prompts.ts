@@ -1,4 +1,4 @@
-import { CATEGORIES } from '@/shared/categories';
+import { CATEGORIES } from '@cred-stats/shared';
 
 /**
  * The prompts. They are short on purpose: the model's job is transcription and

@@ -16,7 +16,7 @@ built, linted or tested; each branch moves the pieces it ports out of it.
       connection, error envelope, health endpoint
 - [x] `feat/backend-parsing` — parsers, reconciliation, categorisation,
       summaries; fixtures and their tests
-- [ ] `feat/backend-llm` — AI providers (groq, azure-foundry,
+- [x] `feat/backend-llm` — AI providers (groq, azure-foundry,
       openai-compatible, mock)
 - [ ] `feat/backend-persistence` — repositories for the six collections, indexes
 - [ ] `feat/backend-auth` — Google ID-token sign-in, session cookie, dev login

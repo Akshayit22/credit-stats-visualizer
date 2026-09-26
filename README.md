@@ -14,8 +14,8 @@ exactly what that means and where it is enforced.
 
 ## Run it in five minutes
 
-No Google account, no cloud account, no API key. Needs Node 22.22+ (24
-recommended) and Docker.
+No Google account, no cloud account, no API key. Needs Node 24.15+ (`nvm use`
+reads `.nvmrc`) and Docker.
 
 ```bash
 npm ci

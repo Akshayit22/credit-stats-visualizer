@@ -99,9 +99,17 @@ export function SignInPage() {
         )}
 
         {googleClientId && devLogin && (
-          <p className="sign-in-note">
-            The demo user is a local development convenience. It is refused in production.
-          </p>
+          <>
+            <p className="sign-in-note">
+              The demo user is a local development convenience. It is refused in production.
+            </p>
+            {/* Google reports a missing origin inside its own popup, where the
+                app cannot see it — so the fix is spelled out here, locally. */}
+            <p className="sign-in-note">
+              If Google says <code>origin_mismatch</code>, add <code>{window.location.origin}</code>{' '}
+              to this OAuth client&rsquo;s authorised JavaScript origins in Google Cloud Console.
+            </p>
+          </>
         )}
       </div>
     </main>

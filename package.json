@@ -5,7 +5,7 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=22.22.0"
+    "node": ">=24.15.0"
   },
   "workspaces": [
     "shared",
@@ -39,5 +39,10 @@
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.70.1",
     "vitest": "^5.0.2"
+  },
+  "allowScripts": {
+    "@swc/core": true,
+    "fsevents": true,
+    "mongodb-memory-server": true
   }
 }

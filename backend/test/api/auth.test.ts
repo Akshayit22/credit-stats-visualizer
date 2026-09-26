@@ -112,7 +112,7 @@ describe('cross-site request forgery', () => {
     const cookie = sessionCookie(login.headers['set-cookie']).split(';')[0] ?? '';
 
     // A bare agent: what a form on another site could make a browser send.
-    const response = await supertest(testApp.app.getHttpServer())
+    const response = await supertest(testApp.baseUrl)
       .post('/api/auth/sign-out')
       .set('cookie', cookie)
       .expect(403);
@@ -120,6 +120,6 @@ describe('cross-site request forgery', () => {
   });
 
   it('lets reads through without it', async () => {
-    await supertest(testApp.app.getHttpServer()).get('/api/health').expect(200);
+    await supertest(testApp.baseUrl).get('/api/health').expect(200);
   });
 });

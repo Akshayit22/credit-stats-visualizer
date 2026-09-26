@@ -64,6 +64,11 @@ export default tseslint.config(
     },
   },
   {
+    // Command-line scripts: printing is the point.
+    files: ['backend/src/scripts/**/*.ts'],
+    rules: { 'no-console': 'off' },
+  },
+  {
     // Tests read fixtures from disk.
     files: ['**/test/**/*.ts', '**/*.config.ts'],
     languageOptions: { globals: { ...globals.node } },

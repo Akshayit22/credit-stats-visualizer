@@ -22,7 +22,10 @@
     "check": "npm run lint && npm run typecheck && npm run test && npm run build",
     "dev:api": "npm run dev -w @cred-stats/backend",
     "db:up": "docker compose up -d --wait mongo mongo-express",
-    "db:down": "docker compose down"
+    "db:down": "docker compose down",
+    "build:backend": "npm run build:shared && npm run build -w @cred-stats/backend",
+    "db:seed": "npm run build:backend && npm run seed -w @cred-stats/backend",
+    "fixtures:build": "npm run build:backend && npm run fixtures:build -w @cred-stats/backend"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

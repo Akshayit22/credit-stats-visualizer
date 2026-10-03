@@ -48,6 +48,31 @@ simpler; the reason is recorded so nobody undoes it by accident.
     broken pipeline look healthy.
 12. **Three real fixtures, not two.** Both slice months were available, so the
     savings parser is tested against two real statements.
+13. **One issuer can need two parsers, and the pair must stay apart.** slice
+    prints a savings statement and a UPI credit card statement that share a
+    bank and nothing else: one is a ledger with a dated table and a running
+    balance, the other a receipt with a summary block and a list of spends.
+    `slice-credit-card` is fingerprinted on markers that appear on neither the
+    savings statement nor the Axis card — `slice credit card mitc`,
+    `refunds & repayments`, `min amount due`, `monies` — so neither document
+    can be routed into the other's parser, which would read a closing balance
+    as an amount due.
+14. **A statement that prints no year is dated from its own transactions.** The
+    slice card prints `03 SEP - 02 OCT` and `Due on 18 Oct`; only the spends
+    carry `'26`. The cycle is anchored to the transaction falling in its
+    closing month, a start month later than the end month means the cycle
+    opened the previous year, and a due month earlier than the closing month
+    means payment falls in the next one.
+15. **A summary row this parser does not know raises a warning.** Only one
+    slice card statement exists to write against, and its glossary names rows
+    — carry forward, late fee, flat fee, foreclosure charge, ongoing EMIs,
+    bank transfers — that simply do not print when they are zero. Labels are
+    mapped by name rather than position, and an unmapped one is reported
+    rather than dropped, because dropping it would silently break the figures
+    it belongs to.
+16. **slice `monies` are points, not cashback.** The card credits 450 monies
+    for ₹450 of spend. The card block measures cashback in paise, so reporting
+    them there would hand the app a reward balance to spend.
 
 ## The rebuild (September 2026)
 

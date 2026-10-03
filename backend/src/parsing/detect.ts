@@ -33,6 +33,20 @@ export const FINGERPRINTS: readonly Fingerprint[] = [
     ],
   },
   {
+    id: 'slice-credit-card',
+    issuer: 'slice',
+    productName: 'UPI credit card',
+    accountType: 'credit_card',
+    // Chosen to miss the slice *savings* statement, which is the same issuer
+    // and a completely different document: none of these four appears on it.
+    markers: [
+      { text: 'slice credit card mitc', weight: 6 },
+      { text: 'refunds & repayments', weight: 4 },
+      { text: 'min amount due', weight: 3 },
+      { text: 'monies', weight: 2 },
+    ],
+  },
+  {
     id: 'axis-supermoney-card',
     issuer: 'Axis Bank',
     productName: 'Supermoney RuPay Credit Card',

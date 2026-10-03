@@ -211,6 +211,21 @@ function isNameLike(value: string): boolean {
 const HONORIFIC = /^(?:mr|mrs|ms|shri|smt|dr)\.?\s+/i;
 
 /**
+ * A statement titled with the holder's given name: `Akshay's`.
+ *
+ * slice heads its credit card statement this way — one capitalised word in the
+ * possessive, on a line of its own, immediately above `Credit card statement`.
+ * Every other rule here needs at least two words, because one capitalised word
+ * is usually a heading rather than a person, so the name sailed through
+ * untouched into the stored text and into the prompt.
+ *
+ * The possessive is what makes it safe to read as a person: a heading does not
+ * own the document it heads. `Statement's` would be a heading, which is why the
+ * blocklist still applies to the word itself.
+ */
+const POSSESSIVE_NAME = /^([A-Z][a-z]{2,20})['\u2019]s$/;
+
+/**
  * The account holder's name, from the three places statements print it: a
  * labelled `Name` row anywhere in the header, the first bare all-caps line near
  * the top, and a bare line opening with an honorific.
@@ -259,6 +274,12 @@ export function detectHolderNames(text: string): string[] {
     const leading = cells[0];
     if (leading !== undefined && HONORIFIC.test(leading) && isNameLike(leading)) {
       found.add(leading);
+    }
+
+    const possessive = POSSESSIVE_NAME.exec(cells[0] ?? '');
+    const given = possessive?.[1];
+    if (given !== undefined && !NOT_A_NAME.test(given) && !ADDRESS_WORDS.test(given)) {
+      found.add(given);
     }
 
     if (tookBareLine) return;

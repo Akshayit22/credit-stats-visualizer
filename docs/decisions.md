@@ -70,9 +70,13 @@ simpler; the reason is recorded so nobody undoes it by accident.
     mapped by name rather than position, and an unmapped one is reported
     rather than dropped, because dropping it would silently break the figures
     it belongs to.
-16. **slice `monies` are points, not cashback.** The card credits 450 monies
-    for ₹450 of spend. The card block measures cashback in paise, so reporting
-    them there would hand the app a reward balance to spend.
+16. **slice `monies` are paise of cashback.** The card credits 450 monies for
+    ₹450 of spend, which read as rupees is a 100% rebate — so they were first
+    left unmapped rather than guessed at. They are 1% of the spend in paise:
+    ₹450 × 1% = ₹4.50 = 450. One money is one paisa. Each spend therefore
+    carries 1% of itself, refunds carry none, and the total is checked against
+    the figure slice prints: a category that earns nothing would show up as
+    that difference, and is reported rather than smoothed away.
 
 ## The rebuild (September 2026)
 

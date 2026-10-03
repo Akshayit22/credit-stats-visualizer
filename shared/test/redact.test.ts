@@ -371,3 +371,31 @@ describe('running redaction twice', () => {
     expect(redactForStorage(once).counts).toEqual({});
   });
 });
+
+describe('a statement titled with the holder’s own name', () => {
+  // slice heads its credit card statement `Akshay's` — one capitalised word in
+  // the possessive, on its own line above `Credit card statement`. Every other
+  // rule here needs two words, because one capitalised word is usually a
+  // heading, so the name went into the stored text and the prompt untouched.
+  const header = ['@@PAGE 1', "Akshay's", 'Credit card statement', 'X X X X\t1 2 2 3'].join('\n');
+
+  it('reads the given name out of the possessive', () => {
+    expect(detectHolderNames(header)).toContain('Akshay');
+  });
+
+  it('masks it, and the curly apostrophe spelling too', () => {
+    expect(redactForStorage(header).text).not.toMatch(/Akshay/i);
+    expect(redactForStorage(header.replace("'", '’')).text).not.toMatch(/Akshay/i);
+  });
+
+  it('does not take a heading that merely owns something', () => {
+    // The possessive is what licenses reading one word as a person — a heading
+    // does not own the document it heads — but the blocklist still applies.
+    expect(detectHolderNames("@@PAGE 1\nStatement's\nsummary")).toEqual([]);
+    expect(detectHolderNames("@@PAGE 1\nAccount's\ndetails")).toEqual([]);
+  });
+
+  it('leaves a plain capitalised heading alone', () => {
+    expect(detectHolderNames('@@PAGE 1\nSpends\nGlossary')).toEqual([]);
+  });
+});

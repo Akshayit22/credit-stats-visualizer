@@ -13,7 +13,8 @@ flowchart LR
   browser -. "Sign in with Google" .-> google["accounts.google.com"]
 ```
 
-Everything below is a one-time setup. After it, every push to `main` deploys.
+Everything below is a one-time setup. After it, deploying is one button in
+Render — pushing to `main` does **not** release, by design: see §4.
 
 ---
 
@@ -123,9 +124,35 @@ value, so the logs are safe to paste when asking for help.
 
 ## 4. After the first deploy
 
+### Releasing a change
+
+`autoDeploy` is **off**. A push to `main` builds nothing; a release is a thing
+you decide to do. That is deliberate — the gates run on your machine and
+nowhere else, so an automatic deploy would ship whatever was merged without
+anything having checked it.
+
+```bash
+npm run check            # lint, format, typecheck, test, build — the only gate
+git checkout main && git merge --no-ff <branch>
+git push                 # main now holds the change; nothing is live yet
+```
+
+Then in Render: **Manual Deploy → Deploy latest commit**, watch **Logs**, and
+confirm it took:
+
+```bash
+curl -s https://<service>.onrender.com/api/health
+# {"status":"ok","database":"ok",...}
+```
+
+If that answers `"database":"unreachable"`, the deploy is not live — see the
+note in §3.
+
+### Everything else
+
 | Task                         | How                                                                      |
 | ---------------------------- | ------------------------------------------------------------------------ |
-| Deploy a change              | merge to `main` and push — `autoDeploy` builds it                        |
+| Deploy a change              | push `main`, then Render → **Manual Deploy → Deploy latest commit**      |
 | Watch a deploy               | Render → the service → **Events** / **Logs**                             |
 | Roll back                    | Render → **Events** → an earlier deploy → **Rollback**                   |
 | Change a setting             | Render → **Environment** → edit → **Save, rebuild and deploy**           |

@@ -91,7 +91,16 @@ git branch -d feat/savings-interest-chart
 - **One concern per branch.** A fix and a feature that touch the same file are
   still two branches — the merge commits are what a reviewer reads.
 - **The gates pass on the branch, before the merge.** `main` is never where a
-  failure is discovered. CI runs the same `npm run check` on every push.
+  failure is discovered. **`npm run check`, locally, is the only thing that
+  runs them** — nothing on a server repeats it. The GitHub workflow is
+  `workflow_dispatch` only, because this workspace has no Actions allowance to
+  spend, so a branch merged without running it is a branch nothing checked.
+  Chain the gate to the merge with `&&` and that cannot happen by accident:
+
+  ```bash
+  npm run check && git checkout main && git merge --no-ff -
+  ```
+
 - `--no-ff` always: the merge commit is what keeps the branch visible in
   `git log --graph`. Delete the branch after merging.
 

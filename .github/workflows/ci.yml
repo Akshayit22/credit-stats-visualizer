@@ -1,10 +1,16 @@
-# The four gates, on every push and pull request. Nothing reaches main that
-# has not passed them on its branch; this is the same check, run by GitHub.
+# The gates, run by GitHub — but only when someone asks for it.
+#
+# This workspace has no Actions allowance to spend, so nothing here fires on a
+# push or a pull request: `npm run check` on the branch, locally, is the gate
+# this project actually runs, and docs/conventions.md says so. The workflow is
+# kept because it is the same command and costs nothing until triggered, so if
+# the allowance ever comes back it is one setting away from automatic again.
+#
+# Run it from the Actions tab → ci → Run workflow.
 name: ci
 
 on:
-  push:
-  pull_request:
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}

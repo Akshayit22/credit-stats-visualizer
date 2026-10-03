@@ -11,6 +11,12 @@ import { renderGoogleButton } from '../utils/google-identity';
  * Sign-in: Google, and — outside production, when switched on — a demo user
  * that needs no account. Which of the two appear is the API's decision
  * (`/api/auth/config`), so the page never offers something the server refuses.
+ *
+ * The demo user and the notes beside it are additionally behind
+ * `import.meta.env.DEV`, which is not redundancy for its own sake: the server
+ * check is what enforces the rule, but the build-time one means the production
+ * bundle does not contain the button at all. A deployed page cannot offer a
+ * sign-in it has no code for, however the API answers.
  */
 export function SignInPage() {
   const session = useSession();
@@ -76,7 +82,7 @@ export function SignInPage() {
 
         <div className="sign-in-actions" aria-busy={busy}>
           {googleClientId && <div ref={googleSlot} className="sign-in-google" />}
-          {devLogin && (
+          {import.meta.env.DEV && devLogin && (
             <button
               type="button"
               className="btn btn-secondary btn-block"
@@ -89,16 +95,27 @@ export function SignInPage() {
           )}
         </div>
 
-        {config.data && !googleClientId && !devLogin && (
-          <p className="sign-in-note">
-            No sign-in method is configured. Set <code>GOOGLE_CLIENT_ID</code> in the server&rsquo;s
-            environment — docs/setup.md says where to get one. For local development,{' '}
-            <code>CRED_STATS_DEV_LOGIN=true</code> in <code>backend/.env</code> adds a demo user
-            instead.
-          </p>
-        )}
+        {config.data &&
+          !googleClientId &&
+          !devLogin &&
+          // The same fault, told to whoever is actually reading it. In a
+          // production build this page is in front of someone who cannot fix
+          // it and should not be shown the server's configuration; the
+          // developer wording is kept for the build where it is actionable.
+          (import.meta.env.PROD ? (
+            <p className="sign-in-note">
+              Sign-in is unavailable at the moment. Please try again later.
+            </p>
+          ) : (
+            <p className="sign-in-note">
+              No sign-in method is configured. Set <code>GOOGLE_CLIENT_ID</code> in the
+              server&rsquo;s environment — docs/setup.md says where to get one. For local
+              development, <code>CRED_STATS_DEV_LOGIN=true</code> in <code>backend/.env</code> adds
+              a demo user instead.
+            </p>
+          ))}
 
-        {googleClientId && devLogin && (
+        {import.meta.env.DEV && googleClientId && devLogin && (
           <>
             <p className="sign-in-note">
               The demo user is a local development convenience. It is refused in production.

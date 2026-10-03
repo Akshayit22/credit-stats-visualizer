@@ -24,7 +24,7 @@ git clone https://github.com/Akshayit22/credit-stats-visualizer.git
 cd credit-stats-visualizer
 npm ci
 cp backend/.env.example backend/.env
-npm run db:up      # MongoDB :27017 and mongo-express :8081, in Docker
+npm run db:up      # MongoDB :27018 and mongo-express :8081, in Docker
 npm run db:seed    # loads the three real (redacted) statements for the demo user
 npm run dev        # API :4000, web app :5173
 ```
@@ -167,7 +167,7 @@ boot and names any variable that is wrong.
 | `NODE_ENV`                                                                             | `development`            | `production` turns on Secure cookies and refuses the demo user                  |
 | `PORT`                                                                                 | `4000`                   | the API's port                                                                  |
 | `LOG_LEVEL`                                                                            | `info`                   | pino level; `silent` under test                                                 |
-| `MONGODB_URI`                                                                          | — (required)             | `mongodb://localhost:27017` locally; the Atlas SRV string in production         |
+| `MONGODB_URI`                                                                          | — (required)             | `mongodb://localhost:27018` locally; the Atlas SRV string in production         |
 | `MONGODB_DB`                                                                           | `cred-stats`             | the database name                                                               |
 | `CRED_STATS_SESSION_SECRET`                                                            | random per process       | signs the session cookie; `openssl rand -base64 32`; **required in production** |
 | `GOOGLE_CLIENT_ID`                                                                     | unset                    | §2; unset means no Google button                                                |

@@ -7,7 +7,7 @@ Run from the repository root.
 | Command                                   | What it does                                                       |
 | ----------------------------------------- | ------------------------------------------------------------------ |
 | `npm ci`                                  | install every workspace                                            |
-| `npm run db:up` / `db:down`               | start / stop MongoDB (:27017) and mongo-express (:8081) in Docker  |
+| `npm run db:up` / `db:down`               | start / stop MongoDB (:27018) and mongo-express (:8081) in Docker  |
 | `npm run db:seed`                         | load the three committed statements for the demo user (idempotent) |
 | `npm run dev`                             | shared in watch mode, the API on :4000, the web app on :5173       |
 | `npm run check`                           | the gates: lint, format, typecheck, test, build                    |

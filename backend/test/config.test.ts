@@ -42,7 +42,7 @@ describe('backend/.env.example', () => {
   });
 
   it('runs a fresh clone offline: local MongoDB, no model', () => {
-    expect(envExample).toMatch(/^MONGODB_URI=mongodb:\/\/localhost:27017$/m);
+    expect(envExample).toMatch(/^MONGODB_URI=mongodb:\/\/localhost:27018$/m);
     expect(envExample).toMatch(/^LLM_PROVIDER=mock$/m);
   });
 });

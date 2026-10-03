@@ -1,6 +1,6 @@
 # Local MongoDB for development — and, optionally, the production image.
 #
-#   npm run db:up      start MongoDB (:27017) and mongo-express (:8081)
+#   npm run db:up      start MongoDB (:27018) and mongo-express (:8081)
 #   npm run db:down    stop them; the data survives in the named volume
 #
 #   docker compose --profile app up --build
@@ -15,7 +15,11 @@ services:
     image: mongo:8.2
     container_name: cred-stats-mongo
     ports:
-      - '27017:27017'
+      # 27018 on the host, not 27017: another project on this machine runs its
+      # own MongoDB on the default port, and two containers cannot share it.
+      # Inside the compose network this is still 27017, so every
+      # container-to-container URL below is unchanged.
+      - '27018:27017'
     volumes:
       - mongo-data:/data/db
     healthcheck:

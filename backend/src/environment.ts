@@ -28,7 +28,7 @@ export const environmentSchema = z.object({
    */
   CRED_STATS_WEB_DIR: optional,
 
-  /** `mongodb://localhost:27017` locally, the Atlas SRV string in production. */
+  /** `mongodb://localhost:27018` locally, the Atlas SRV string in production. */
   MONGODB_URI: z.string().min(1),
   MONGODB_DB: z.string().min(1).default('cred-stats'),
 

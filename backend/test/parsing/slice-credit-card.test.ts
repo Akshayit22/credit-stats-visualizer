@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parserInputFor, runDeterministicParser } from '../../src/parsing/registry.js';
-import { reconcile } from '../../src/domain/reconcile.js';
+import { checkCashback, reconcile } from '../../src/domain/reconcile.js';
 import { parsedStatementSchema, type ParsedStatement } from '../../src/domain/schemas.js';
 
 /**
@@ -174,12 +174,39 @@ describe('slice-credit-card parser', () => {
     expect(modes).toEqual(['upi', 'upi', 'card']);
   });
 
-  it('leaves cashback at zero, because monies are points and not rupees', () => {
-    // The statement credits 500 "monies" for ₹500 of spend. They are a reward
-    // balance; putting them in a paise field would have the app spend them.
-    const { card } = parseCard(STATEMENT);
-    expect(card.cashbackEarnedMinor).toBe(0);
-    expect(card.cashbackCreditedMinor).toBe(0);
+  it('earns 1% on every spend', () => {
+    // ₹300 earns ₹3.00, ₹150 earns ₹1.50, ₹50 earns ₹0.50.
+    const cashback = parseCard(STATEMENT).transactions.map((txn) => txn.cashbackMinor);
+    expect(cashback).toEqual([30_000 / 100, 15_000 / 100, 5_000 / 100]);
+  });
+
+  it('reads the monies block as paise, which is what reconciles it', () => {
+    // `Earned 500` against ₹500 of spend is a 100% rebate read as rupees and
+    // 1% read as paise. The second is the one that matches the per-spend sum,
+    // which is how the unit was settled rather than assumed.
+    const statement = parseCard(STATEMENT);
+    expect(statement.card.cashbackEarnedMinor).toBe(500);
+    expect(checkCashback(statement)).toMatchObject({ ok: true, rowsMinor: 500, statedMinor: 500 });
+  });
+
+  it('pays nothing on a refund', () => {
+    // A refund reverses a spend. Earning on it would pay twice for one
+    // purchase.
+    const refunded = STATEMENT.replace('Spends\nCorner Store\t₹300', 'Refunds\nCorner Store\t₹300');
+    const credited = parseCard(refunded).transactions.filter((txn) => txn.direction === 'credit');
+    expect(credited.length).toBeGreaterThan(0);
+    for (const txn of credited) expect(txn.cashbackMinor).toBeNull();
+  });
+
+  it('still reports what slice says when the two disagree', () => {
+    // A category that earns nothing would look exactly like this, so slice's
+    // figure is kept and the difference is raised rather than smoothed over.
+    const tampered = STATEMENT.replace('Earned\t500', 'Earned\t400');
+    const attempt = runDeterministicParser(parserInputFor(tampered));
+    expect(attempt?.output?.warnings.map((warning) => warning.code)).toContain('cashback_mismatch');
+    const statement = attempt?.output?.statement;
+    if (statement?.accountType !== 'credit_card') throw new Error('expected a card');
+    expect(statement.card.cashbackEarnedMinor).toBe(400);
   });
 });
 

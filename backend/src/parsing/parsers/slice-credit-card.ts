@@ -40,9 +40,12 @@ const ID = 'slice-credit-card';
  *   warning instead of being silently dropped — with one statement to go on,
  *   the labels we have not seen are the ones worth hearing about.
  *
- * - **`monies` are points, not money.** slice credits 450 "monies" for ₹450 of
- *   spend; they are not rupees and are deliberately not reported as cashback,
- *   which the card block measures in paise.
+ * - **`monies` are paise of cashback, which is not obvious.** slice credits 450
+ *   monies for ₹450 of spend. Read as rupees that is a 100% rebate, which is
+ *   absurd, so they were first left unmapped. They are 1% of the spend
+ *   expressed in paise: ₹450 × 1% = ₹4.50 = 450. One money is one paisa, and
+ *   the statement's own figure is what confirms it rather than an assumption
+ *   about the product.
  */
 export const sliceCreditCardParser: StatementParser = {
   id: ID,
@@ -69,6 +72,21 @@ export const sliceCreditCardParser: StatementParser = {
       // A cycle that opens in a later month than it closes crossed New Year.
       cycle.startMonth > cycle.endMonth ? year - 1 : year,
     );
+
+    const earnedMinor = readMonies(input.lines);
+    const rowsCashbackMinor = transactions.reduce(
+      (total, txn) => total + (txn.cashbackMinor ?? 0),
+      0,
+    );
+    if (earnedMinor !== null && earnedMinor !== rowsCashbackMinor) {
+      warnings.push({
+        code: 'cashback_mismatch',
+        message:
+          'The 1% worked out per spend does not add up to the monies this statement says ' +
+          'were earned. Both are kept; a spend category that earns nothing would look ' +
+          'exactly like this.',
+      });
+    }
 
     const spentMinor = transactions.reduce((total, txn) => total + txn.amountMinor, 0);
     if (summary.purchasesMinor !== spentMinor) {
@@ -119,9 +137,11 @@ export const sliceCreditCardParser: StatementParser = {
           creditLimitMinor: 0,
           availableCreditMinor: 0,
           cashLimitMinor: 0,
-          // `monies` are reward points, not rupees. Reporting them here would
-          // put a point count into a field the rest of the app spends.
-          cashbackEarnedMinor: 0,
+          // What slice says it gave, in preference to what we worked out — and
+          // the two are compared above, so a disagreement is reported.
+          cashbackEarnedMinor: earnedMinor ?? rowsCashbackMinor,
+          // Earned this cycle, not yet credited to the balance: the summary
+          // would show it under refunds and repayments when it is.
           cashbackCreditedMinor: 0,
         },
         transactions,
@@ -318,6 +338,52 @@ function readSummary(page1: StatementLine[], warnings: ParseWarning[]): Summary 
   return summary;
 }
 
+/* ── cashback ────────────────────────────────────────────────────────────── */
+
+/** slice pays 1% of the spend. ₹85 earns ₹0.85; in paise, 8500 earns 85. */
+const CASHBACK_RATE = 0.01;
+
+/**
+ * What a spend earned.
+ *
+ * Only money going out earns: a refund is the reversal of a spend, and paying
+ * cashback on it again would pay twice for the same purchase.
+ *
+ * Every amount this bank prints is whole rupees, so the 1% lands on a whole
+ * paisa and the rounding never fires. It is here for the statement that
+ * eventually prints something like ₹85.50, where a fraction of a paisa has to
+ * go somewhere; the monies check above is what would catch it being the wrong
+ * way.
+ */
+function cashbackFor(amountMinor: number, direction: 'debit' | 'credit'): number | null {
+  if (direction !== 'debit') return null;
+  return Math.round(amountMinor * CASHBACK_RATE);
+}
+
+/**
+ * The `monies` block — slice's own figure for what the cycle earned:
+ *
+ *     monies
+ *     Earned   450
+ *     03 Sep - 02 Oct
+ *
+ * A money is a paisa, so this is read as paise directly. It is the figure the
+ * app reports, with the per-spend 1% checked against it rather than replacing
+ * it: slice knows about category exclusions and caps that this does not.
+ */
+function readMonies(lines: StatementLine[]): number | null {
+  const start = lines.findIndex((line) => /^monies$/i.test(line.text.trim()));
+  if (start === -1) return null;
+
+  for (const line of lines.slice(start + 1, start + 6)) {
+    const cells = line.cells.map((cell) => cell.trim());
+    if (!/^earned$/i.test(cells[0] ?? '')) continue;
+    const earned = Number((cells[cells.length - 1] ?? '').replace(/[^\d]/g, ''));
+    return Number.isFinite(earned) ? earned : null;
+  }
+  return null;
+}
+
 /* ── the spends ──────────────────────────────────────────────────────────── */
 
 /** `2 Oct '26 • UPI` — the only line of a spend that carries a year. */
@@ -391,7 +457,7 @@ function readTransactions(
       mode: dated.mode,
       referenceNo: null,
       balanceAfterMinor: null,
-      cashbackMinor: null,
+      cashbackMinor: cashbackFor(amountMinor, direction),
       isFee: false,
       isInterest: false,
       isPayment: direction === 'credit',

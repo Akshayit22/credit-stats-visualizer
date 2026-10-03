@@ -3,6 +3,7 @@ import { detectStatement } from './detect.js';
 import { axisSupermoneyCardParser } from './parsers/axis-supermoney-card.js';
 import { idfcSavingsParser } from './parsers/idfc-savings.js';
 import { scbSavingsParser } from './parsers/scb-savings.js';
+import { sliceCreditCardParser } from './parsers/slice-credit-card.js';
 import { sliceSavingsParser } from './parsers/slice-savings.js';
 import type { ParserInput, ParserOutput, StatementParser } from './types.js';
 
@@ -12,6 +13,7 @@ import type { ParserInput, ParserOutput, StatementParser } from './types.js';
  */
 const PARSERS: readonly StatementParser[] = [
   sliceSavingsParser,
+  sliceCreditCardParser,
   axisSupermoneyCardParser,
   idfcSavingsParser,
   scbSavingsParser,

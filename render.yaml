@@ -17,7 +17,10 @@ services:
     dockerfilePath: ./Dockerfile
     dockerContext: .
     healthCheckPath: /api/health
-    autoDeploy: true
+    # Deploys are triggered by hand, from Render's dashboard. A push to main is
+    # not a release: the gates run locally here, so an automatic deploy would
+    # ship whatever was merged without anything having checked it first.
+    autoDeploy: false
     envVars:
       - key: NODE_ENV
         value: production
